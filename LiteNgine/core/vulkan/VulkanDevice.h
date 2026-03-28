@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstdlib>
+#include <map>
 namespace lte {
 	class VulkanDevice
 	{
@@ -31,5 +32,10 @@ namespace lte {
 			vk::DebugUtilsMessageTypeFlagsEXT              type,
 			const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData);
+		void setupDebugMessenger();
+		vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
+		void pickPhyscialDevice();
+		vk::raii::PhysicalDevice physicalDevice = nullptr;
+		bool isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevice);
 	};
 }
