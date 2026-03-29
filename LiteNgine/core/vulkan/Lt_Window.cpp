@@ -12,6 +12,9 @@ namespace lte {
 		}
 		glfwTerminate();
 	};
+	GLFWwindow* Lt_Window::getGLFWWindow() {
+		return window;
+	}
 	void Lt_Window::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
 
 		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {

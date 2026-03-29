@@ -12,7 +12,8 @@ namespace lte
 		//NAME = "LiteEngine: Agstrum";
 		void run();
 	private:
-		VulkanDevice vkDevice{};
 		Lt_Window ltWindow{ WIDTH, HEIGHT ,"LiteEngine : Agstrum" };
+		VulkanDevice vkDevice { ltWindow };
+
 	};
 }

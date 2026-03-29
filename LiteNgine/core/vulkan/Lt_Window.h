@@ -15,6 +15,7 @@ namespace lte {
 		Lt_Window& operator=(const Lt_Window&) = delete;
 		bool shouldClose() { return glfwWindowShouldClose(window); }
 		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+		GLFWwindow* getGLFWWindow();
 	private:
 
 		GLFWwindow* window;

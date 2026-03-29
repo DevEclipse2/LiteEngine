@@ -1,11 +1,19 @@
 #include "VulkanDevice.h"
 #include "ConsoleLog.h"
+
 namespace lte {
 
-	VulkanDevice::VulkanDevice(){
+	VulkanDevice::VulkanDevice(Lt_Window& ltwind) : window{ ltwind }
+	{
 		createInstance();
 		setupDebugMessenger();
+		createSurface();
 		pickPhysicalDevice();
+		createLogicalDevice();
+		createSwapChain();
+		createImageViews();
+		createGraphicsPipeline();
+
 	}
 	VulkanDevice::~VulkanDevice() {
 
@@ -35,6 +43,14 @@ namespace lte {
 	}
 
 
+	void VulkanDevice::createSurface() 
+	{
+		VkSurfaceKHR       _surface;
+		if (glfwCreateWindowSurface(*instance, window.getGLFWWindow(), nullptr, &_surface) != 0) {
+			throw std::runtime_error("failed to create window surface!");
+		}
+		surface = vk::raii::SurfaceKHR(instance, _surface);
+	}
 	std::vector<const char*> VulkanDevice::getRequiredInstanceExtensions()
 	{
 		uint32_t glfwExtensionCount = 0;
@@ -136,7 +152,6 @@ namespace lte {
 			throw std::runtime_error("failed to find a suitable GPU!");
 		}*/
 	}
-
 	void VulkanDevice::ListFeatures(vk::PhysicalDeviceProperties* props ,
 		vk::PhysicalDeviceFeatures* features , vk::PhysicalDeviceMemoryProperties* memProps) {
 		ConsoleLog::printU32("apiVersion", props->apiVersion);
@@ -189,7 +204,148 @@ namespace lte {
 		}
 	}
 
+	void VulkanDevice::createLogicalDevice() {
 
+		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+
+		uint32_t queueIndex = ~0;
+		for (uint32_t qfpIndex = 0; qfpIndex < queueFamilyProperties.size(); qfpIndex++)
+		{
+			if ((queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eGraphics) &&
+				physicalDevice.getSurfaceSupportKHR(qfpIndex, *surface))
+			{
+				// found a queue family that supports both graphics and present
+				queueIndex = qfpIndex;
+				break;
+			}
+		}
+		if (queueIndex == ~0)
+		{
+			throw std::runtime_error("Could not find a queue for graphics and present -> terminating");
+		}
+
+		// create a Device
+		float queuePriority = 0.5f;
+		vk::DeviceQueueCreateInfo deviceQueueCreateInfo{};
+		deviceQueueCreateInfo.queueFamilyIndex = queueIndex, deviceQueueCreateInfo.queueCount = 1, deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+		
+		
+		// Create a chain of feature structures
+		// query for Vulkan 1.3 features
+
+		vk::StructureChain<
+			vk::PhysicalDeviceFeatures2,
+			vk::PhysicalDeviceVulkan13Features,
+			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
+		> featureChain{};
+		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = VK_TRUE;
+		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = VK_TRUE;
+
+		vk::DeviceCreateInfo deviceCreateInfo{};
+			deviceCreateInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
+			deviceCreateInfo.queueCreateInfoCount = 1,
+			deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo,
+			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size()),
+			deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+		device = vk::raii::Device(physicalDevice, deviceCreateInfo);
+		queue = vk::raii::Queue(device, queueIndex, 0);
+
+		vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
+		std::vector<vk::SurfaceFormatKHR> availableFormats = physicalDevice.getSurfaceFormatsKHR(surface);
+		std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
+
+	}
+
+	vk::SurfaceFormatKHR VulkanDevice::chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const& availableFormats)
+	{
+		const auto formatIt = std::ranges::find_if(
+			availableFormats,
+			[](const auto& format) { return format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
+		return formatIt != availableFormats.end() ? *formatIt : availableFormats[0];
+	}
+
+	void VulkanDevice::createSwapChain()
+	{
+		vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
+		swapChainExtent = chooseSwapExtent(surfaceCapabilities);
+		uint32_t minImageCount = chooseSwapMinImageCount(surfaceCapabilities);
+		std::vector<vk::SurfaceFormatKHR> availableFormats = physicalDevice.getSurfaceFormatsKHR(*surface);
+		swapChainSurfaceFormat = chooseSwapSurfaceFormat(availableFormats);
+
+		std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
+		vk::PresentModeKHR              presentMode = chooseSwapPresentMode(availablePresentModes);
+
+		vk::SwapchainCreateInfoKHR swapChainCreateInfo{}; 
+			swapChainCreateInfo.surface = *surface,
+			swapChainCreateInfo.minImageCount = minImageCount,
+			swapChainCreateInfo.imageFormat = swapChainSurfaceFormat.format,
+			swapChainCreateInfo.imageColorSpace = swapChainSurfaceFormat.colorSpace,
+			swapChainCreateInfo.imageExtent = swapChainExtent,
+			swapChainCreateInfo.imageArrayLayers = 1,
+			swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
+			swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive,
+			swapChainCreateInfo.preTransform = surfaceCapabilities.currentTransform,
+			swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+			swapChainCreateInfo.presentMode = chooseSwapPresentMode(availablePresentModes),
+			swapChainCreateInfo.clipped = true;
+			swapChainCreateInfo.oldSwapchain = nullptr;
+		swapChain = vk::raii::SwapchainKHR(device, swapChainCreateInfo);
+		swapChainImages = swapChain.getImages();
+
+	}
+	vk::PresentModeKHR VulkanDevice::chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes)
+	{
+		assert(std::ranges::any_of(availablePresentModes, [](auto presentMode) { return presentMode == vk::PresentModeKHR::eFifo; }));
+		return std::ranges::any_of(availablePresentModes,
+			[](const vk::PresentModeKHR value) { return vk::PresentModeKHR::eMailbox == value; }) ?
+			vk::PresentModeKHR::eMailbox:
+			vk::PresentModeKHR::eFifo;
+	}
+	uint32_t VulkanDevice::chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities)
+	{
+		auto minImageCount = (std::max)(3u, surfaceCapabilities.minImageCount);
+		if ((0 < surfaceCapabilities.maxImageCount) && (surfaceCapabilities.maxImageCount < minImageCount))
+		{
+			minImageCount = surfaceCapabilities.maxImageCount;
+		}
+		return minImageCount;
+
+		
+	}
+	vk::Extent2D VulkanDevice::chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities)
+	{
+		if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)())
+		{
+			return capabilities.currentExtent;
+		}
+		int w, h;
+		glfwGetFramebufferSize(window.getGLFWWindow(), &w, &h);
+		uint32_t width = static_cast<uint32_t>(w);
+		uint32_t height = static_cast<uint32_t>(h);
+		return {
+			std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+			std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
+		};
+	}
+
+	void VulkanDevice::createImageViews() {
+		assert(swapChainImageViews.empty());
+
+		vk::ImageViewCreateInfo imageViewCreateInfo{};
+			imageViewCreateInfo.viewType = vk::ImageViewType::e2D,
+			imageViewCreateInfo.format = swapChainSurfaceFormat.format,
+			imageViewCreateInfo.subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+		for (auto& image : swapChainImages)
+		{
+			imageViewCreateInfo.image = image;
+			swapChainImageViews.emplace_back(device, imageViewCreateInfo);
+		}
+	}
+
+	void VulkanDevice::createGraphicsPipeline() {
+
+	}
 
 	int VulkanDevice::createInstance() {
 
