@@ -23,6 +23,7 @@ namespace lte {
 		const std::vector<char const*> validationLayers = {
 			"VK_LAYER_KHRONOS_validation"
 			};
+		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
 	private:
 		std::vector<const char*> getRequiredInstanceExtensions();
 		vk::raii::Context  context;
@@ -34,8 +35,10 @@ namespace lte {
 			void* pUserData);
 		void setupDebugMessenger();
 		vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
-		void pickPhyscialDevice();
+		void pickPhysicalDevice();
 		vk::raii::PhysicalDevice physicalDevice = nullptr;
 		bool isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevice);
+		void ListFeatures(vk::PhysicalDeviceProperties* props, vk::PhysicalDeviceFeatures* feats,vk::PhysicalDeviceMemoryProperties* memoryprops);
+
 	};
 }

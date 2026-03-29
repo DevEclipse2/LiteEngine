@@ -27,6 +27,9 @@
     <ClCompile Include="core\vulkan\Lt_Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\ConsoleLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\VulkanDevice.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\Lt_Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\ConsoleLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
