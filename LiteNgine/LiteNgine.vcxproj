@@ -80,11 +80,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;$(IncludePath)</IncludePath>
-    <OutDir>..\build</OutDir>
+    <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;$(IncludePath)</IncludePath>
-    <OutDir>..\build</OutDir>
+    <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,7 +127,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,7 +152,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -175,6 +175,7 @@
     <ClCompile Include="core\vulkan\VulkanDevice.cpp" />
     <ClCompile Include="core\vulkan\Lt_Window.cpp" />
     <ClCompile Include="core\vulkan\ShaderLoader.cpp" />
+    <ClCompile Include="core\vulkan\VertexHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="core\vulkan\VulkanDevice.h" />
     <ClInclude Include="core\vulkan\Lt_Window.h" />
     <ClInclude Include="core\vulkan\ShaderLoader.h" />
+    <ClInclude Include="core\vulkan\VertexHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />

@@ -21,6 +21,7 @@ constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 namespace lte {
 	class Lt_Window;
+	class ShaderLoader;
 	class VulkanDevice
 	{
 	public:
@@ -119,6 +120,10 @@ namespace lte {
 		void createSyncObjects();
 		//multiple frame handlers
 		uint32_t frameIndex = 0;
+
+		//shader loading class
+		ShaderLoader shaderLoader{};
+
 
 
 

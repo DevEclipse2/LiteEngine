@@ -3,6 +3,12 @@ namespace lte {
 	ShaderLoader::ShaderLoader() {
 
 	}
+    ShaderLoader::~ShaderLoader() {
+
+    }
+    void ShaderLoader::UpdateShaders() {
+
+    }
     std::vector<char> ShaderLoader::readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
 

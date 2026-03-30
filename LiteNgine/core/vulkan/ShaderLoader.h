@@ -10,7 +10,7 @@ namespace lte {
 		ShaderLoader();
 		~ShaderLoader();
 		void UpdateShaders();
-		static std::vector<char> readFile(const std::string& filename);
+		std::vector<char> readFile(const std::string& filename);
 	private:
 	};
 }

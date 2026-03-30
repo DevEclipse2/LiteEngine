@@ -1,6 +1,6 @@
 #include "VulkanDevice.h"
 #include "ConsoleLog.h"
-
+#define VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS
 namespace lte {
 
 	VulkanDevice::VulkanDevice(Lt_Window* ltwind) : window { *ltwind }
@@ -385,7 +385,7 @@ namespace lte {
 	void VulkanDevice::createGraphicsPipeline() {
 
 		//gets shaders for vert and frag respectively
-		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));
+		vk::raii::ShaderModule shaderModule = createShaderModule(shaderLoader.readFile("shaders/slang.spv"));
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
 			vertShaderStageInfo.module = shaderModule,
@@ -531,9 +531,9 @@ namespace lte {
 			renderingInfo.layerCount = 1,
 			renderingInfo.colorAttachmentCount = 1,
 			renderingInfo.pColorAttachments = &attachmentInfo;
-			
+
 		commandBuffer.beginRendering(renderingInfo);
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline);
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 		commandBuffer.draw(3, 1, 0, 0);
@@ -610,18 +610,29 @@ namespace lte {
 		recordCommandBuffer(imageIndex);
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo{
-			1, &* presentCompleteSemaphores[frameIndex],& waitDestinationStageMask, 1,
-				&* commandBuffers[frameIndex], 1, &* renderFinishedSemaphores[frameIndex]};
+										1,
+										&* presentCompleteSemaphores[frameIndex],
+										& waitDestinationStageMask,
+										1,
+										&* commandBuffers[frameIndex],
+										1,
+										&*renderFinishedSemaphores[imageIndex]};
 
 		queue.submit(submitInfo, *inFlightFences[frameIndex]);
+																			//bruhhhhhhh
 		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex};
-		result = queue.presentKHR(presentInfoKHR);
+
 		if (framebufferResized)
 		{
 			framebufferResized = false;
 			recreateSwapChain();
 			std::cout << "resize" << "\n";
+			return;
 		}
+
+
+		result = queue.presentKHR(presentInfoKHR); //error here 
+		
 			switch (result)
 		{
 		case vk::Result::eSuccess:
@@ -666,6 +677,7 @@ namespace lte {
 	}
 
 	void VulkanDevice::Exit() {
+
 		device.waitIdle();
 		//error during cleanup
 	}
