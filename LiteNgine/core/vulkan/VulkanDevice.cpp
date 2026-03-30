@@ -3,9 +3,9 @@
 
 namespace lte {
 
-	VulkanDevice::VulkanDevice(Lt_Window& ltwind) : window{ ltwind }
+	VulkanDevice::VulkanDevice(Lt_Window* ltwind) : window { *ltwind }
 	{
-		//sets up the main vulkan context
+		
 		//vulkan instance
 		createInstance();
 		//debug messenger and validation layers
@@ -21,7 +21,7 @@ namespace lte {
 		createSyncObjects();
 	}
 	VulkanDevice::~VulkanDevice() {
-
+		cleanupSwapChain();
 	}
 
 	//validation layer stuff
@@ -227,11 +227,6 @@ namespace lte {
 	}
 
 
-
-
-
-
-
 	void VulkanDevice::createLogicalDevice() {
 
 		//creates graphics queue
@@ -283,11 +278,6 @@ namespace lte {
 			deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 		device = vk::raii::Device(physicalDevice, deviceCreateInfo);
 		queue = vk::raii::Queue(device, queueIndex, 0);
-
-		vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
-		std::vector<vk::SurfaceFormatKHR> availableFormats = physicalDevice.getSurfaceFormatsKHR(surface);
-		std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
-
 	}
 
 	vk::SurfaceFormatKHR VulkanDevice::chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const& availableFormats)
@@ -447,12 +437,12 @@ namespace lte {
 
 		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 		vk::PipelineDynamicStateCreateInfo dynamicState{};
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
 			dynamicState.pDynamicStates = dynamicStates.data();
 
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.setLayoutCount = 0,
+			pipelineLayoutInfo.setLayoutCount = 0,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
@@ -501,14 +491,22 @@ namespace lte {
 
 	void VulkanDevice::createCommandBuffer() {
 
+		commandBuffers.clear();
 		vk::CommandBufferAllocateInfo allocInfo{};
+			allocInfo.commandPool = commandPool,
+			allocInfo.level = vk::CommandBufferLevel::ePrimary,
+			allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+		commandBuffers = vk::raii::CommandBuffers(device, allocInfo);
+
+		/*vk::CommandBufferAllocateInfo allocInfo{};
 			allocInfo.commandPool = commandPool, 
 			allocInfo.level = vk::CommandBufferLevel::ePrimary, 
 			allocInfo.commandBufferCount = 1 ;
-		commandBuffer = std::move(vk::raii::CommandBuffers(device, allocInfo).front());
+		commandBuffer = std::move(vk::raii::CommandBuffers(device, allocInfo).front());*/
 	}
 
 	void VulkanDevice::recordCommandBuffer(uint32_t imageIndex) {
+		auto& commandBuffer = commandBuffers[frameIndex];
 		commandBuffer.begin({});
 		transition_image_layout(
 			imageIndex,
@@ -585,48 +583,85 @@ namespace lte {
 			dependencyInfo.imageMemoryBarrierCount = 1,
 			dependencyInfo.pImageMemoryBarriers = &barrier;
 
-		commandBuffer.pipelineBarrier2(dependencyInfo);
+		commandBuffers[frameIndex].pipelineBarrier2(dependencyInfo);
 	}
 
 	void VulkanDevice::drawFrame() {
-		auto fenceResult = device.waitForFences(*drawFence, vk::True, UINT64_MAX);
-		auto [result, imageIndex] = swapChain.acquireNextImage(UINT64_MAX, *presentCompleteSemaphore, nullptr);
-		recordCommandBuffer(imageIndex);
-		device.resetFences(*drawFence);
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		const vk::SubmitInfo submitInfo{
-			1, &* presentCompleteSemaphore, & waitDestinationStageMask, 1,
-				&* commandBuffer, 1, &* renderFinishedSemaphore};
-		queue.submit(submitInfo, *drawFence);
-		result = device.waitForFences(*drawFence, vk::True, UINT64_MAX);
-		if (result != vk::Result::eSuccess)
+
+		auto fenceResult = device.waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
+		if (fenceResult != vk::Result::eSuccess)
 		{
 			throw std::runtime_error("failed to wait for fence!");
 		}
+		auto [result, imageIndex] = swapChain.acquireNextImage(UINT64_MAX, *presentCompleteSemaphores[frameIndex], nullptr);
 
-		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphore,1, &*swapChain,&imageIndex};
+		if (result == vk::Result::eErrorOutOfDateKHR)
+		{
+			recreateSwapChain();
+			return;
+		}
+		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+		{
+			assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
+			throw std::runtime_error("failed to acquire swap chain image!");
+		}
+		device.resetFences(*inFlightFences[frameIndex]);
+		commandBuffers[frameIndex].reset();
+		recordCommandBuffer(imageIndex);
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::SubmitInfo submitInfo{
+			1, &* presentCompleteSemaphores[frameIndex],& waitDestinationStageMask, 1,
+				&* commandBuffers[frameIndex], 1, &* renderFinishedSemaphores[frameIndex]};
+
+		queue.submit(submitInfo, *inFlightFences[frameIndex]);
+		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex};
 		result = queue.presentKHR(presentInfoKHR);
-		switch (result)
+		if (framebufferResized)
+		{
+			framebufferResized = false;
+			recreateSwapChain();
+			std::cout << "resize" << "\n";
+		}
+			switch (result)
 		{
 		case vk::Result::eSuccess:
 			break;
 		case vk::Result::eSuboptimalKHR:
+			framebufferResized = false;
+			recreateSwapChain();
 			std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n";
 			break;
 		default:
+			framebufferResized = false;
+			recreateSwapChain();
 			std::cerr << "what the fuck" << "\n";
 			break;        // an unexpected result is returned!
 		}
-		
+		frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanDevice::createSyncObjects() {
 
-		presentCompleteSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+
+		assert(presentCompleteSemaphores.empty() && renderFinishedSemaphores.empty() && inFlightFences.empty());
+
+		for (size_t i = 0; i < swapChainImages.size(); i++)
+		{
+			renderFinishedSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
+		}
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{	
+			vk::FenceCreateInfo info{};
+			info.flags = vk::FenceCreateFlagBits::eSignaled;
+			presentCompleteSemaphores.emplace_back(device, vk::SemaphoreCreateInfo());
+			inFlightFences.emplace_back(device, info);
+		}
+		/*presentCompleteSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
 		renderFinishedSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
 		vk::FenceCreateInfo info{};
 		info.flags = vk::FenceCreateFlagBits::eSignaled;
-		drawFence = vk::raii::Fence(device, info);
+		drawFence = vk::raii::Fence(device, info);*/
 
 	}
 
@@ -634,6 +669,31 @@ namespace lte {
 		device.waitIdle();
 		//error during cleanup
 	}
+
+	void VulkanDevice::cleanupSwapChain()
+	{
+		swapChainImageViews.clear();
+		swapChain = nullptr;
+	}
+
+	void VulkanDevice::recreateSwapChain() {
+
+		int width = 0, height = 0;
+		glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
+		while (width == 0 || height == 0)
+		{
+			glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
+			glfwWaitEvents();
+		}
+		device.waitIdle();
+
+		cleanupSwapChain();
+
+
+		createSwapChain();
+		createImageViews();
+	}
+
 
 	int VulkanDevice::createInstance() {
 

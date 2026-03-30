@@ -4,8 +4,9 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <vulkan/vulkan_raii.hpp>
+#include "VulkanDevice.h"
 namespace lte {
-
+	class VulkanDevice;
 	class Lt_Window
 	{
 	public:
@@ -16,14 +17,16 @@ namespace lte {
 		bool shouldClose() { return glfwWindowShouldClose(window); }
 		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 		GLFWwindow* getGLFWWindow();
+		void setVkDevice(VulkanDevice* device);
 	private:
 
+		static VulkanDevice* vkdevice;
 		GLFWwindow* window;
 		void initWindow();
 		const int width;
 		const int height;
 		std::string windowName;
-
+		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 	};
 }

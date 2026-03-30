@@ -16,7 +16,11 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+
+constexpr int MAX_FRAMES_IN_FLIGHT = 3;
+
 namespace lte {
+	class Lt_Window;
 	class VulkanDevice
 	{
 	public:
@@ -25,7 +29,7 @@ namespace lte {
 		#else
 			static constexpr bool enableValidationLayers = true;
 		#endif
-			VulkanDevice(Lt_Window &window);
+		VulkanDevice(Lt_Window* window);
 		~VulkanDevice();
 		const std::vector<char const*> validationLayers = {
 			"VK_LAYER_KHRONOS_validation"
@@ -33,7 +37,9 @@ namespace lte {
 		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
 		void drawFrame();
 		void Exit();
-		vk::raii::Device device = nullptr;
+		
+		bool framebufferResized = false;
+
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -56,7 +62,7 @@ namespace lte {
 		vk::raii::PhysicalDevice physicalDevice = nullptr;
 		bool isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevice);
 		void ListFeatures(vk::PhysicalDeviceProperties* props, vk::PhysicalDeviceFeatures* feats,vk::PhysicalDeviceMemoryProperties* memoryprops);
-
+		vk::raii::Device device = nullptr;
 		//logical device creation
 		vk::raii::Queue queue				= nullptr;
 		void createLogicalDevice();
@@ -91,7 +97,8 @@ namespace lte {
 		//command pool 
 		void createCommandPool();
 		uint32_t    queueIndex = ~0;
-		vk::raii::CommandBuffer commandBuffer = nullptr;
+		std::vector<vk::raii::CommandBuffer> commandBuffers;
+		
 		void createCommandBuffer();
 		vk::raii::CommandPool    commandPool = nullptr;
 		void recordCommandBuffer(uint32_t imageIndex);
@@ -106,9 +113,17 @@ namespace lte {
 		);
 
 		//sync objects
-		vk::raii::Semaphore presentCompleteSemaphore = nullptr;
-		vk::raii::Semaphore renderFinishedSemaphore = nullptr;
-		vk::raii::Fence drawFence = nullptr;
+		std::vector<vk::raii::Semaphore> presentCompleteSemaphores;
+		std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
+		std::vector<vk::raii::Fence> inFlightFences;
 		void createSyncObjects();
+		//multiple frame handlers
+		uint32_t frameIndex = 0;
+
+
+
+		//swap chain recreation
+		void recreateSwapChain();
+		void cleanupSwapChain();
 	};
 }

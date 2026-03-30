@@ -2,7 +2,7 @@
 #include <string>
 #include <stdexcept>
 namespace lte {
-
+	VulkanDevice* Lt_Window::vkdevice = nullptr;
 	Lt_Window::Lt_Window(int w, int h, std::string name) : width{ w }, height{ h }, windowName{ name } {
 		initWindow();
 	}
@@ -24,8 +24,17 @@ namespace lte {
 	void Lt_Window::initWindow(){
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		//glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	}
+	void Lt_Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		vkdevice->framebufferResized = true;
+	}
+	void Lt_Window::setVkDevice(VulkanDevice* device){
+		vkdevice = device;
+	}
+
 }
