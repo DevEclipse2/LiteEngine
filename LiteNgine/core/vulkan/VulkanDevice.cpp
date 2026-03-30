@@ -5,7 +5,10 @@ namespace lte {
 
 	VulkanDevice::VulkanDevice(Lt_Window& ltwind) : window{ ltwind }
 	{
+		//sets up the main vulkan context
+		//vulkan instance
 		createInstance();
+		//debug messenger and validation layers
 		setupDebugMessenger();
 		createSurface();
 		pickPhysicalDevice();
@@ -19,6 +22,7 @@ namespace lte {
 
 	}
 
+	//validation layer stuff
 	VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanDevice::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT       severity,
 		vk::DebugUtilsMessageTypeFlagsEXT              type,
 		const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -29,12 +33,18 @@ namespace lte {
 		return vk::False;
 	}
 
+	//checks if debugging(if not , it quits
 	void VulkanDevice::setupDebugMessenger() {
+		//here
 		if (!enableValidationLayers) return;
+		//sets it up for both warnings AND errors using container
 		vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
+
+		//warn types
 		vk::DebugUtilsMessageTypeFlagsEXT     messageTypeFlags(
 			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+		//this makes the message
 		vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT{};
 		debugUtilsMessengerCreateInfoEXT.messageSeverity = severityFlags,
 		debugUtilsMessengerCreateInfoEXT.messageType = messageTypeFlags,
@@ -45,6 +55,7 @@ namespace lte {
 
 	void VulkanDevice::createSurface() 
 	{
+		//connects the vulkan object with the window created by GLFW
 		VkSurfaceKHR       _surface;
 		if (glfwCreateWindowSurface(*instance, window.getGLFWWindow(), nullptr, &_surface) != 0) {
 			throw std::runtime_error("failed to create window surface!");
@@ -53,6 +64,7 @@ namespace lte {
 	}
 	std::vector<const char*> VulkanDevice::getRequiredInstanceExtensions()
 	{
+		//gets important extensions
 		uint32_t glfwExtensionCount = 0;
 		auto glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -66,6 +78,7 @@ namespace lte {
 	}
 	bool VulkanDevice::isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevice)
 	{
+
 		vk::PhysicalDeviceProperties deviceProperties = physicalDevice.getProperties();
 		vk::PhysicalDeviceFeatures deviceFeatures = physicalDevice.getFeatures();
 		vk::PhysicalDeviceMemoryProperties deviceMemoryProperties = physicalDevice.getMemoryProperties();
@@ -100,6 +113,9 @@ namespace lte {
 		}
 		physicalDevice = *devIter;
 
+
+		//scoring system i never bothered to implement
+		//remind me to prioritize discrete gpus
 		/*
 		std::vector<vk::raii::PhysicalDevice> physicalDevices = vk::raii::PhysicalDevices(instance);
 		if (physicalDevices.empty())
@@ -154,6 +170,8 @@ namespace lte {
 	}
 	void VulkanDevice::ListFeatures(vk::PhysicalDeviceProperties* props ,
 		vk::PhysicalDeviceFeatures* features , vk::PhysicalDeviceMemoryProperties* memProps) {
+
+		//lists all available features for funsies
 		ConsoleLog::printU32("apiVersion", props->apiVersion);
 		ConsoleLog::printU64("vendorID", props->vendorID);
 		ConsoleLog::printU64("deviceID", props->deviceID);
@@ -206,6 +224,7 @@ namespace lte {
 
 	void VulkanDevice::createLogicalDevice() {
 
+		//creates graphics queue
 		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
 
 		uint32_t queueIndex = ~0;
