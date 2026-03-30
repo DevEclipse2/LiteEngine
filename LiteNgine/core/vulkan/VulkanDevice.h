@@ -31,6 +31,9 @@ namespace lte {
 			"VK_LAYER_KHRONOS_validation"
 			};
 		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
+		void drawFrame();
+		void Exit();
+		vk::raii::Device device = nullptr;
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -56,7 +59,6 @@ namespace lte {
 
 		//logical device creation
 		vk::raii::Queue queue				= nullptr;
-		vk::raii::Device device				= nullptr;
 		void createLogicalDevice();
 
 		//windows surface recreation
@@ -93,5 +95,20 @@ namespace lte {
 		void createCommandBuffer();
 		vk::raii::CommandPool    commandPool = nullptr;
 		void recordCommandBuffer(uint32_t imageIndex);
+		void transition_image_layout(
+			uint32_t imageIndex,
+			vk::ImageLayout oldLayout,
+			vk::ImageLayout newLayout,
+			vk::AccessFlags2 srcAccessMask,
+			vk::AccessFlags2 dstAccessMask,
+			vk::PipelineStageFlags2 srcStageMask,
+			vk::PipelineStageFlags2 dstStageMask
+		);
+
+		//sync objects
+		vk::raii::Semaphore presentCompleteSemaphore = nullptr;
+		vk::raii::Semaphore renderFinishedSemaphore = nullptr;
+		vk::raii::Fence drawFence = nullptr;
+		void createSyncObjects();
 	};
 }

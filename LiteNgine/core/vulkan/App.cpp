@@ -4,6 +4,8 @@ namespace lte {
 	void main::run() {
 		while (!ltWindow.shouldClose()) {
 			glfwPollEvents();
+			vkDevice.drawFrame();
 		}
+		vkDevice.Exit();
 	}
 }

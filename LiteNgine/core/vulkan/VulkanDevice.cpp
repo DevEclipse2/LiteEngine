@@ -15,8 +15,10 @@ namespace lte {
 		createLogicalDevice();
 		createSwapChain();
 		createImageViews();
-		createGraphicsPipeline();
+		createGraphicsPipeline();//throws validation error
 		createCommandPool();
+		createCommandBuffer();
+		createSyncObjects();
 	}
 	VulkanDevice::~VulkanDevice() {
 
@@ -250,10 +252,7 @@ namespace lte {
 			throw std::runtime_error("Could not find a queue for graphics and present -> terminating");
 		}
 
-		// create a Device
-		float queuePriority = 0.5f;
-		vk::DeviceQueueCreateInfo deviceQueueCreateInfo{};
-		deviceQueueCreateInfo.queueFamilyIndex = queueIndex, deviceQueueCreateInfo.queueCount = 1, deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+		
 		
 		
 		// Create a chain of feature structures
@@ -261,12 +260,21 @@ namespace lte {
 
 		vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
+			vk::PhysicalDeviceVulkan11Features,
 			vk::PhysicalDeviceVulkan13Features,
 			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
 		> featureChain{};
+
+		//featureChain.get<vk::PhysicalDeviceFeatures2>() = nullptr;
+		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = VK_TRUE;
+		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = VK_TRUE;
 
+		// create a Device
+		float queuePriority = 0.5f;
+		vk::DeviceQueueCreateInfo deviceQueueCreateInfo{};
+		deviceQueueCreateInfo.queueFamilyIndex = queueIndex, deviceQueueCreateInfo.queueCount = 1, deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
 		vk::DeviceCreateInfo deviceCreateInfo{};
 			deviceCreateInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
 			deviceCreateInfo.queueCreateInfoCount = 1,
@@ -473,10 +481,12 @@ namespace lte {
 
 	[[nodiscard]] vk::raii::ShaderModule VulkanDevice::createShaderModule(const std::vector<char>& code) const
 	{
+
 		vk::ShaderModuleCreateInfo createInfo{};
 			createInfo.codeSize = code.size() * sizeof(char), 
 			createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-			vk::raii::ShaderModule shaderModule{device,createInfo};
+			//createInfo.structureType = VK_KHR_shader_draw_parameters;
+			vk::raii::ShaderModule shaderModule{device,createInfo}; //validationlayerError
 			return shaderModule;
 	}
 
@@ -486,9 +496,11 @@ namespace lte {
 		vk::CommandPoolCreateInfo poolInfo{};
 		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
 		poolInfo.queueFamilyIndex = queueIndex;
+		commandPool = vk::raii::CommandPool(device, poolInfo);
 	}
 
 	void VulkanDevice::createCommandBuffer() {
+
 		vk::CommandBufferAllocateInfo allocInfo{};
 			allocInfo.commandPool = commandPool, 
 			allocInfo.level = vk::CommandBufferLevel::ePrimary, 
@@ -497,7 +509,130 @@ namespace lte {
 	}
 
 	void VulkanDevice::recordCommandBuffer(uint32_t imageIndex) {
+		commandBuffer.begin({});
+		transition_image_layout(
+			imageIndex,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			{},                                                         // srcAccessMask (no need to wait for previous operations)
+			vk::AccessFlagBits2::eColorAttachmentWrite,                 // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,         // srcStage
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput          // dstStage
+		);
+
+		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+		vk::RenderingAttachmentInfo attachmentInfo = {};
+			attachmentInfo.imageView = swapChainImageViews[imageIndex],
+			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
+			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
+			attachmentInfo.clearValue = clearColor;
+
+		vk::RenderingInfo renderingInfo = {};
+			renderingInfo.renderArea = {.offset = { 0, 0 }, .extent = swapChainExtent },
+			renderingInfo.layerCount = 1,
+			renderingInfo.colorAttachmentCount = 1,
+			renderingInfo.pColorAttachments = &attachmentInfo;
+			
+		commandBuffer.beginRendering(renderingInfo);
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline);
+		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
+		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
+		commandBuffer.draw(3, 1, 0, 0);
+		commandBuffer.endRendering();
+		transition_image_layout(
+			imageIndex,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::ImageLayout::ePresentSrcKHR,
+			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+			{},                                                     // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe               // dstStage
+		);
+		commandBuffer.end();
+	}
+
+	void VulkanDevice::transition_image_layout(
+		uint32_t imageIndex,
+		vk::ImageLayout oldLayout,
+		vk::ImageLayout newLayout,
+		vk::AccessFlags2 srcAccessMask,
+		vk::AccessFlags2 dstAccessMask,
+		vk::PipelineStageFlags2 srcStageMask,
+		vk::PipelineStageFlags2 dstStageMask
+	) 
+	{
+		vk::ImageSubresourceRange subresourceRange{};
+			subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor,
+			subresourceRange.baseMipLevel = 0,
+			subresourceRange.levelCount = 1,
+			subresourceRange.baseArrayLayer = 0,
+			subresourceRange.layerCount = 1;
+		vk::ImageMemoryBarrier2 barrier = {};
+			barrier.srcStageMask = srcStageMask,
+			barrier.srcAccessMask = srcAccessMask,
+			barrier.dstStageMask = dstStageMask,
+			barrier.dstAccessMask = dstAccessMask,
+			barrier.oldLayout = oldLayout,
+			barrier.newLayout = newLayout,
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			barrier.image = swapChainImages[imageIndex],
+			barrier.subresourceRange = subresourceRange;
+
+			vk::DependencyInfo dependencyInfo = {};
+			dependencyInfo.dependencyFlags = {},
+			dependencyInfo.imageMemoryBarrierCount = 1,
+			dependencyInfo.pImageMemoryBarriers = &barrier;
+
+		commandBuffer.pipelineBarrier2(dependencyInfo);
+	}
+
+	void VulkanDevice::drawFrame() {
+		auto fenceResult = device.waitForFences(*drawFence, vk::True, UINT64_MAX);
+		auto [result, imageIndex] = swapChain.acquireNextImage(UINT64_MAX, *presentCompleteSemaphore, nullptr);
+		recordCommandBuffer(imageIndex);
+		device.resetFences(*drawFence);
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::SubmitInfo submitInfo{
+			1, &* presentCompleteSemaphore, & waitDestinationStageMask, 1,
+				&* commandBuffer, 1, &* renderFinishedSemaphore};
+		queue.submit(submitInfo, *drawFence);
+		result = device.waitForFences(*drawFence, vk::True, UINT64_MAX);
+		if (result != vk::Result::eSuccess)
+		{
+			throw std::runtime_error("failed to wait for fence!");
+		}
+
+		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphore,1, &*swapChain,&imageIndex};
+		result = queue.presentKHR(presentInfoKHR);
+		switch (result)
+		{
+		case vk::Result::eSuccess:
+			break;
+		case vk::Result::eSuboptimalKHR:
+			std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n";
+			break;
+		default:
+			std::cerr << "what the fuck" << "\n";
+			break;        // an unexpected result is returned!
+		}
 		
+	}
+
+	void VulkanDevice::createSyncObjects() {
+
+		presentCompleteSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+		renderFinishedSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+		vk::FenceCreateInfo info{};
+		info.flags = vk::FenceCreateFlagBits::eSignaled;
+		drawFence = vk::raii::Fence(device, info);
+
+	}
+
+	void VulkanDevice::Exit() {
+		device.waitIdle();
+		//error during cleanup
 	}
 
 	int VulkanDevice::createInstance() {
