@@ -12,6 +12,7 @@
 #include <limits>
 #include <map>
 #include "Lt_Window.h"
+#include "ShaderLoader.h"
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -66,15 +67,31 @@ namespace lte {
 		vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
 		vk::Extent2D	chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities);
 
+		//swapchain creation
 		void createSwapChain();
 		vk::Extent2D swapChainExtent;
 		vk::SurfaceFormatKHR swapChainSurfaceFormat;
 		uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities);
 		vk::raii::SwapchainKHR swapChain = nullptr;
 		std::vector<vk::Image> swapChainImages;
-
 		void createImageViews();
 		std::vector<vk::raii::ImageView> swapChainImageViews;
+
+
+		//pipeline creation
 		void createGraphicsPipeline();
+		vk::raii::ShaderModule createShaderModule(const std::vector<char>& code) const;
+		vk::raii::PipelineLayout pipelineLayout = nullptr;
+		vk::raii::Pipeline graphicsPipeline = nullptr;
+		static std::vector<char> readFile(const std::string& filename);
+
+
+		//command pool 
+		void createCommandPool();
+		uint32_t    queueIndex = ~0;
+		vk::raii::CommandBuffer commandBuffer = nullptr;
+		void createCommandBuffer();
+		vk::raii::CommandPool    commandPool = nullptr;
+		void recordCommandBuffer(uint32_t imageIndex);
 	};
 }

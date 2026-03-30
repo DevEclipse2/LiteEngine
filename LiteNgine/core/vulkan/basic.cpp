@@ -45,3 +45,10 @@ int main()
 
     return EXIT_SUCCESS;
 }
+
+/*
+Severity	Code	Description	Project	File	Line	Suppression State
+Error	LNK2019	unresolved external symbol __imp_DispatchMessageW referenced in function _glfwInitWin32	LiteNgine	C:\git\LiteEngine\LiteNgine\glfw3.lib(win32_init.obj)	1
+
+
+*/

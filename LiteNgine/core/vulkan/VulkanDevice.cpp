@@ -16,7 +16,7 @@ namespace lte {
 		createSwapChain();
 		createImageViews();
 		createGraphicsPipeline();
-
+		createCommandPool();
 	}
 	VulkanDevice::~VulkanDevice() {
 
@@ -51,6 +51,8 @@ namespace lte {
 		debugUtilsMessengerCreateInfoEXT.pfnUserCallback = &debugCallback;
 		debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 	}
+
+
 
 
 	void VulkanDevice::createSurface() 
@@ -222,12 +224,17 @@ namespace lte {
 		}
 	}
 
+
+
+
+
+
+
 	void VulkanDevice::createLogicalDevice() {
 
 		//creates graphics queue
 		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
 
-		uint32_t queueIndex = ~0;
 		for (uint32_t qfpIndex = 0; qfpIndex < queueFamilyProperties.size(); qfpIndex++)
 		{
 			if ((queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eGraphics) &&
@@ -362,8 +369,135 @@ namespace lte {
 		}
 	}
 
+	std::vector<char> VulkanDevice::readFile(const std::string& filename) {
+		std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+		if (!file.is_open()) {
+			throw std::runtime_error("failed to open file!");
+		}
+		std::vector<char> buffer(file.tellg());
+		file.seekg(0, std::ios::beg);
+		file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+		file.close();
+
+		return buffer;
+	}
+
+
 	void VulkanDevice::createGraphicsPipeline() {
 
+		//gets shaders for vert and frag respectively
+		vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));
+		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
+		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
+			vertShaderStageInfo.module = shaderModule,
+			vertShaderStageInfo.pName = "vertMain";
+		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
+		fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
+			fragShaderStageInfo.module = shaderModule,
+			fragShaderStageInfo.pName = "fragMain";
+
+		//defines pipeline
+
+		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+		vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
+		inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
+		vk::PipelineViewportStateCreateInfo      viewportState{};
+		viewportState.viewportCount = 1, viewportState.scissorCount = 1;
+
+
+		vk::PipelineRasterizationStateCreateInfo rasterizer{};
+		rasterizer.depthClampEnable = vk::False,
+			rasterizer.rasterizerDiscardEnable = vk::False,
+			rasterizer.polygonMode = vk::PolygonMode::eFill,
+			rasterizer.cullMode = vk::CullModeFlagBits::eBack,
+			rasterizer.frontFace = vk::FrontFace::eClockwise,
+			rasterizer.depthBiasEnable = vk::False,
+			rasterizer.lineWidth = 1.0f;
+
+		vk::PipelineMultisampleStateCreateInfo multisampling{};
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
+			multisampling.sampleShadingEnable = vk::False;
+
+		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
+		colorBlendAttachment.blendEnable = vk::True,
+			colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+			colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+			colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd,
+			colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne,
+			colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero,
+			colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd,
+			colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+
+		vk::PipelineColorBlendStateCreateInfo colorBlending{};
+		colorBlending.logicOpEnable = vk::False,
+			colorBlending.logicOp = vk::LogicOp::eCopy,
+			colorBlending.attachmentCount = 1,
+			colorBlending.pAttachments = &colorBlendAttachment;
+
+		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+		vk::PipelineDynamicStateCreateInfo dynamicState{};
+		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+			dynamicState.pDynamicStates = dynamicStates.data();
+
+
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.setLayoutCount = 0,
+			pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
+
+		vk::GraphicsPipelineCreateInfo graphicsInfo{};
+			graphicsInfo.stageCount = 2,
+			graphicsInfo.pStages = shaderStages,
+			graphicsInfo.pVertexInputState = &vertexInputInfo,
+			graphicsInfo.pInputAssemblyState = &inputAssembly,
+			graphicsInfo.pViewportState = &viewportState,
+			graphicsInfo.pRasterizationState = &rasterizer,
+			graphicsInfo.pMultisampleState = &multisampling,
+			graphicsInfo.pColorBlendState = &colorBlending,
+			graphicsInfo.pDynamicState = &dynamicState,
+			graphicsInfo.layout = pipelineLayout,
+			graphicsInfo.renderPass = nullptr;
+
+		vk::PipelineRenderingCreateInfo renderingInfo{};
+			renderingInfo.colorAttachmentCount = 1,
+			renderingInfo.pColorAttachmentFormats = &swapChainSurfaceFormat.format;
+
+		vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain{graphicsInfo , renderingInfo};
+		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
+
+	}
+
+	[[nodiscard]] vk::raii::ShaderModule VulkanDevice::createShaderModule(const std::vector<char>& code) const
+	{
+		vk::ShaderModuleCreateInfo createInfo{};
+			createInfo.codeSize = code.size() * sizeof(char), 
+			createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+			vk::raii::ShaderModule shaderModule{device,createInfo};
+			return shaderModule;
+	}
+
+	void VulkanDevice::createCommandPool() 
+	{
+
+		vk::CommandPoolCreateInfo poolInfo{};
+		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+		poolInfo.queueFamilyIndex = queueIndex;
+	}
+
+	void VulkanDevice::createCommandBuffer() {
+		vk::CommandBufferAllocateInfo allocInfo{};
+			allocInfo.commandPool = commandPool, 
+			allocInfo.level = vk::CommandBufferLevel::ePrimary, 
+			allocInfo.commandBufferCount = 1 ;
+		commandBuffer = std::move(vk::raii::CommandBuffers(device, allocInfo).front());
+	}
+
+	void VulkanDevice::recordCommandBuffer(uint32_t imageIndex) {
+		
 	}
 
 	int VulkanDevice::createInstance() {

@@ -1,0 +1,17 @@
+#pragma once
+#include <fstream>
+#include <vector>
+namespace lte {
+
+
+	class ShaderLoader
+	{
+	public:
+		ShaderLoader();
+		~ShaderLoader();
+		void UpdateShaders();
+		static std::vector<char> readFile(const std::string& filename);
+	private:
+	};
+}
+
