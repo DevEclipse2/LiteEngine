@@ -21,6 +21,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -166,5 +168,11 @@ namespace lte {
 		//swap chain recreation
 		void recreateSwapChain();
 		void cleanupSwapChain();
+
+
+		//texture stuff
+		void createTextureImage();
+		vk::raii::Image textureImage = nullptr;
+		vk::raii::DeviceMemory textureImageMemory = nullptr;
 	};
 }
