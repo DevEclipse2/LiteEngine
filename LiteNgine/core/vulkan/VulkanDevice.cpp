@@ -18,6 +18,7 @@ namespace lte {
 		createGraphicsPipeline();//throws validation error
 		createCommandPool();
 		createVertexBuffer();
+		createIndexBuffer();
 		createCommandBuffer();
 		createSyncObjects();
 	}
@@ -383,6 +384,22 @@ namespace lte {
 		return buffer;
 	}
 
+	void VulkanDevice::createIndexBuffer() {
+		vk::DeviceSize bufferSize = sizeof(vertexHandler.indices[0]) * vertexHandler.indices.size();
+
+		vk::raii::Buffer stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(data, vertexHandler.indices.data(), (size_t)bufferSize);
+		stagingBufferMemory.unmapMemory();
+
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
+
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+	}
 
 	void VulkanDevice::createGraphicsPipeline() {
 
@@ -502,7 +519,7 @@ namespace lte {
 	void VulkanDevice::createVertexBuffer() {
 		//assert(vertexBuffer == nullptr);
 
-		vk::DeviceSize bufferSize = sizeof(testAnim.vertices[0]) * testAnim.vertices.size();
+		vk::DeviceSize bufferSize = sizeof(vertexHandler.vertices[0]) * vertexHandler.vertices.size();
 
 
 		vk::BufferCreateInfo stagingInfo{};
@@ -510,18 +527,19 @@ namespace lte {
 			stagingInfo.usage = vk::BufferUsageFlagBits::eTransferSrc, 
 			stagingInfo.sharingMode = vk::SharingMode::eExclusive;
 		vk::raii::Buffer stagingBuffer(device, stagingInfo);
-		vk::MemoryRequirements memRequirementsStaging = stagingBuffer.getMemoryRequirements();
-		vk::MemoryAllocateInfo memoryAllocateInfoStaging{};
-			memoryAllocateInfoStaging.allocationSize = memRequirementsStaging.size,
-			memoryAllocateInfoStaging.memoryTypeIndex = findMemoryType(memRequirementsStaging.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-		vk::raii::DeviceMemory stagingBufferMemory(device, memoryAllocateInfoStaging);
+		vk::raii::DeviceMemory stagingBufferMemory({});
 
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 		stagingBuffer.bindMemory(stagingBufferMemory, 0);
 		void* dataStaging = stagingBufferMemory.mapMemory(0, stagingInfo.size);
-		memcpy(dataStaging, testAnim.vertices.data(), stagingInfo.size);
+		memcpy(dataStaging, vertexHandler.vertices.data(), stagingInfo.size);
 		stagingBufferMemory.unmapMemory();
 
-		vk::BufferCreateInfo bufferInfo{};
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
+
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+		/*vk::BufferCreateInfo bufferInfo{};
 			bufferInfo.size = bufferSize,
 			bufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 			bufferInfo.sharingMode = vk::SharingMode::eExclusive;
@@ -536,6 +554,7 @@ namespace lte {
 		vertexBuffer.bindMemory(*vertexBufferMemory, 0);
 
 		copyBuffer(stagingBuffer, vertexBuffer, stagingInfo.size);
+		*/
 	}
 	void VulkanDevice::copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size) {
 		vk::CommandBufferAllocateInfo allocInfo{};
@@ -565,7 +584,7 @@ namespace lte {
 		vertexBufferMemory.unmapMemory();		
 		*/
 
-		vk::DeviceSize bufferSize = sizeof(testAnim.vertices[0]) * testAnim.vertices.size();
+		vk::DeviceSize bufferSize = sizeof(vertexHandler.vertices[0]) * vertexHandler.vertices.size();
 
 		vk::BufferCreateInfo stagingInfo{};
 		stagingInfo.size = bufferSize;
@@ -588,7 +607,7 @@ namespace lte {
 
 		// --- Write new vertex data into staging ---
 		void* mapped = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(mapped,testAnim.vertices.data(), bufferSize);
+		memcpy(mapped, vertexHandler.vertices.data(), bufferSize);
 		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 	}
@@ -670,8 +689,11 @@ namespace lte {
 
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
+
 		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
-		commandBuffer.draw(3, 1, 0, 0);
+		//commandBuffers[frameIndex].bindVertexBuffers(0, *vertexBuffer, { 0 });
+		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint16);
+		commandBuffer.drawIndexed(vertexHandler.indices.size(), 3, 1, 0, 0);
 
 		commandBuffer.endRendering();
 		transition_image_layout(
@@ -724,8 +746,8 @@ namespace lte {
 
 	void VulkanDevice::drawFrame() {
 
-		testAnim.interpolate(frameNumber);
-		updateVertexBuffer();
+		//testAnim.interpolate(frameNumber);
+		//updateVertexBuffer();
 		auto fenceResult = device.waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{

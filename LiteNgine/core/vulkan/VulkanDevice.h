@@ -104,11 +104,15 @@ namespace lte {
 		VertexHandler vertexHandler;
 		void createVertexBuffer();
 		void updateVertexBuffer();
+		void createIndexBuffer();
 		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
 		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
 		vk::raii::Buffer vertexBuffer = nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
 		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+		vk::raii::Buffer indexBuffer = nullptr;
+		vk::raii::DeviceMemory indexBufferMemory = nullptr;
+
 
 		//test 
 		TestAnim testAnim;
@@ -138,9 +142,6 @@ namespace lte {
 
 		//shader loading class
 		ShaderLoader shaderLoader{};
-
-
-
 
 		//swap chain recreation
 		void recreateSwapChain();
