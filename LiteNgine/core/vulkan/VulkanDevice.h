@@ -17,7 +17,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include "VertexHandler.h"
-
+#include "testNcoolShit/TestAnim.h"
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 namespace lte {
@@ -103,9 +103,16 @@ namespace lte {
 		
 		VertexHandler vertexHandler;
 		void createVertexBuffer();
+		void updateVertexBuffer();
+		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
+		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
 		vk::raii::Buffer vertexBuffer = nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
 		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+
+		//test 
+		TestAnim testAnim;
+		int frameNumber;
 
 
 		void createCommandBuffer();

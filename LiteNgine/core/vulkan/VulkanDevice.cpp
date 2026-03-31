@@ -22,7 +22,8 @@ namespace lte {
 		createSyncObjects();
 	}
 	VulkanDevice::~VulkanDevice() {
-		cleanupSwapChain();
+		device.waitIdle();
+		//cleanupSwapChain();
 	}
 
 	//validation layer stuff
@@ -500,22 +501,110 @@ namespace lte {
 
 	void VulkanDevice::createVertexBuffer() {
 		//assert(vertexBuffer == nullptr);
+
+		vk::DeviceSize bufferSize = sizeof(testAnim.vertices[0]) * testAnim.vertices.size();
+
+
+		vk::BufferCreateInfo stagingInfo{};
+			stagingInfo.size = bufferSize,
+			stagingInfo.usage = vk::BufferUsageFlagBits::eTransferSrc, 
+			stagingInfo.sharingMode = vk::SharingMode::eExclusive;
+		vk::raii::Buffer stagingBuffer(device, stagingInfo);
+		vk::MemoryRequirements memRequirementsStaging = stagingBuffer.getMemoryRequirements();
+		vk::MemoryAllocateInfo memoryAllocateInfoStaging{};
+			memoryAllocateInfoStaging.allocationSize = memRequirementsStaging.size,
+			memoryAllocateInfoStaging.memoryTypeIndex = findMemoryType(memRequirementsStaging.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		vk::raii::DeviceMemory stagingBufferMemory(device, memoryAllocateInfoStaging);
+
+		stagingBuffer.bindMemory(stagingBufferMemory, 0);
+		void* dataStaging = stagingBufferMemory.mapMemory(0, stagingInfo.size);
+		memcpy(dataStaging, testAnim.vertices.data(), stagingInfo.size);
+		stagingBufferMemory.unmapMemory();
+
 		vk::BufferCreateInfo bufferInfo{};
-			bufferInfo.size = sizeof(vertexHandler.vertices[0]) * vertexHandler.vertices.size(),
-			bufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer,
+			bufferInfo.size = bufferSize,
+			bufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 			bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 		vertexBuffer = vk::raii::Buffer(device, bufferInfo);
+
 		vk::MemoryRequirements memRequirements = vertexBuffer.getMemoryRequirements();
 		vk::MemoryAllocateInfo memoryAllocateInfo{};
 			memoryAllocateInfo.allocationSize = memRequirements.size,
-			memoryAllocateInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+			memoryAllocateInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 		vertexBufferMemory = vk::raii::DeviceMemory(device, memoryAllocateInfo);
 
 		vertexBuffer.bindMemory(*vertexBufferMemory, 0);
+
+		copyBuffer(stagingBuffer, vertexBuffer, stagingInfo.size);
+	}
+	void VulkanDevice::copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size) {
+		vk::CommandBufferAllocateInfo allocInfo{};
+		allocInfo.commandPool = commandPool,
+			allocInfo.level = vk::CommandBufferLevel::ePrimary,
+			allocInfo.commandBufferCount = 1;
+		vk::raii::CommandBuffer commandCopyBuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
+		vk::CommandBufferBeginInfo cmdbuffer{};
+		cmdbuffer.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+		commandCopyBuffer.begin(cmdbuffer);
+		commandCopyBuffer.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(0, 0, size));
+		commandCopyBuffer.end();
+		vk::SubmitInfo info{};
+			info.commandBufferCount = 1,
+			info.pCommandBuffers = &*commandCopyBuffer;
+		queue.submit(info, nullptr);
 		
-		void* data = vertexBufferMemory.mapMemory(0, bufferInfo.size);
-		memcpy(data,vertexHandler.vertices.data(), bufferInfo.size);
-		vertexBufferMemory.unmapMemory();
+		queue.waitIdle();
+	}
+	void VulkanDevice::updateVertexBuffer() {
+		/*
+		const vk::DeviceSize newSize =
+			sizeof(testAnim.vertices[0]) * testAnim.vertices.size();
+		void* data = vertexBufferMemory.mapMemory(0, newSize);
+		std::memcpy(data, testAnim.vertices.data(),
+			static_cast<size_t>(newSize));
+		vertexBufferMemory.unmapMemory();		
+		*/
+
+		vk::DeviceSize bufferSize = sizeof(testAnim.vertices[0]) * testAnim.vertices.size();
+
+		vk::BufferCreateInfo stagingInfo{};
+		stagingInfo.size = bufferSize;
+		stagingInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
+		stagingInfo.sharingMode = vk::SharingMode::eExclusive;
+
+		vk::raii::Buffer stagingBuffer(device, stagingInfo);
+
+		vk::MemoryRequirements memRequirementsStaging = stagingBuffer.getMemoryRequirements();
+		vk::MemoryAllocateInfo memoryAllocateInfoStaging{};
+		memoryAllocateInfoStaging.allocationSize = memRequirementsStaging.size;
+		memoryAllocateInfoStaging.memoryTypeIndex =
+			findMemoryType(memRequirementsStaging.memoryTypeBits,
+				vk::MemoryPropertyFlagBits::eHostVisible |
+				vk::MemoryPropertyFlagBits::eHostCoherent);
+
+		vk::raii::DeviceMemory stagingBufferMemory(device, memoryAllocateInfoStaging);
+
+		stagingBuffer.bindMemory(stagingBufferMemory, 0);
+
+		// --- Write new vertex data into staging ---
+		void* mapped = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(mapped,testAnim.vertices.data(), bufferSize);
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+	}
+
+	void VulkanDevice::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
+		vk::BufferCreateInfo bufferInfo{};
+			bufferInfo.size = size,
+			bufferInfo.usage = usage,
+			bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+		buffer = vk::raii::Buffer(device, bufferInfo);
+		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
+		vk::MemoryAllocateInfo allocInfo{};
+			allocInfo.allocationSize = memRequirements.size,
+			allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		bufferMemory = vk::raii::DeviceMemory(device, allocInfo);
+		buffer.bindMemory(*bufferMemory, 0);
 	}
 
 	uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) 
@@ -635,6 +724,8 @@ namespace lte {
 
 	void VulkanDevice::drawFrame() {
 
+		testAnim.interpolate(frameNumber);
+		updateVertexBuffer();
 		auto fenceResult = device.waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{
@@ -695,6 +786,7 @@ namespace lte {
 			std::cerr << "what the fuck" << "\n";
 			break;        // an unexpected result is returned!
 		}
+			frameNumber++;
 		frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
@@ -725,8 +817,10 @@ namespace lte {
 
 	void VulkanDevice::Exit() {
 
-		device.waitIdle();
+		//device.waitIdle();
 		//error during cleanup
+		cleanupSwapChain();
+
 	}
 
 	void VulkanDevice::cleanupSwapChain()

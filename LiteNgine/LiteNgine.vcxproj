@@ -176,6 +176,7 @@
     <ClCompile Include="core\vulkan\Lt_Window.cpp" />
     <ClCompile Include="core\vulkan\ShaderLoader.cpp" />
     <ClCompile Include="core\vulkan\VertexHandler.cpp" />
+    <ClCompile Include="core\vulkan\testNcoolShit\TestAnim.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="core\vulkan\Lt_Window.h" />
     <ClInclude Include="core\vulkan\ShaderLoader.h" />
     <ClInclude Include="core\vulkan\VertexHandler.h" />
+    <ClInclude Include="core\vulkan\testNcoolShit\TestAnim.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
