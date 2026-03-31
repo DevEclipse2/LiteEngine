@@ -294,36 +294,6 @@ namespace lte {
 			[](const auto& format) { return format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
 		return formatIt != availableFormats.end() ? *formatIt : availableFormats[0];
 	}
-
-	void VulkanDevice::createSwapChain()
-	{
-		vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
-		swapChainExtent = chooseSwapExtent(surfaceCapabilities);
-		uint32_t minImageCount = chooseSwapMinImageCount(surfaceCapabilities);
-		std::vector<vk::SurfaceFormatKHR> availableFormats = physicalDevice.getSurfaceFormatsKHR(*surface);
-		swapChainSurfaceFormat = chooseSwapSurfaceFormat(availableFormats);
-
-		std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
-		vk::PresentModeKHR              presentMode = chooseSwapPresentMode(availablePresentModes);
-
-		vk::SwapchainCreateInfoKHR swapChainCreateInfo{}; 
-			swapChainCreateInfo.surface = *surface,
-			swapChainCreateInfo.minImageCount = minImageCount,
-			swapChainCreateInfo.imageFormat = swapChainSurfaceFormat.format,
-			swapChainCreateInfo.imageColorSpace = swapChainSurfaceFormat.colorSpace,
-			swapChainCreateInfo.imageExtent = swapChainExtent,
-			swapChainCreateInfo.imageArrayLayers = 1,
-			swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
-			swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive,
-			swapChainCreateInfo.preTransform = surfaceCapabilities.currentTransform,
-			swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-			swapChainCreateInfo.presentMode = chooseSwapPresentMode(availablePresentModes),
-			swapChainCreateInfo.clipped = true;
-			swapChainCreateInfo.oldSwapchain = nullptr;
-		swapChain = vk::raii::SwapchainKHR(device, swapChainCreateInfo);
-		swapChainImages = swapChain.getImages();
-
-	}
 	vk::PresentModeKHR VulkanDevice::chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes)
 	{
 		assert(std::ranges::any_of(availablePresentModes, [](auto presentMode) { return presentMode == vk::PresentModeKHR::eFifo; }));
@@ -639,8 +609,9 @@ namespace lte {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		UniformBufferObject ubo{};
-		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(720.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		float offset = std::sin(time * glm::radians(720.0f));
+		ubo.view = lookAt(glm::vec3(2.0f, 0, 2.0f), glm::vec3(0.0f, offset * 0.1f , 0.0f), glm::vec3(0.0f, 1.0f,0.0f));
 		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
 		ubo.proj[1][1] *= -1;
 		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));

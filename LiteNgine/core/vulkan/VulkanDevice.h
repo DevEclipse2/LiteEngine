@@ -20,7 +20,6 @@
 #include "testNcoolShit/TestAnim.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <chrono>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
@@ -82,7 +81,9 @@ namespace lte {
 		vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
 		vk::Extent2D	chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities);
 
-		//swapchain creation
+
+
+
 		void createSwapChain();
 		vk::Extent2D swapChainExtent;
 		vk::SurfaceFormatKHR swapChainSurfaceFormat;
@@ -130,7 +131,7 @@ namespace lte {
 		void createDescriptorPool();
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		void createDescriptorSets();
-		vk::raii::DescriptorPool descriptorPool = nullptr;
+		//vk::raii::DescriptorPool descriptorPool = nullptr;
 		std::vector<vk::raii::DescriptorSet> descriptorSets;
 
 		//test 
