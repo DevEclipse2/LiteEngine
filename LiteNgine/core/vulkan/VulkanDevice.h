@@ -16,6 +16,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#include "VertexHandler.h"
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -100,6 +101,13 @@ namespace lte {
 		uint32_t    queueIndex = ~0;
 		std::vector<vk::raii::CommandBuffer> commandBuffers;
 		
+		VertexHandler vertexHandler;
+		void createVertexBuffer();
+		vk::raii::Buffer vertexBuffer = nullptr;
+		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+
+
 		void createCommandBuffer();
 		vk::raii::CommandPool    commandPool = nullptr;
 		void recordCommandBuffer(uint32_t imageIndex);

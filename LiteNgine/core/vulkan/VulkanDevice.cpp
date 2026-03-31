@@ -17,6 +17,7 @@ namespace lte {
 		createImageViews();
 		createGraphicsPipeline();//throws validation error
 		createCommandPool();
+		createVertexBuffer();
 		createCommandBuffer();
 		createSyncObjects();
 	}
@@ -399,7 +400,15 @@ namespace lte {
 
 		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-		vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+		auto                                   bindingDescription	 = Vertex::getBindingDescription();
+		auto                                   attributeDescriptions = Vertex::getAttributeDescriptions();
+		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vertexInputInfo.vertexBindingDescriptionCount = 1,
+			vertexInputInfo.pVertexBindingDescriptions = &bindingDescription,
+			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+			vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+
 		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
 		vk::PipelineViewportStateCreateInfo      viewportState{};
@@ -489,6 +498,39 @@ namespace lte {
 		commandPool = vk::raii::CommandPool(device, poolInfo);
 	}
 
+	void VulkanDevice::createVertexBuffer() {
+		//assert(vertexBuffer == nullptr);
+		vk::BufferCreateInfo bufferInfo{};
+			bufferInfo.size = sizeof(vertexHandler.vertices[0]) * vertexHandler.vertices.size(),
+			bufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer,
+			bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+		vertexBuffer = vk::raii::Buffer(device, bufferInfo);
+		vk::MemoryRequirements memRequirements = vertexBuffer.getMemoryRequirements();
+		vk::MemoryAllocateInfo memoryAllocateInfo{};
+			memoryAllocateInfo.allocationSize = memRequirements.size,
+			memoryAllocateInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		vertexBufferMemory = vk::raii::DeviceMemory(device, memoryAllocateInfo);
+
+		vertexBuffer.bindMemory(*vertexBufferMemory, 0);
+		
+		void* data = vertexBufferMemory.mapMemory(0, bufferInfo.size);
+		memcpy(data,vertexHandler.vertices.data(), bufferInfo.size);
+		vertexBufferMemory.unmapMemory();
+	}
+
+	uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) 
+	{
+		vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice.getMemoryProperties();
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+		throw std::runtime_error("failed to find suitable memory type!");
+	}
+
+
 	void VulkanDevice::createCommandBuffer() {
 
 		commandBuffers.clear();
@@ -536,7 +578,12 @@ namespace lte {
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
+
+
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
+		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
 		commandBuffer.draw(3, 1, 0, 0);
+
 		commandBuffer.endRendering();
 		transition_image_layout(
 			imageIndex,
