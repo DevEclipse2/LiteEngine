@@ -15,10 +15,14 @@ namespace lte {
 		createLogicalDevice();
 		createSwapChain();
 		createImageViews();
+		createDescriptorSetLayout();
 		createGraphicsPipeline();//throws validation error
 		createCommandPool();
 		createVertexBuffer();
 		createIndexBuffer();
+		createUniformBuffers();
+		createDescriptorPool();
+		createDescriptorSets();
 		createCommandBuffer();
 		createSyncObjects();
 	}
@@ -384,22 +388,15 @@ namespace lte {
 		return buffer;
 	}
 
-	void VulkanDevice::createIndexBuffer() {
-		vk::DeviceSize bufferSize = sizeof(vertexHandler.indices[0]) * vertexHandler.indices.size();
 
-		vk::raii::Buffer stagingBuffer({});
-		vk::raii::DeviceMemory stagingBufferMemory({});
-		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
-		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(data, vertexHandler.indices.data(), (size_t)bufferSize);
-		stagingBufferMemory.unmapMemory();
-
-		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
-
-		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
+	void VulkanDevice::createDescriptorSetLayout() {
+		vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+		vk::DescriptorSetLayoutCreateInfo layoutInfo{};
+			layoutInfo.bindingCount = 1, 
+			layoutInfo.pBindings = &uboLayoutBinding;
+		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
 	}
+
 
 	void VulkanDevice::createGraphicsPipeline() {
 
@@ -433,15 +430,17 @@ namespace lte {
 		viewportState.viewportCount = 1, viewportState.scissorCount = 1;
 
 
-		vk::PipelineRasterizationStateCreateInfo rasterizer{};
-		rasterizer.depthClampEnable = vk::False,
+		//vk::PipelineRasterizationStateCreateInfo rasterizer{};
+		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
+			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
+		/*rasterizer.depthClampEnable = vk::False,
 			rasterizer.rasterizerDiscardEnable = vk::False,
 			rasterizer.polygonMode = vk::PolygonMode::eFill,
 			rasterizer.cullMode = vk::CullModeFlagBits::eBack,
 			rasterizer.frontFace = vk::FrontFace::eClockwise,
 			rasterizer.depthBiasEnable = vk::False,
 			rasterizer.lineWidth = 1.0f;
-
+		*/
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
 			multisampling.sampleShadingEnable = vk::False;
@@ -469,7 +468,8 @@ namespace lte {
 
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-			pipelineLayoutInfo.setLayoutCount = 0,
+			pipelineLayoutInfo.setLayoutCount = 1,
+			pipelineLayoutInfo.pSetLayouts = &*descriptorSetLayout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
@@ -530,9 +530,9 @@ namespace lte {
 		vk::raii::DeviceMemory stagingBufferMemory({});
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-		stagingBuffer.bindMemory(stagingBufferMemory, 0);
-		void* dataStaging = stagingBufferMemory.mapMemory(0, stagingInfo.size);
-		memcpy(dataStaging, vertexHandler.vertices.data(), stagingInfo.size);
+		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
+		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(dataStaging, vertexHandler.vertices.data(), bufferSize);
 		stagingBufferMemory.unmapMemory();
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
@@ -556,6 +556,25 @@ namespace lte {
 		copyBuffer(stagingBuffer, vertexBuffer, stagingInfo.size);
 		*/
 	}
+
+	void VulkanDevice::createIndexBuffer() {
+
+		vk::DeviceSize bufferSize = sizeof(vertexHandler.indices[0]) * (vertexHandler.indices.size());
+
+		vk::raii::Buffer stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(data, vertexHandler.indices.data(), (size_t)bufferSize);
+		stagingBufferMemory.unmapMemory();
+
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
+
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+	}
+
 	void VulkanDevice::copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size) {
 		vk::CommandBufferAllocateInfo allocInfo{};
 		allocInfo.commandPool = commandPool,
@@ -574,15 +593,15 @@ namespace lte {
 		
 		queue.waitIdle();
 	}
+	/*
 	void VulkanDevice::updateVertexBuffer() {
-		/*
 		const vk::DeviceSize newSize =
 			sizeof(testAnim.vertices[0]) * testAnim.vertices.size();
 		void* data = vertexBufferMemory.mapMemory(0, newSize);
 		std::memcpy(data, testAnim.vertices.data(),
 			static_cast<size_t>(newSize));
 		vertexBufferMemory.unmapMemory();		
-		*/
+
 
 		vk::DeviceSize bufferSize = sizeof(vertexHandler.vertices[0]) * vertexHandler.vertices.size();
 
@@ -611,7 +630,21 @@ namespace lte {
 		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 	}
+	*/
 
+	void VulkanDevice::updateUniformBuffer(uint32_t frame) 
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		UniformBufferObject ubo{};
+		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
+		ubo.proj[1][1] *= -1;
+		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
+	}
 	void VulkanDevice::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
 		vk::BufferCreateInfo bufferInfo{};
 			bufferInfo.size = size,
@@ -638,6 +671,56 @@ namespace lte {
 		throw std::runtime_error("failed to find suitable memory type!");
 	}
 
+	void VulkanDevice::createUniformBuffers() {
+		uniformBuffers.clear();
+		uniformBuffersMemory.clear();
+		uniformBuffersMapped.clear();
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+			vk::raii::Buffer buffer({});
+			vk::raii::DeviceMemory bufferMem({});
+			createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, buffer, bufferMem);
+			uniformBuffers.emplace_back(std::move(buffer));
+			uniformBuffersMemory.emplace_back(std::move(bufferMem));
+			uniformBuffersMapped.emplace_back(uniformBuffersMemory[i].mapMemory(0, bufferSize));
+		}
+	}
+
+	void VulkanDevice::createDescriptorPool() {
+		vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT);
+		vk::DescriptorPoolCreateInfo poolInfo{};
+			poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+			poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT,
+			poolInfo.poolSizeCount = 1,
+			poolInfo.pPoolSizes = &poolSize;
+		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
+	}
+
+	void VulkanDevice::createDescriptorSets() {
+		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *descriptorSetLayout);
+		vk::DescriptorSetAllocateInfo allocInfo{};
+			allocInfo.descriptorPool = descriptorPool,
+			allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
+			allocInfo.pSetLayouts = layouts.data();
+		descriptorSets.clear();
+		descriptorSets = device.allocateDescriptorSets(allocInfo);
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vk::DescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniformBuffers[i], 
+			bufferInfo.offset = 0, 
+			bufferInfo.range = sizeof(UniformBufferObject);
+			vk::WriteDescriptorSet descriptorWrite{};
+				descriptorWrite.dstSet = descriptorSets[i], 
+				descriptorWrite.dstBinding = 0, 
+				descriptorWrite.dstArrayElement = 0,
+				descriptorWrite.descriptorCount = 1,
+				descriptorWrite.descriptorType = vk::DescriptorType::eUniformBuffer, 
+				descriptorWrite.pBufferInfo = &bufferInfo;
+			device.updateDescriptorSets(descriptorWrite, {});
+		}
+		
+	}
 
 	void VulkanDevice::createCommandBuffer() {
 
@@ -687,13 +770,11 @@ namespace lte {
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
 
-
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
-
 		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
-		//commandBuffers[frameIndex].bindVertexBuffers(0, *vertexBuffer, { 0 });
-		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint16);
-		commandBuffer.drawIndexed(vertexHandler.indices.size(), 3, 1, 0, 0);
+	
+		commandBuffer.bindIndexBuffer(*indexBuffer,0,vk::IndexTypeValue<decltype(vertexHandler.indices)::value_type>::value);
+		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
+		commandBuffer.drawIndexed(vertexHandler.indices.size(), 1 ,0, 0, 0); //one 3 btw
 
 		commandBuffer.endRendering();
 		transition_image_layout(
@@ -748,6 +829,7 @@ namespace lte {
 
 		//testAnim.interpolate(frameNumber);
 		//updateVertexBuffer();
+		updateUniformBuffer(frameIndex);
 		auto fenceResult = device.waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{

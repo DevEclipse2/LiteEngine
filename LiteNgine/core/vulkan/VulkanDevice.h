@@ -18,6 +18,11 @@
 #include <GLFW/glfw3native.h>
 #include "VertexHandler.h"
 #include "testNcoolShit/TestAnim.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
+
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 namespace lte {
@@ -87,10 +92,14 @@ namespace lte {
 		void createImageViews();
 		std::vector<vk::raii::ImageView> swapChainImageViews;
 
+		//shader description set 
+		void createDescriptorSetLayout();
+		
 
 		//pipeline creation
 		void createGraphicsPipeline();
 		vk::raii::ShaderModule createShaderModule(const std::vector<char>& code) const;
+		vk::raii::DescriptorSetLayout descriptorSetLayout = nullptr;
 		vk::raii::PipelineLayout pipelineLayout = nullptr;
 		vk::raii::Pipeline graphicsPipeline = nullptr;
 		static std::vector<char> readFile(const std::string& filename);
@@ -112,7 +121,17 @@ namespace lte {
 		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 		vk::raii::Buffer indexBuffer = nullptr;
 		vk::raii::DeviceMemory indexBufferMemory = nullptr;
+		void createUniformBuffers();
+		void updateUniformBuffer(uint32_t frameindex);
+		std::vector<vk::raii::Buffer> uniformBuffers;
+		std::vector<vk::raii::DeviceMemory> uniformBuffersMemory;
+		std::vector<void*> uniformBuffersMapped;
 
+		void createDescriptorPool();
+		vk::raii::DescriptorPool descriptorPool = nullptr;
+		void createDescriptorSets();
+		vk::raii::DescriptorPool descriptorPool = nullptr;
+		std::vector<vk::raii::DescriptorSet> descriptorSets;
 
 		//test 
 		TestAnim testAnim;
