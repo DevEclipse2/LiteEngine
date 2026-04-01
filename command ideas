@@ -1,0 +1,13 @@
+object selection options
+'+' is used to append extra options
+a carat must be left empty (+ at both front and back)
+*keyword* + *arg* + *modifier* + *options* + *scope*
+keywords : sel, desel, invert
+args : $name, $island, $type, $typeinstance, all, allexclude + arg
+modifier: add, overwrite,
+option : include child, include component, no
+scope : worldlayer, allworldlayers, allslates, allloadedslates, allrecentslates
+
+object options
+*keyword* + *arg*
+keywords : list, trydestroy, revokeability, deactivate, activate, toggleactive, findpath, findreferences
