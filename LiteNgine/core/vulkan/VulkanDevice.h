@@ -18,11 +18,13 @@
 #include <GLFW/glfw3native.h>
 #include "VertexHandler.h"
 #include "testNcoolShit/TestAnim.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 #include <stb_image.h>
 #include "ConsoleLog.h"
+
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -152,7 +154,8 @@ namespace lte {
 			vk::AccessFlags2 srcAccessMask,
 			vk::AccessFlags2 dstAccessMask,
 			vk::PipelineStageFlags2 srcStageMask,
-			vk::PipelineStageFlags2 dstStageMask
+			vk::PipelineStageFlags2 dstStageMask,
+			vk::ImageAspectFlags    image_aspect_flags
 		);
 
 		//sync objects
@@ -185,10 +188,20 @@ namespace lte {
 
 
 		void createTextureImageView();
-		vk::raii::ImageView createImageView(vk::raii::Image& image, vk::Format format);
+		vk::raii::ImageView createImageView(vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags);
 		void createTextureSampler();
 		vk::raii::ImageView textureImageView	= nullptr;
 		vk::raii::Sampler textureSampler		= nullptr;
 		
+		vk::raii::Image depthImage = nullptr;
+		vk::raii::DeviceMemory depthImageMemory = nullptr;
+		vk::raii::ImageView depthImageView = nullptr;
+		void createDepthResources();
+		vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+		vk::Format findDepthFormat();
+		bool hasStencilComponent(vk::Format format);
+		vk::Format depthFormat = findDepthFormat();
+
+
 	};
 }

@@ -16,9 +16,9 @@ namespace lte {
 		~TestAnim();
 		void interpolate(int frame);
 		std::vector<Vertex> vertices = {
-		{{0.0f, -0.5f}, {1.0f, 0.0f, 1.0f}},
-		{{0.5f, 0.5f}, {0.0f, 1.0f, 0.8f}},
-		{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}} };
+		{{0.0f, 1.0f, -0.5f}, {1.0f, 0.0f, 1.0f}},
+		{{0.5f, 1.0f, 0.5f}, {0.0f, 1.0f, 0.8f}},
+		{{-0.5f, 1.0f, 0.5f}, {0.0f, 0.0f, 1.0f}} };
 	private:
 
 		int fps = 60;

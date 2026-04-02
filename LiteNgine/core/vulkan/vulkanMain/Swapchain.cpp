@@ -20,7 +20,7 @@ namespace lte {
 			swapChainCreateInfo.imageColorSpace		= swapChainSurfaceFormat.colorSpace,
 			swapChainCreateInfo.imageExtent			= swapChainExtent,
 			swapChainCreateInfo.imageArrayLayers	= 1,
-			swapChainCreateInfo.imageUsage			= vk::ImageUsageFlagBits::eColorAttachment,
+			swapChainCreateInfo.imageUsage			= vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled| vk::ImageUsageFlagBits::eTransferSrc,
 			swapChainCreateInfo.imageSharingMode	= vk::SharingMode::eExclusive,
 			swapChainCreateInfo.preTransform		= surfaceCapabilities.currentTransform,
 			swapChainCreateInfo.compositeAlpha		= vk::CompositeAlphaFlagBitsKHR::eOpaque,
@@ -35,7 +35,7 @@ namespace lte {
 	{
 		const auto formatIt = std::ranges::find_if(
 			availableFormats,
-			[](const auto& format) { return format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear; });
+			[](const auto& format) { return format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;});
 		return formatIt != availableFormats.end() ? *formatIt : availableFormats[0];
 	}
 	vk::PresentModeKHR VulkanDevice::chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes)

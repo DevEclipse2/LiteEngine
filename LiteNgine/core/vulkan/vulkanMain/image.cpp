@@ -124,16 +124,16 @@ namespace lte {
 
 
     void VulkanDevice::createTextureImageView() {
-        textureImageView = createImageView(textureImage, vk::Format::eR8G8B8A8Srgb);
+        textureImageView = createImageView(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 
     }
 
-    vk::raii::ImageView VulkanDevice::createImageView(vk::raii::Image& image, vk::Format format) {
+    vk::raii::ImageView VulkanDevice::createImageView(vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags) {
         vk::ImageViewCreateInfo viewInfo{};
             viewInfo.image = image,
             viewInfo.viewType = vk::ImageViewType::e2D,
             viewInfo.format = format, 
-            viewInfo.subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+            viewInfo.subresourceRange = { aspectFlags, 0, 1, 0, 1 };
         return vk::raii::ImageView(device, viewInfo);
     }
 

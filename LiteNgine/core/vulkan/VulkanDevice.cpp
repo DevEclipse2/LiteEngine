@@ -18,7 +18,10 @@ namespace lte {
 		createDescriptorSetLayout();
 		createGraphicsPipeline();//throws validation error
 		createCommandPool();
+		createDepthResources();
 		createTextureImage();
+		createTextureImageView();
+		createTextureSampler();
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
@@ -26,6 +29,7 @@ namespace lte {
 		createDescriptorSets();
 		createCommandBuffer();
 		createSyncObjects();
+
 	}
 	VulkanDevice::~VulkanDevice() {
 		device.waitIdle();
@@ -56,9 +60,9 @@ namespace lte {
 			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
 		//this makes the message
 		vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT{};
-		debugUtilsMessengerCreateInfoEXT.messageSeverity = severityFlags,
-		debugUtilsMessengerCreateInfoEXT.messageType = messageTypeFlags,
-		debugUtilsMessengerCreateInfoEXT.pfnUserCallback = &debugCallback;
+		debugUtilsMessengerCreateInfoEXT.messageSeverity	= severityFlags,
+		debugUtilsMessengerCreateInfoEXT.messageType		= messageTypeFlags,
+		debugUtilsMessengerCreateInfoEXT.pfnUserCallback	= &debugCallback;
 		debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 	}
 
@@ -95,9 +99,9 @@ namespace lte {
 		assert(swapChainImageViews.empty());
 
 		vk::ImageViewCreateInfo imageViewCreateInfo{};
-			imageViewCreateInfo.viewType = vk::ImageViewType::e2D,
-			imageViewCreateInfo.format = swapChainSurfaceFormat.format,
-			imageViewCreateInfo.subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+			imageViewCreateInfo.viewType			= vk::ImageViewType::e2D,
+			imageViewCreateInfo.format				= swapChainSurfaceFormat.format,
+			imageViewCreateInfo.subresourceRange	= { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
 
 		for (auto& image : swapChainImages)
 		{
@@ -124,6 +128,16 @@ namespace lte {
 	void VulkanDevice::createDescriptorSetLayout() {
 
 		std::array bindings = {
+	vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+	vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
+		};
+
+		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings.size(), bindings.data());
+		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
+		/*
+		
+			
+		std::array bindings = {
 			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
 			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
 		};
@@ -131,7 +145,7 @@ namespace lte {
 		vk::DescriptorSetLayoutCreateInfo layoutInfo{};
 			layoutInfo.bindingCount = 1, 
 			layoutInfo.pBindings = &uboLayoutBinding;
-		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
+		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);*/
 	}
 
 
@@ -140,31 +154,31 @@ namespace lte {
 		//gets shaders for vert and frag respectively
 		vk::raii::ShaderModule shaderModule = createShaderModule(shaderLoader.readFile("shaders/slang.spv"));
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
-		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
-			vertShaderStageInfo.module = shaderModule,
-			vertShaderStageInfo.pName = "vertMain";
+			vertShaderStageInfo.stage	= vk::ShaderStageFlagBits::eVertex,
+			vertShaderStageInfo.module	= shaderModule,
+			vertShaderStageInfo.pName	= "vertMain";
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
-		fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
-			fragShaderStageInfo.module = shaderModule,
-			fragShaderStageInfo.pName = "fragMain";
+		fragShaderStageInfo.stage		= vk::ShaderStageFlagBits::eFragment,
+			fragShaderStageInfo.module	= shaderModule,
+			fragShaderStageInfo.pName	= "fragMain";
 
 		//defines pipeline
 
-		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+		vk::PipelineShaderStageCreateInfo shaderStages[]				= { vertShaderStageInfo, fragShaderStageInfo };
 
-		auto                                   bindingDescription	 = Vertex::getBindingDescription();
-		auto                                   attributeDescriptions = Vertex::getAttributeDescriptions();
+		auto                                   bindingDescription		= Vertex::getBindingDescription();
+		auto                                   attributeDescriptions	= Vertex::getAttributeDescriptions();
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-		vertexInputInfo.vertexBindingDescriptionCount = 1,
-			vertexInputInfo.pVertexBindingDescriptions = &bindingDescription,
-			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
-			vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+		vertexInputInfo.vertexBindingDescriptionCount					= 1,
+			vertexInputInfo.pVertexBindingDescriptions					= &bindingDescription,
+			vertexInputInfo.vertexAttributeDescriptionCount				= static_cast<uint32_t>(attributeDescriptions.size()),
+			vertexInputInfo.pVertexAttributeDescriptions				= attributeDescriptions.data();
 
 
 		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
 		vk::PipelineViewportStateCreateInfo      viewportState{};
-		viewportState.viewportCount = 1, viewportState.scissorCount = 1;
+		viewportState.viewportCount = 1, viewportState.scissorCount		= 1;
 
 
 		//vk::PipelineRasterizationStateCreateInfo rasterizer{};
@@ -179,41 +193,41 @@ namespace lte {
 			rasterizer.lineWidth = 1.0f;
 		*/
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
-			multisampling.sampleShadingEnable = vk::False;
+		multisampling.rasterizationSamples								= vk::SampleCountFlagBits::e1,
+			multisampling.sampleShadingEnable							= vk::False;
 
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-		colorBlendAttachment.blendEnable = vk::True,
-			colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
-			colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
-			colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd,
-			colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne,
-			colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero,
-			colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd,
-			colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+		colorBlendAttachment.blendEnable								= vk::True,
+			colorBlendAttachment.srcColorBlendFactor					= vk::BlendFactor::eSrcAlpha,
+			colorBlendAttachment.dstColorBlendFactor					= vk::BlendFactor::eOneMinusSrcAlpha,
+			colorBlendAttachment.colorBlendOp							= vk::BlendOp::eAdd,
+			colorBlendAttachment.srcAlphaBlendFactor					= vk::BlendFactor::eOne,
+			colorBlendAttachment.dstAlphaBlendFactor					= vk::BlendFactor::eZero,
+			colorBlendAttachment.alphaBlendOp							= vk::BlendOp::eAdd,
+			colorBlendAttachment.colorWriteMask							= vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
 
 		vk::PipelineColorBlendStateCreateInfo colorBlending{};
-		colorBlending.logicOpEnable = vk::False,
-			colorBlending.logicOp = vk::LogicOp::eCopy,
-			colorBlending.attachmentCount = 1,
-			colorBlending.pAttachments = &colorBlendAttachment;
+		colorBlending.logicOpEnable										= vk::False,
+			colorBlending.logicOp										= vk::LogicOp::eCopy,
+			colorBlending.attachmentCount								= 1,
+			colorBlending.pAttachments									= &colorBlendAttachment;
 
-		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+		std::vector<vk::DynamicState>      dynamicStates				= { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 		vk::PipelineDynamicStateCreateInfo dynamicState{};
-			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
-			dynamicState.pDynamicStates = dynamicStates.data();
+			dynamicState.dynamicStateCount								= static_cast<uint32_t>(dynamicStates.size()),
+			dynamicState.pDynamicStates									= dynamicStates.data();
 
 
-			vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+			/*vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 				pipelineLayoutInfo.setLayoutCount = 0,
 				pipelineLayoutInfo.pushConstantRangeCount = 0;
-			pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
-		/*vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+			pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);*/
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 			pipelineLayoutInfo.setLayoutCount = 1,
 			pipelineLayoutInfo.pSetLayouts = &*descriptorSetLayout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);*/
+		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
 
 		vk::GraphicsPipelineCreateInfo graphicsInfo{};
 			graphicsInfo.stageCount = 2,
@@ -231,6 +245,7 @@ namespace lte {
 		vk::PipelineRenderingCreateInfo renderingInfo{};
 			renderingInfo.colorAttachmentCount = 1,
 			renderingInfo.pColorAttachmentFormats = &swapChainSurfaceFormat.format;
+			
 
 		vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain{graphicsInfo , renderingInfo};
 		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
@@ -380,9 +395,12 @@ namespace lte {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		UniformBufferObject ubo{};
-		ubo.model = rotate(glm::mat4(1.0f), -1 * time * glm::radians(480.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubo.model = rotate(glm::mat4(1.0f), -1 * time * glm::radians(480.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		float offset = std::sin(time * glm::radians(480.0f));
-		ubo.view = lookAt(glm::vec3(2.0f, 1.0f, 2.0f), glm::vec3(0.0f, offset * 0.05f , 0.0f), glm::vec3(0.0f, 1.0f,0.0f));
+		//ubo.view = lookAt(glm::vec3(2.0f, 1.0f, 2.0f), glm::vec3(0.0f, offset * 0.05f , 0.0f), glm::vec3(0.0f, 1.0f,0.0f));
+		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, offset * 0.05f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
 		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
 		ubo.proj[1][1] *= -1;
 		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
@@ -430,11 +448,17 @@ namespace lte {
 	}
 
 	void VulkanDevice::createDescriptorPool() {
+
+
 		std::array poolSize{
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
 		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT)
 		};
-		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, MAX_FRAMES_IN_FLIGHT, poolSize);
+		vk::DescriptorPoolCreateInfo poolInfo{
+			poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+			poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT,
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size()),
+			poolInfo.pPoolSizes = poolSize.data()};
 		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
 	}
 
@@ -461,18 +485,18 @@ namespace lte {
 			
 			vk::WriteDescriptorSet descriptorbuffer{};
 				descriptorbuffer.dstSet = descriptorSets[i],
-				descriptorbuffer.dstBinding = 0,
-				descriptorbuffer.dstArrayElement = 0,
-				descriptorbuffer.descriptorCount = 1,
-				descriptorbuffer.descriptorType = vk::DescriptorType::eUniformBuffer,
-				descriptorbuffer.pBufferInfo = &bufferInfo;
+				descriptorbuffer.dstBinding				= 0,
+				descriptorbuffer.dstArrayElement		= 0,
+				descriptorbuffer.descriptorCount		= 1,
+				descriptorbuffer.descriptorType			= vk::DescriptorType::eUniformBuffer,
+				descriptorbuffer.pBufferInfo			= &bufferInfo;
 			vk::WriteDescriptorSet descriptorimage{};
-				descriptorimage.dstSet				= descriptorSets[i],
-				descriptorimage.dstBinding			= 1,
-				descriptorimage.dstArrayElement		= 0,
-				descriptorimage.descriptorCount		= 1,
-				descriptorimage.descriptorType		= vk::DescriptorType::eCombinedImageSampler,
-				descriptorimage.pImageInfo			= &imageInfo;
+				descriptorimage.dstSet					= descriptorSets[i],
+				descriptorimage.dstBinding				= 1,
+				descriptorimage.dstArrayElement			= 0,
+				descriptorimage.descriptorCount			= 1,
+				descriptorimage.descriptorType			= vk::DescriptorType::eCombinedImageSampler,
+				descriptorimage.pImageInfo				= &imageInfo;
 			std::array descriptorWrites{
 				descriptorbuffer,
 				descriptorimage 
@@ -500,6 +524,10 @@ namespace lte {
 	}
 
 	void VulkanDevice::recordCommandBuffer(uint32_t imageIndex) {
+
+		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+
 		auto& commandBuffer = commandBuffers[frameIndex];
 		commandBuffer.begin({});
 		transition_image_layout(
@@ -519,13 +547,23 @@ namespace lte {
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
 			attachmentInfo.clearValue = clearColor;
+		vk::RenderingAttachmentInfo depthAttachmentInfo{};
+			depthAttachmentInfo.imageView		= depthImageView,
+			depthAttachmentInfo.imageLayout		= vk::ImageLayout::eDepthAttachmentOptimal,
+			depthAttachmentInfo.loadOp			= vk::AttachmentLoadOp::eClear,
+			depthAttachmentInfo.storeOp			= vk::AttachmentStoreOp::eDontCare,
+			depthAttachmentInfo.clearValue		= clearDepth;
+
 
 		vk::RenderingInfo renderingInfo = {};
 			renderingInfo.renderArea = {.offset = { 0, 0 }, .extent = swapChainExtent },
 			renderingInfo.layerCount = 1,
 			renderingInfo.colorAttachmentCount = 1,
-			renderingInfo.pColorAttachments = &attachmentInfo;
+			renderingInfo.pColorAttachments = &attachmentInfo,
+			renderingInfo.pDepthAttachment = &depthAttachmentInfo;
 
+
+			
 		commandBuffer.beginRendering(renderingInfo);
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
@@ -545,7 +583,7 @@ namespace lte {
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
 			{},                                                     // dstAccessMask
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
-			vk::PipelineStageFlagBits2::eBottomOfPipe               // dstStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe              // dstStage
 		);
 		commandBuffer.end();
 	}
@@ -557,7 +595,8 @@ namespace lte {
 		vk::AccessFlags2 srcAccessMask,
 		vk::AccessFlags2 dstAccessMask,
 		vk::PipelineStageFlags2 srcStageMask,
-		vk::PipelineStageFlags2 dstStageMask
+		vk::PipelineStageFlags2 dstStageMask,
+		vk::ImageAspectFlags    image_aspect_flags
 	) 
 	{
 		vk::ImageSubresourceRange subresourceRange{};
@@ -566,8 +605,15 @@ namespace lte {
 			subresourceRange.levelCount = 1,
 			subresourceRange.baseArrayLayer = 0,
 			subresourceRange.layerCount = 1;
+		vk::ImageSubresourceRange range{};
+			range.aspectMask = image_aspect_flags,
+			range.baseMipLevel = 0,
+			range.levelCount = 1,
+			range.baseArrayLayer = 0,
+			range.layerCount = 1;
+
 		vk::ImageMemoryBarrier2 barrier = {};
-			barrier.srcStageMask = srcStageMask,
+		barrier.srcStageMask = srcStageMask,
 			barrier.srcAccessMask = srcAccessMask,
 			barrier.dstStageMask = dstStageMask,
 			barrier.dstAccessMask = dstAccessMask,
@@ -576,7 +622,8 @@ namespace lte {
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 			barrier.image = swapChainImages[imageIndex],
-			barrier.subresourceRange = subresourceRange;
+			barrier.subresourceRange = range;
+            
 
 			vk::DependencyInfo dependencyInfo = {};
 			dependencyInfo.dependencyFlags = {},
@@ -760,4 +807,35 @@ namespace lte {
 		debugMessenger = nullptr;
 		setupDebugMessenger();
 	}
+
+	void VulkanDevice::createDepthResources() {
+		vk::Format depthFormat = findDepthFormat();
+		createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+		depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
+	}
+	vk::Format VulkanDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+		for (const auto format : candidates) {
+			vk::FormatProperties props = physicalDevice.getFormatProperties(format);
+			if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
+				return format;
+			}
+			if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+				return format;
+			}
+		}
+		throw std::runtime_error("failed to find supported format!");
+		throw std::runtime_error("failed to find supported format!");
+	}
+	bool VulkanDevice::hasStencilComponent(vk::Format format) {
+
+		return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+	}
+	vk::Format VulkanDevice::findDepthFormat() {
+		return findSupportedFormat(
+			{ vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint },
+			vk::ImageTiling::eOptimal,
+			vk::FormatFeatureFlagBits::eDepthStencilAttachment
+		);
+	}
+
 }
