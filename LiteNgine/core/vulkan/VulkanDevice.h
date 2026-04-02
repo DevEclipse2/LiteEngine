@@ -21,8 +21,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "ConsoleLog.h"
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -131,6 +131,7 @@ namespace lte {
 		std::vector<void*> uniformBuffersMapped;
 
 		void createDescriptorPool();
+
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		void createDescriptorSets();
 		//vk::raii::DescriptorPool descriptorPool = nullptr;
@@ -174,5 +175,20 @@ namespace lte {
 		void createTextureImage();
 		vk::raii::Image textureImage = nullptr;
 		vk::raii::DeviceMemory textureImageMemory = nullptr;
+		void createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
+		std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands();
+		void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer);
+		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+		void copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height);
+
+
+
+
+		void createTextureImageView();
+		vk::raii::ImageView createImageView(vk::raii::Image& image, vk::Format format);
+		void createTextureSampler();
+		vk::raii::ImageView textureImageView	= nullptr;
+		vk::raii::Sampler textureSampler		= nullptr;
+		
 	};
 }

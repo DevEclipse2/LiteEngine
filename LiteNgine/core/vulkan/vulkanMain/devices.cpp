@@ -25,9 +25,13 @@ namespace lte {
 						{ return strcmp(availableDeviceExtension.extensionName, requiredDeviceExtension) == 0; });
 				});
 		auto features = physicalDevice.template getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
-		bool supportsRequiredFeatures = features.template get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering &&
+		bool supportsRequiredFeatures = 
+			features.template get<vk::PhysicalDeviceFeatures2>().features.samplerAnisotropy &&
+			features.template get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering &&
 			features.template get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState;
+
 		return supportsVulkan1_3 && supportsGraphics && supportsAllRequiredExtensions && supportsRequiredFeatures;
+		//return supportsVulkan1_3 && supportsGraphics && supportsAllRequiredExtensions && supportsRequiredFeatures && deviceFeatures.samplerAnisotropy;
 	}
 
 	void VulkanDevice::pickPhysicalDevice() {
@@ -44,7 +48,7 @@ namespace lte {
 		//scoring system i never bothered to implement
 		//remind me to prioritize discrete gpus
 		
-		std::vector<vk::raii::PhysicalDevice> physicalDevices = vk::raii::PhysicalDevices(instance);
+		//std::vector<vk::raii::PhysicalDevice> physicalDevices = vk::raii::PhysicalDevices(instance);
 		if (physicalDevices.empty())
 		{
 			throw std::runtime_error("failed to find GPUs with Vulkan support!");
@@ -119,7 +123,7 @@ namespace lte {
 		}
 		// Create a chain of feature structures
 		// query for Vulkan 1.3 features
-
+		vk::PhysicalDeviceFeatures deviceFeatures{ deviceFeatures.samplerAnisotropy = true };
 		vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceVulkan11Features,
@@ -127,7 +131,7 @@ namespace lte {
 			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
 		> featureChain{};
 
-		//featureChain.get<vk::PhysicalDeviceFeatures2>() = nullptr;
+		featureChain.get<vk::PhysicalDeviceFeatures2>().features = deviceFeatures;
 		featureChain.get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = VK_TRUE;

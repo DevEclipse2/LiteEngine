@@ -79,11 +79,11 @@
     <OutDir>..\build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -177,6 +177,10 @@
     <ClCompile Include="core\vulkan\ShaderLoader.cpp" />
     <ClCompile Include="core\vulkan\VertexHandler.cpp" />
     <ClCompile Include="core\vulkan\testNcoolShit\TestAnim.cpp" />
+    <ClCompile Include="core\vulkan\vulkanMain\buffers.cpp" />
+    <ClCompile Include="core\vulkan\vulkanMain\devices.cpp" />
+    <ClCompile Include="core\vulkan\vulkanMain\extras.cpp" />
+    <ClCompile Include="core\vulkan\vulkanMain\image.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
   </ItemGroup>
   <ItemGroup>

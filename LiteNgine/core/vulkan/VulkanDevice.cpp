@@ -122,6 +122,11 @@ namespace lte {
 
 
 	void VulkanDevice::createDescriptorSetLayout() {
+
+		std::array bindings = {
+			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
+		};
 		vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
 		vk::DescriptorSetLayoutCreateInfo layoutInfo{};
 			layoutInfo.bindingCount = 1, 
@@ -199,12 +204,16 @@ namespace lte {
 			dynamicState.pDynamicStates = dynamicStates.data();
 
 
-		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+			vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+				pipelineLayoutInfo.setLayoutCount = 0,
+				pipelineLayoutInfo.pushConstantRangeCount = 0;
+			pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
+		/*vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 			pipelineLayoutInfo.setLayoutCount = 1,
 			pipelineLayoutInfo.pSetLayouts = &*descriptorSetLayout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
+		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);*/
 
 		vk::GraphicsPipelineCreateInfo graphicsInfo{};
 			graphicsInfo.stageCount = 2,
@@ -421,17 +430,16 @@ namespace lte {
 	}
 
 	void VulkanDevice::createDescriptorPool() {
-		vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT);
-		vk::DescriptorPoolCreateInfo poolInfo{};
-			poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-			poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT,
-			poolInfo.poolSizeCount = 1,
-			poolInfo.pPoolSizes = &poolSize;
+		std::array poolSize{
+		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
+		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT)
+		};
+		vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, MAX_FRAMES_IN_FLIGHT, poolSize);
 		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
 	}
 
 	void VulkanDevice::createDescriptorSets() {
-		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *descriptorSetLayout);
+		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 		vk::DescriptorSetAllocateInfo allocInfo{};
 			allocInfo.descriptorPool = descriptorPool,
 			allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
@@ -439,18 +447,38 @@ namespace lte {
 		descriptorSets.clear();
 		descriptorSets = device.allocateDescriptorSets(allocInfo);
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			
 			vk::DescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = uniformBuffers[i], 
-			bufferInfo.offset = 0, 
-			bufferInfo.range = sizeof(UniformBufferObject);
-			vk::WriteDescriptorSet descriptorWrite{};
-				descriptorWrite.dstSet = descriptorSets[i], 
-				descriptorWrite.dstBinding = 0, 
-				descriptorWrite.dstArrayElement = 0,
-				descriptorWrite.descriptorCount = 1,
-				descriptorWrite.descriptorType = vk::DescriptorType::eUniformBuffer, 
-				descriptorWrite.pBufferInfo = &bufferInfo;
-			device.updateDescriptorSets(descriptorWrite, {});
+				bufferInfo.buffer = uniformBuffers[i], 
+				bufferInfo.offset = 0, 
+				bufferInfo.range = sizeof(UniformBufferObject);
+
+			vk::DescriptorImageInfo imageInfo{};
+				imageInfo.sampler		= textureSampler, 
+				imageInfo.imageView		= textureImageView,
+				imageInfo.imageLayout	= vk::ImageLayout::eShaderReadOnlyOptimal;
+
+			
+			vk::WriteDescriptorSet descriptorbuffer{};
+				descriptorbuffer.dstSet = descriptorSets[i],
+				descriptorbuffer.dstBinding = 0,
+				descriptorbuffer.dstArrayElement = 0,
+				descriptorbuffer.descriptorCount = 1,
+				descriptorbuffer.descriptorType = vk::DescriptorType::eUniformBuffer,
+				descriptorbuffer.pBufferInfo = &bufferInfo;
+			vk::WriteDescriptorSet descriptorimage{};
+				descriptorimage.dstSet				= descriptorSets[i],
+				descriptorimage.dstBinding			= 1,
+				descriptorimage.dstArrayElement		= 0,
+				descriptorimage.descriptorCount		= 1,
+				descriptorimage.descriptorType		= vk::DescriptorType::eCombinedImageSampler,
+				descriptorimage.pImageInfo			= &imageInfo;
+			std::array descriptorWrites{
+				descriptorbuffer,
+				descriptorimage 
+			};
+
+			device.updateDescriptorSets(descriptorWrites, {});
 		}
 		
 	}
