@@ -193,9 +193,14 @@ namespace lte {
 			rasterizer.lineWidth = 1.0f;
 		*/
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples								= vk::SampleCountFlagBits::e1,
+			multisampling.rasterizationSamples							= vk::SampleCountFlagBits::e1,
 			multisampling.sampleShadingEnable							= vk::False;
-
+			vk::PipelineDepthStencilStateCreateInfo depthStencil{};
+				depthStencil.depthTestEnable = vk::True,
+				depthStencil.depthWriteEnable = vk::True,
+				depthStencil.depthCompareOp = vk::CompareOp::eLess,
+				depthStencil.depthBoundsTestEnable = vk::False,
+				depthStencil.stencilTestEnable = vk::False;
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
 		colorBlendAttachment.blendEnable								= vk::True,
 			colorBlendAttachment.srcColorBlendFactor					= vk::BlendFactor::eSrcAlpha,
@@ -525,22 +530,35 @@ namespace lte {
 
 	void VulkanDevice::recordCommandBuffer(uint32_t imageIndex) {
 
-		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
-		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
-
+		
 		auto& commandBuffer = commandBuffers[frameIndex];
 		commandBuffer.begin({});
 		transition_image_layout(
-			imageIndex,
+			swapChainImages[imageIndex],
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eColorAttachmentOptimal,
 			{},                                                         // srcAccessMask (no need to wait for previous operations)
 			vk::AccessFlagBits2::eColorAttachmentWrite,                 // dstAccessMask
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,         // srcStage
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput          // dstStage
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,          // dstStage
+			vk::ImageAspectFlagBits::eColor
 		);
+		// Transition depth image to depth attachment optimal layout
+		transition_image_layout(
+			*depthImage,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eDepthAttachmentOptimal,
+			vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+			vk::ImageAspectFlagBits::eDepth);
 
 		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+
+
+
 		vk::RenderingAttachmentInfo attachmentInfo = {};
 			attachmentInfo.imageView = swapChainImageViews[imageIndex],
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
@@ -577,19 +595,20 @@ namespace lte {
 
 		commandBuffer.endRendering();
 		transition_image_layout(
-			imageIndex,
+			swapChainImages[imageIndex],
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
 			{},                                                     // dstAccessMask
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
-			vk::PipelineStageFlagBits2::eBottomOfPipe              // dstStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::ImageAspectFlagBits::eColor
 		);
 		commandBuffer.end();
 	}
 
 	void VulkanDevice::transition_image_layout(
-		uint32_t imageIndex,
+		vk::Image       image,
 		vk::ImageLayout oldLayout,
 		vk::ImageLayout newLayout,
 		vk::AccessFlags2 srcAccessMask,
@@ -621,7 +640,7 @@ namespace lte {
 			barrier.newLayout = newLayout,
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			barrier.image = swapChainImages[imageIndex],
+			barrier.image = image;
 			barrier.subresourceRange = range;
             
 

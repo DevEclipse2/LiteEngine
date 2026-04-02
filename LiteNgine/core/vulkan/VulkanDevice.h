@@ -148,7 +148,7 @@ namespace lte {
 		vk::raii::CommandPool    commandPool = nullptr;
 		void recordCommandBuffer(uint32_t imageIndex);
 		void transition_image_layout(
-			uint32_t imageIndex,
+			vk::Image               image,
 			vk::ImageLayout oldLayout,
 			vk::ImageLayout newLayout,
 			vk::AccessFlags2 srcAccessMask,
