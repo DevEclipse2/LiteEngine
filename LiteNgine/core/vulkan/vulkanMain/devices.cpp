@@ -92,6 +92,7 @@ namespace lte {
 		if (!candidates.empty() && candidates.rbegin()->first > 0)
 		{
 			physicalDevice = candidates.rbegin()->second;
+			msaaSamples = getMaxUsableSampleCount();
 			//std::cout(physicalDevice)
 		}
 		else

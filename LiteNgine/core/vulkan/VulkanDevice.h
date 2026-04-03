@@ -25,6 +25,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <unordered_map>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -34,6 +35,11 @@ namespace lte {
 	class VulkanDevice
 	{
 	public:
+
+		const std::string MODEL_PATH = "models/viking_room.obj";
+		const std::string TEXTURE_PATH = "textures/viking_room.png";
+
+
 		#ifdef NDEBUG
 			static constexpr bool enableValidationLayers = false;
 		#else
@@ -115,12 +121,14 @@ namespace lte {
 		uint32_t    queueIndex = ~0;
 		std::vector<vk::raii::CommandBuffer> commandBuffers;
 		
-		VertexHandler vertexHandler;
+
 		void createVertexBuffer();
-		void updateVertexBuffer();
+		//void updateVertexBuffer();
 		void createIndexBuffer();
 		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
 		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
 		vk::raii::Buffer vertexBuffer = nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
 		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
@@ -176,19 +184,21 @@ namespace lte {
 
 		//texture stuff
 		void createTextureImage();
-		vk::raii::Image textureImage = nullptr;
+		uint32_t mipLevels;
+		vk::raii::Image        textureImage = nullptr;
+		//std::unique_ptr<vk::raii::Image> textureImage;
 		vk::raii::DeviceMemory textureImageMemory = nullptr;
-		void createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
+		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
 		std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands();
 		void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer);
-		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
 		void copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height);
-
+		void generateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
 
 
 		void createTextureImageView();
-		vk::raii::ImageView createImageView(vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags);
+		vk::raii::ImageView createImageView(const vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
 		void createTextureSampler();
 		vk::raii::ImageView textureImageView	= nullptr;
 		vk::raii::Sampler textureSampler		= nullptr;
@@ -200,8 +210,18 @@ namespace lte {
 		vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 		vk::Format findDepthFormat();
 		bool hasStencilComponent(vk::Format format);
-		vk::Format depthFormat = findDepthFormat();
+		//vk::Format depthFormat = findDepthFormat();
 
+
+		void loadModel();
+
+
+		vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
+		vk::SampleCountFlagBits getMaxUsableSampleCount();
+		vk::raii::Image colorImage = nullptr;
+		vk::raii::DeviceMemory colorImageMemory = nullptr;
+		vk::raii::ImageView colorImageView = nullptr;
+		void createColorResources();
 
 	};
 }

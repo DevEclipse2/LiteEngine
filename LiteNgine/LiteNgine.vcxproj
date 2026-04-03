@@ -79,11 +79,11 @@
     <OutDir>..\build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,6 +128,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm</AdditionalIncludeDirectories>
+      <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +154,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm</AdditionalIncludeDirectories>
+      <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -181,6 +183,7 @@
     <ClCompile Include="core\vulkan\vulkanMain\devices.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\extras.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\image.cpp" />
+    <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
   </ItemGroup>
   <ItemGroup>

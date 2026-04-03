@@ -1,5 +1,6 @@
 #include "VulkanDevice.h"
 #include "ConsoleLog.h"
+
 #define VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS
 namespace lte {
 
@@ -15,13 +16,15 @@ namespace lte {
 		createLogicalDevice();
 		createSwapChain();
 		createImageViews();
+		createColorResources();
+		createDepthResources();
 		createDescriptorSetLayout();
 		createGraphicsPipeline();//throws validation error
 		createCommandPool();
-		createDepthResources();
 		createTextureImage();
 		createTextureImageView();
 		createTextureSampler();
+		loadModel();
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
@@ -29,6 +32,9 @@ namespace lte {
 		createDescriptorSets();
 		createCommandBuffer();
 		createSyncObjects();
+
+
+		
 
 	}
 	VulkanDevice::~VulkanDevice() {
@@ -195,12 +201,12 @@ namespace lte {
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
 			multisampling.rasterizationSamples							= vk::SampleCountFlagBits::e1,
 			multisampling.sampleShadingEnable							= vk::False;
-			vk::PipelineDepthStencilStateCreateInfo depthStencil{};
-				depthStencil.depthTestEnable = vk::True,
-				depthStencil.depthWriteEnable = vk::True,
-				depthStencil.depthCompareOp = vk::CompareOp::eLess,
-				depthStencil.depthBoundsTestEnable = vk::False,
-				depthStencil.stencilTestEnable = vk::False;
+		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
+			depthStencil.depthTestEnable								= vk::True,
+			depthStencil.depthWriteEnable								= vk::True,
+			depthStencil.depthCompareOp									= vk::CompareOp::eLess,
+			depthStencil.depthBoundsTestEnable							= vk::False,
+			depthStencil.stencilTestEnable								= vk::False;
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
 		colorBlendAttachment.blendEnable								= vk::True,
 			colorBlendAttachment.srcColorBlendFactor					= vk::BlendFactor::eSrcAlpha,
@@ -234,6 +240,8 @@ namespace lte {
 
 		pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
 
+		vk::Format depthFormat = findDepthFormat();
+
 		vk::GraphicsPipelineCreateInfo graphicsInfo{};
 			graphicsInfo.stageCount = 2,
 			graphicsInfo.pStages = shaderStages,
@@ -244,13 +252,14 @@ namespace lte {
 			graphicsInfo.pMultisampleState = &multisampling,
 			graphicsInfo.pColorBlendState = &colorBlending,
 			graphicsInfo.pDynamicState = &dynamicState,
+			graphicsInfo.pDepthStencilState = &depthStencil,
 			graphicsInfo.layout = pipelineLayout,
 			graphicsInfo.renderPass = nullptr;
 
 		vk::PipelineRenderingCreateInfo renderingInfo{};
 			renderingInfo.colorAttachmentCount = 1,
-			renderingInfo.pColorAttachmentFormats = &swapChainSurfaceFormat.format;
-			
+			renderingInfo.pColorAttachmentFormats = &swapChainSurfaceFormat.format,
+			renderingInfo.depthAttachmentFormat = depthFormat;
 
 		vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain{graphicsInfo , renderingInfo};
 		graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
@@ -280,7 +289,7 @@ namespace lte {
 	void VulkanDevice::createVertexBuffer() {
 		//assert(vertexBuffer == nullptr);
 
-		vk::DeviceSize bufferSize = sizeof(vertexHandler.vertices[0]) * vertexHandler.vertices.size();
+		vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
 
 		vk::BufferCreateInfo stagingInfo{};
@@ -293,7 +302,7 @@ namespace lte {
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
 		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(dataStaging, vertexHandler.vertices.data(), bufferSize);
+		memcpy(dataStaging, vertices.data(), bufferSize);
 		stagingBufferMemory.unmapMemory();
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
@@ -320,14 +329,14 @@ namespace lte {
 
 	void VulkanDevice::createIndexBuffer() {
 
-		vk::DeviceSize bufferSize = sizeof(vertexHandler.indices[0]) * (vertexHandler.indices.size());
+		vk::DeviceSize bufferSize = sizeof(indices[0]) * (indices.size());
 
 		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory stagingBufferMemory({});
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(data, vertexHandler.indices.data(), (size_t)bufferSize);
+		memcpy(data, indices.data(), (size_t)bufferSize);
 		stagingBufferMemory.unmapMemory();
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
@@ -400,6 +409,7 @@ namespace lte {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		UniformBufferObject ubo{};
+		/*
 		//ubo.model = rotate(glm::mat4(1.0f), -1 * time * glm::radians(480.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		float offset = std::sin(time * glm::radians(480.0f));
 		//ubo.view = lookAt(glm::vec3(2.0f, 1.0f, 2.0f), glm::vec3(0.0f, offset * 0.05f , 0.0f), glm::vec3(0.0f, 1.0f,0.0f));
@@ -408,6 +418,13 @@ namespace lte {
 
 		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
 		ubo.proj[1][1] *= -1;
+		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));*/
+
+		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
+		ubo.proj[1][1] *= -1;
+
 		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
 	}
 	void VulkanDevice::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
@@ -589,9 +606,10 @@ namespace lte {
 
 		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
 	
-		commandBuffer.bindIndexBuffer(*indexBuffer,0,vk::IndexTypeValue<decltype(vertexHandler.indices)::value_type>::value);
+		commandBuffer.bindIndexBuffer(*indexBuffer,0,vk::IndexType::eUint32);
 		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
-		commandBuffer.drawIndexed(vertexHandler.indices.size(), 1 ,0, 0, 0); //one 3 btw
+		commandBuffer.drawIndexed(indices.size(), 1 ,0, 0, 0); //one 3 btw
+		//commandBuffer.drawIndexed(12, 1, 0, 0, 0); //one 3 btw
 
 		commandBuffer.endRendering();
 		transition_image_layout(
@@ -776,6 +794,7 @@ namespace lte {
 
 		createSwapChain();
 		createImageViews();
+		createDepthResources();
 	}
 
 
@@ -829,21 +848,23 @@ namespace lte {
 
 	void VulkanDevice::createDepthResources() {
 		vk::Format depthFormat = findDepthFormat();
-		createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
-		depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
+		createImage(swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+		//createImage(swapChainExtent.width, swapChainExtent.height, 1, vk::SampleCountFlagBits::e1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+		depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 	}
 	vk::Format VulkanDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
-		for (const auto format : candidates) {
+		
+		
+		auto formatIt = std::ranges::find_if(candidates, [&](auto const format) {
 			vk::FormatProperties props = physicalDevice.getFormatProperties(format);
-			if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
-				return format;
-			}
-			if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
-				return format;
-			}
+			return (((tiling == vk::ImageTiling::eLinear) && ((props.linearTilingFeatures & features) == features)) ||
+				((tiling == vk::ImageTiling::eOptimal) && ((props.optimalTilingFeatures & features) == features)));
+			});
+		if (formatIt == candidates.end())
+		{
+			throw std::runtime_error("failed to find supported format!");
 		}
-		throw std::runtime_error("failed to find supported format!");
-		throw std::runtime_error("failed to find supported format!");
+		return *formatIt;
 	}
 	bool VulkanDevice::hasStencilComponent(vk::Format format) {
 
@@ -855,6 +876,20 @@ namespace lte {
 			vk::ImageTiling::eOptimal,
 			vk::FormatFeatureFlagBits::eDepthStencilAttachment
 		);
+	}
+
+	vk::SampleCountFlagBits VulkanDevice::getMaxUsableSampleCount() {
+		vk::PhysicalDeviceProperties physicalDeviceProperties = physicalDevice.getProperties();
+
+		vk::SampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		if (counts & vk::SampleCountFlagBits::e64) { return vk::SampleCountFlagBits::e64; }
+		if (counts & vk::SampleCountFlagBits::e32) { return vk::SampleCountFlagBits::e32; }
+		if (counts & vk::SampleCountFlagBits::e16) { return vk::SampleCountFlagBits::e16; }
+		if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
+		if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
+		if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+
+		return vk::SampleCountFlagBits::e1;
 	}
 
 }
