@@ -223,5 +223,6 @@ namespace lte {
 		vk::raii::ImageView colorImageView = nullptr;
 		void createColorResources();
 
+		void loadModelGLTF();
 	};
 }

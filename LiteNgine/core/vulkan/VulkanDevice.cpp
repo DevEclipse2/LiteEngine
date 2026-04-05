@@ -14,6 +14,7 @@ namespace lte {
 		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
+		msaaSamples = getMaxUsableSampleCount();
 		createSwapChain();
 		createImageViews();
 		createColorResources();
@@ -167,7 +168,6 @@ namespace lte {
 		fragShaderStageInfo.stage		= vk::ShaderStageFlagBits::eFragment,
 			fragShaderStageInfo.module	= shaderModule,
 			fragShaderStageInfo.pName	= "fragMain";
-
 		//defines pipeline
 
 		vk::PipelineShaderStageCreateInfo shaderStages[]				= { vertShaderStageInfo, fragShaderStageInfo };
@@ -199,7 +199,7 @@ namespace lte {
 			rasterizer.lineWidth = 1.0f;
 		*/
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-			multisampling.rasterizationSamples							= vk::SampleCountFlagBits::e1,
+			multisampling.rasterizationSamples							= msaaSamples,
 			multisampling.sampleShadingEnable							= vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 			depthStencil.depthTestEnable								= vk::True,
@@ -216,7 +216,6 @@ namespace lte {
 			colorBlendAttachment.dstAlphaBlendFactor					= vk::BlendFactor::eZero,
 			colorBlendAttachment.alphaBlendOp							= vk::BlendOp::eAdd,
 			colorBlendAttachment.colorWriteMask							= vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-
 		vk::PipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.logicOpEnable										= vk::False,
 			colorBlending.logicOp										= vk::LogicOp::eCopy,
@@ -554,13 +553,22 @@ namespace lte {
 			swapChainImages[imageIndex],
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eColorAttachmentOptimal,
-			{},                                                         // srcAccessMask (no need to wait for previous operations)
-			vk::AccessFlagBits2::eColorAttachmentWrite,                 // dstAccessMask
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,         // srcStage
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,          // dstStage
-			vk::ImageAspectFlagBits::eColor
-		);
-		// Transition depth image to depth attachment optimal layout
+			{},                                                        // srcAccessMask (no need to wait for previous operations)
+			vk::AccessFlagBits2::eColorAttachmentWrite,                // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // srcStage
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // dstStage
+			vk::ImageAspectFlagBits::eColor);
+		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
+		transition_image_layout(
+			*colorImage,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::ImageAspectFlagBits::eColor);
+		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
 		transition_image_layout(
 			*depthImage,
 			vk::ImageLayout::eUndefined,
@@ -574,14 +582,17 @@ namespace lte {
 		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
-
-
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = swapChainImageViews[imageIndex],
+			attachmentInfo.imageView = colorImageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
+			attachmentInfo.resolveImageView = swapChainImageViews[imageIndex],
+			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
 			attachmentInfo.clearValue = clearColor;
+
+
 		vk::RenderingAttachmentInfo depthAttachmentInfo{};
 			depthAttachmentInfo.imageView		= depthImageView,
 			depthAttachmentInfo.imageLayout		= vk::ImageLayout::eDepthAttachmentOptimal,
@@ -596,8 +607,6 @@ namespace lte {
 			renderingInfo.colorAttachmentCount = 1,
 			renderingInfo.pColorAttachments = &attachmentInfo,
 			renderingInfo.pDepthAttachment = &depthAttachmentInfo;
-
-
 			
 		commandBuffer.beginRendering(renderingInfo);
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
@@ -794,6 +803,7 @@ namespace lte {
 
 		createSwapChain();
 		createImageViews();
+		createColorResources();
 		createDepthResources();
 	}
 
@@ -891,5 +901,5 @@ namespace lte {
 
 		return vk::SampleCountFlagBits::e1;
 	}
-
+	
 }
