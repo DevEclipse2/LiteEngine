@@ -28,6 +28,7 @@ namespace lte {
 		loadModel();
 		createVertexBuffer();
 		createIndexBuffer();
+		setupMeshes();
 		createUniformBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
@@ -99,9 +100,6 @@ namespace lte {
 
 		return extensions;
 	}
-	
-	
-
 	void VulkanDevice::createImageViews() {
 		assert(swapChainImageViews.empty());
 
@@ -130,8 +128,6 @@ namespace lte {
 
 		return buffer;
 	}
-
-
 	void VulkanDevice::createDescriptorSetLayout() {
 
 		std::array bindings = {
@@ -411,23 +407,33 @@ namespace lte {
 		std::cout << "fps: " << 1 / (time - prevtime) << "Delta :" << (time-prevtime) * 1000 << "miliseconds" << '\n';
 		prevtime = time;
 		UniformBufferObject ubo{};
-		/*
-		//ubo.model = rotate(glm::mat4(1.0f), -1 * time * glm::radians(480.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		float offset = std::sin(time * glm::radians(480.0f));
-		//ubo.view = lookAt(glm::vec3(2.0f, 1.0f, 2.0f), glm::vec3(0.0f, offset * 0.05f , 0.0f), glm::vec3(0.0f, 1.0f,0.0f));
-		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, offset * 0.05f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
-		ubo.proj[1][1] *= -1;
-		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));*/
+		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 proj = glm::perspective(glm::radians(45.0f),
+			static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height),
+			0.1f, 20.0f);
 
-		ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
 		ubo.proj[1][1] *= -1;
 
-		memcpy(uniformBuffersMapped[frame], &ubo, sizeof(ubo));
+
+		// Update uniform buffers for each object
+		for (auto& gameObject : meshes) {
+			// Apply continuous rotation to the object
+			gameObject.rotation.y += 0.001f; // Slow rotation around Y axis
+
+			// Get the model matrix for this object
+			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
+
+			// Create and update the UBO
+			UniformBufferObject ubo{};
+				ubo.model = model,
+				ubo.view = view,
+				ubo.proj = proj;
+
+			// Copy the UBO data to the mapped memory
+			memcpy(gameObject.uniformBuffersMapped[frameIndex], &ubo, sizeof(ubo));
+		}
 	}
 	void VulkanDevice::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
 		vk::BufferCreateInfo bufferInfo{};
@@ -456,7 +462,27 @@ namespace lte {
 	}
 
 	void VulkanDevice::createUniformBuffers() {
-		uniformBuffers.clear();
+
+		for (auto& gameObject : meshes) {
+			gameObject.uniformBuffers.clear();
+			gameObject.uniformBuffersMemory.clear();
+			gameObject.uniformBuffersMapped.clear();
+
+			// Create uniform buffers for each frame in flight
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+				vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+				vk::raii::Buffer buffer({});
+				vk::raii::DeviceMemory bufferMem({});
+				createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
+					vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+					buffer, bufferMem);
+				gameObject.uniformBuffers.emplace_back(std::move(buffer));
+				gameObject.uniformBuffersMemory.emplace_back(std::move(bufferMem));
+				gameObject.uniformBuffersMapped.emplace_back(gameObject.uniformBuffersMemory[i].mapMemory(0, bufferSize));
+			}
+		}
+
+		/*uniformBuffers.clear();
 		uniformBuffersMemory.clear();
 		uniformBuffersMapped.clear();
 
@@ -468,13 +494,26 @@ namespace lte {
 			uniformBuffers.emplace_back(std::move(buffer));
 			uniformBuffersMemory.emplace_back(std::move(bufferMem));
 			uniformBuffersMapped.emplace_back(uniformBuffersMemory[i].mapMemory(0, bufferSize));
-		}
+		}*/
 	}
 
 	void VulkanDevice::createDescriptorPool() {
 
-
 		std::array poolSize{
+		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_OBJECTS * MAX_FRAMES_IN_FLIGHT),
+		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_OBJECTS * MAX_FRAMES_IN_FLIGHT)
+		};
+		vk::DescriptorPoolCreateInfo poolInfo{};
+			poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+			poolInfo.maxSets = MAX_OBJECTS * MAX_FRAMES_IN_FLIGHT,
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size()),
+			poolInfo.pPoolSizes = poolSize.data();
+		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
+
+
+
+
+		/*std::array poolSize{
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
 		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT)
 		};
@@ -483,52 +522,57 @@ namespace lte {
 			poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT,
 			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size()),
 			poolInfo.pPoolSizes = poolSize.data()};
-		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
+		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);*/
 	}
 
 	void VulkanDevice::createDescriptorSets() {
-		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
-		vk::DescriptorSetAllocateInfo allocInfo{};
-			allocInfo.descriptorPool = descriptorPool,
-			allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
-			allocInfo.pSetLayouts = layouts.data();
-		descriptorSets.clear();
-		descriptorSets = device.allocateDescriptorSets(allocInfo);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			
-			vk::DescriptorBufferInfo bufferInfo{};
-				bufferInfo.buffer = uniformBuffers[i], 
-				bufferInfo.offset = 0, 
-				bufferInfo.range = sizeof(UniformBufferObject);
 
-			vk::DescriptorImageInfo imageInfo{};
-				imageInfo.sampler		= textureSampler, 
-				imageInfo.imageView		= textureImageView,
-				imageInfo.imageLayout	= vk::ImageLayout::eShaderReadOnlyOptimal;
+		for (auto& gameObject : meshes) 
+		{
+			// Create descriptor sets for each frame in flight
+			std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *descriptorSetLayout);
+			vk::DescriptorSetAllocateInfo allocInfo{};
+				allocInfo.descriptorPool = *descriptorPool,
+				allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
+				allocInfo.pSetLayouts = layouts.data();
 
-			
-			vk::WriteDescriptorSet descriptorbuffer{};
-				descriptorbuffer.dstSet = descriptorSets[i],
-				descriptorbuffer.dstBinding				= 0,
-				descriptorbuffer.dstArrayElement		= 0,
-				descriptorbuffer.descriptorCount		= 1,
-				descriptorbuffer.descriptorType			= vk::DescriptorType::eUniformBuffer,
-				descriptorbuffer.pBufferInfo			= &bufferInfo;
-			vk::WriteDescriptorSet descriptorimage{};
-				descriptorimage.dstSet					= descriptorSets[i],
-				descriptorimage.dstBinding				= 1,
-				descriptorimage.dstArrayElement			= 0,
-				descriptorimage.descriptorCount			= 1,
-				descriptorimage.descriptorType			= vk::DescriptorType::eCombinedImageSampler,
-				descriptorimage.pImageInfo				= &imageInfo;
-			std::array descriptorWrites{
-				descriptorbuffer,
-				descriptorimage 
-			};
+			gameObject.descriptorSets.clear();
+			gameObject.descriptorSets = device.allocateDescriptorSets(allocInfo);
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 
-			device.updateDescriptorSets(descriptorWrites, {});
+				vk::DescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = *gameObject.uniformBuffers[i],
+					bufferInfo.offset = 0,
+					bufferInfo.range = sizeof(UniformBufferObject);
+
+				vk::DescriptorImageInfo imageInfo{};
+				imageInfo.sampler = *textureSampler,
+					imageInfo.imageView = *textureImageView,
+					imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+
+				vk::WriteDescriptorSet descriptorbuffer{};
+				descriptorbuffer.dstSet = *gameObject.descriptorSets[i],
+					descriptorbuffer.dstBinding = 0,
+					descriptorbuffer.dstArrayElement = 0,
+					descriptorbuffer.descriptorCount = 1,
+					descriptorbuffer.descriptorType = vk::DescriptorType::eUniformBuffer,
+					descriptorbuffer.pBufferInfo = &bufferInfo;
+				vk::WriteDescriptorSet descriptorimage{};
+				descriptorimage.dstSet = *gameObject.descriptorSets[i],
+					descriptorimage.dstBinding = 1,
+					descriptorimage.dstArrayElement = 0,
+					descriptorimage.descriptorCount = 1,
+					descriptorimage.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+					descriptorimage.pImageInfo = &imageInfo;
+				std::array descriptorWrites{
+					descriptorbuffer,
+					descriptorimage
+				};
+
+				device.updateDescriptorSets(descriptorWrites, {});
+			}
 		}
-		
 	}
 
 	void VulkanDevice::createCommandBuffer() {
@@ -618,10 +662,27 @@ namespace lte {
 
 		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
 	
+
 		commandBuffer.bindIndexBuffer(*indexBuffer,0,vk::IndexType::eUint32);
-		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
-		commandBuffer.drawIndexed(indices.size(), 1 ,0, 0, 0); //one 3 btw
-		//commandBuffer.drawIndexed(12, 1, 0, 0, 0); //one 3 btw
+
+		for (const auto& gameObject : meshes)
+		{
+			// Bind the descriptor set for this object
+			commandBuffer.bindDescriptorSets(
+				vk::PipelineBindPoint::eGraphics,
+				*pipelineLayout,
+				0,
+				*gameObject.descriptorSets[frameIndex],
+				nullptr);
+
+			// Draw the object
+			commandBuffer.drawIndexed(indices.size(), 1, 0, 0, 0);
+		}
+
+
+		//commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
+		//commandBuffer.drawIndexed(indices.size(), 1 ,0, 0, 0); //one 3 btw
+		////commandBuffer.drawIndexed(12, 1, 0, 0, 0); //one 3 btw
 
 		commandBuffer.endRendering();
 		transition_image_layout(
@@ -905,4 +966,21 @@ namespace lte {
 		return vk::SampleCountFlagBits::e1;
 	}
 	
+	void VulkanDevice::setupMeshes()
+	{
+		meshes[0].position = { 0.0f, 0.0f, 0.0f };
+		meshes[0].rotation = { 0.0f, 0.0f, 0.0f };
+		meshes[0].scale = { 1.0f, 1.0f, 1.0f };
+
+		// Object 2 - Left
+		meshes[1].position = { -2.0f, 0.0f, -1.0f };
+		meshes[1].rotation = { 0.0f, glm::radians(45.0f), 0.0f };
+		meshes[1].scale = { 0.75f, 0.75f, 0.75f };
+
+		// Object 3 - Right
+		meshes[2].position = { 2.0f, 0.0f, -1.0f };
+		meshes[2].rotation = { 0.0f, glm::radians(-45.0f), 0.0f };
+		meshes[2].scale = { 0.75f, 0.75f, 0.75f };
+	}
+
 }

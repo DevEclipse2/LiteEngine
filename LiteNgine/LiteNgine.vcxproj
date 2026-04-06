@@ -186,8 +186,6 @@
     <ClCompile Include="core\vulkan\vulkanMain\image.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
-    <ClCompile Include="core\engine\FileMgr.cpp" />
-    <ClCompile Include="core\engine\json testing\jsonTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
@@ -198,8 +196,6 @@
     <ClInclude Include="core\vulkan\VertexHandler.h" />
     <ClInclude Include="core\vulkan\testNcoolShit\TestAnim.h" />
     <ClInclude Include="core\vulkan\vulkanMain\Swapchain.h" />
-    <ClInclude Include="core\engine\FileMgr.h" />
-    <ClInclude Include="core\engine\json testing\jsonTest.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />

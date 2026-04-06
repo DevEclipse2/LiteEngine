@@ -60,9 +60,6 @@
     <ClCompile Include="core\vulkan\vulkanMain\GltfLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\engine\FileMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\VulkanDevice.h">
@@ -89,11 +86,12 @@
     <ClInclude Include="core\vulkan\vulkanMain\Swapchain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\engine\FileMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="core\engine\engine formatting.txt" />
+    <Text Include="core\engine\notes\fileSys.txt" />
   </ItemGroup>
 </Project>
