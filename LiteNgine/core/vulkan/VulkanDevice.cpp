@@ -407,6 +407,9 @@ namespace lte {
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		
+		std::cout << "fps: " << 1 / (time - prevtime) << "Delta :" << (time-prevtime) * 1000 << "miliseconds" << '\n';
+		prevtime = time;
 		UniformBufferObject ubo{};
 		/*
 		//ubo.model = rotate(glm::mat4(1.0f), -1 * time * glm::radians(480.0f), glm::vec3(0.0f, 1.0f, 0.0f));

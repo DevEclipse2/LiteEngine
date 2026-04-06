@@ -1,0 +1,11 @@
+[slate]
+"name"
+"uuid"
+"parent uuid"
+"child uuids"
+"barnacle ids"
+"engine file designator"
+[barnacle]
+"barnacle id"
+"functional component id"
+"functional component values"

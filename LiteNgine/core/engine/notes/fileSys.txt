@@ -1,0 +1,5 @@
+different engine files
+json slate files
+glue files that contain diffrent object groupings
+indexer files that contains filepathes 
+keystone files that the engine opens up first

@@ -224,5 +224,10 @@ namespace lte {
 		void createColorResources();
 
 		void loadModelGLTF();
+
+
+
+		//profilin
+		float prevtime = 0.0f;
 	};
 }
