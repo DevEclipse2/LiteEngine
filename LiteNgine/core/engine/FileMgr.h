@@ -15,12 +15,13 @@ namespace lte {
 		static const uint8_t incorrectFormat	= 4;
 		static const uint8_t readFail			= 8;
 		static const uint8_t unknownError		= 16;
+		static const uint8_t noDestination		= 32;
 
 
 		FileMgr();
 		~FileMgr();
 		uint8_t readBinFile(const std::string* path, std::vector<char>* charptr, uint16_t format);
-		uint8_t readJsonFile(const std::string* path, std::string* charptr, std::string format);
+		uint8_t readJsonFile(const std::string* path, nlohmann::json* pFile, std::string format);
 
 	private:
 		bool checkPath(const std::string& path);

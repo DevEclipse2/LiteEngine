@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -79,11 +79,11 @@
     <OutDir>..\build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -187,6 +187,7 @@
     <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
     <ClCompile Include="core\engine\FileMgr.cpp" />
+    <ClCompile Include="core\engine\json testing\jsonTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
@@ -198,9 +199,14 @@
     <ClInclude Include="core\vulkan\testNcoolShit\TestAnim.h" />
     <ClInclude Include="core\vulkan\vulkanMain\Swapchain.h" />
     <ClInclude Include="core\engine\FileMgr.h" />
+    <ClInclude Include="core\engine\json testing\jsonTest.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="core\engine\engine formatting.txt" />
+    <Text Include="core\engine\notes\fileSys.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

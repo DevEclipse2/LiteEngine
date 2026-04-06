@@ -1,3 +1,8 @@
+formats
+slate
+ 
+
+
 [slate]
 "name"
 "uuid"
@@ -6,6 +11,9 @@
 "barnacle ids"
 "engine file designator"
 [barnacle]
-"barnacle id"
-"functional component id"
-"functional component values"
+"barnacle uuid"
+"functional component"
+"functional component values" 
+string  and value
+
+

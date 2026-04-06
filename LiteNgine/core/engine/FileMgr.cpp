@@ -26,7 +26,7 @@ namespace lte {
 		return result | FileMgr::unknownError;
 	}
 
-	uint8_t FileMgr::readJsonFile(const std::string* path, std::string* charptr , std::string format)
+	uint8_t FileMgr::readJsonFile(const std::string* path, nlohmann::json* pFile , std::string format)
 	{
 		uint8_t result{};
 		if (!checkPath(*path))
@@ -34,16 +34,28 @@ namespace lte {
 			result |= FileMgr::noFile;
 			return result | FileMgr::failure;
 		}
-		if (charptr == nullptr) {
-			charptr = &dataStr;
-
+		if (pFile == nullptr) {
+			result |= FileMgr::noDestination;
+			return result | FileMgr::failure;
 		}
 		std::fstream input("dat.json");
 		nlohmann::json file;
 		input >> file;
 		std::cout << file.dump(4) << std::endl;
-
-		return result | FileMgr::unknownError;
+		if (file.is_null()) {
+			result |= FileMgr::readFail;
+			return result | FileMgr::failure;
+		}
+		if (file.contains("Format"))
+		{
+			std::cout <<"Format : " << file["Format"] << std::endl;
+			if (file["Format"] != format) {
+				result |= FileMgr::incorrectFormat;
+				return result | FileMgr::failure;
+			}
+		}
+		return result;
+		//return result | FileMgr::unknownError;
 	}
 	bool FileMgr::checkPath(const std::string& path){
 		//checks if the file even exists
