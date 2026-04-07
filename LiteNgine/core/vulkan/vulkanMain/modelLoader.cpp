@@ -15,7 +15,7 @@ namespace lte {
 		std::vector<uint32_t>* pIndices = &indices[index];
 		/*bool LoadObj(attrib_t * attrib, std::vector<shape_t> *shapes, std::vector<material_t> *materials, std::string * err, const char* filename, const char* mtl_basedir = NULL,bool triangulate = true);*/
 
-		std::cout << "loading! \n";
+		std::cout << "loading!" << models[index].c_str() << "\n";
 		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, models[index].c_str()))
 		{
 			std::cout << (warn + err) << "\n";
@@ -44,13 +44,13 @@ namespace lte {
 
 				if (!uniqueVertices.contains(vertex))
 				{
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					uniqueVertices[vertex] = static_cast<uint32_t>(pVertices->size());
 					pVertices->push_back(vertex);
 				}
 
 				pIndices->push_back(uniqueVertices[vertex]);
 			}
 		}
-		std::cout << "indexing complete! \n";
+ 		std::cout << "indexing complete! \n";
 	}
 }

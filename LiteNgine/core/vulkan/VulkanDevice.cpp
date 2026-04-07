@@ -286,11 +286,13 @@ namespace lte {
 
 	void VulkanDevice::createVertexBuffer() {
 		//assert(vertexBuffer == nullptr);
+		std::vector<Vertex> verticesPacked{};
 
-		vk::DeviceSize bufferSize =  0;
-		for (const auto& inner : vertices) {
-			bufferSize += sizeof(Vertex) * inner.size();
+		for (const auto& subVector : vertices) {
+			verticesPacked.insert(verticesPacked.end(), subVector.begin(), subVector.end());
 		}
+		vk::DeviceSize bufferSize = verticesPacked.size() * sizeof(Vertex);
+
 
 		vk::BufferCreateInfo stagingInfo{};
 			stagingInfo.size = bufferSize,
@@ -302,13 +304,15 @@ namespace lte {
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
 		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(dataStaging, vertices[0].data(), bufferSize);
+
+		
+		memcpy(dataStaging, verticesPacked.data(), bufferSize);
+
+
 		stagingBufferMemory.unmapMemory();
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
-
-		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);	
 		/*vk::BufferCreateInfo bufferInfo{};
 			bufferInfo.size = bufferSize,
 			bufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
@@ -328,21 +332,39 @@ namespace lte {
 	}
 
 	void VulkanDevice::createIndexBuffer() {
-
-		vk::DeviceSize bufferSize = 0;
-		for (const auto& inner : indices) {
-			bufferSize += sizeof(uint32_t) * inner.size();
+		//this will fix the offsets
+		/*
+		uint64_t offsets = 0;
+		for (int i = 0; i < indices.size(); i++) {
+			
+			for (int j = 0; j < indices[i].size(); j++) {
+				indices[i][j] += offsets;
+			}
+			offsets += vertices[i].size();
 		}
-
+		*/
+		std::vector<uint32_t> indicesPacked{};
+		for (const auto& subVector : indices) {
+			indicesPacked.insert(indicesPacked.end(), subVector.begin(), subVector.end());
+		}
+		vk::DeviceSize bufferSize = sizeof(uint32_t) * indicesPacked.size();
 		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory stagingBufferMemory({});
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-
+		
 		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(data, indices.data(), (size_t)bufferSize);
+
+
+		
+
+		memcpy(data, indicesPacked.data(), (size_t)bufferSize);
+		
+
+		//memcpy(data, indices.data(), (size_t)bufferSize);
 		stagingBufferMemory.unmapMemory();
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, indexBuffer, indexBufferMemory);
+
 
 		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
@@ -438,6 +460,7 @@ namespace lte {
 				ubo.model = model,
 				ubo.view = view,
 				ubo.proj = proj;
+
 
 			// Copy the UBO data to the mapped memory
 			memcpy(gameObject.uniformBuffersMapped[frameIndex], &ubo, sizeof(ubo));
@@ -549,25 +572,25 @@ namespace lte {
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 
 				vk::DescriptorBufferInfo bufferInfo{};
-				bufferInfo.buffer = *gameObject.uniformBuffers[i],
+					bufferInfo.buffer = *gameObject.uniformBuffers[i],
 					bufferInfo.offset = 0,
 					bufferInfo.range = sizeof(UniformBufferObject);
 
 				vk::DescriptorImageInfo imageInfo{};
-				imageInfo.sampler = *textureSampler,
+					imageInfo.sampler = *textureSampler,
 					imageInfo.imageView = *textureImageView,
 					imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
 
 				vk::WriteDescriptorSet descriptorbuffer{};
-				descriptorbuffer.dstSet = *gameObject.descriptorSets[i],
+					descriptorbuffer.dstSet = *gameObject.descriptorSets[i],
 					descriptorbuffer.dstBinding = 0,
 					descriptorbuffer.dstArrayElement = 0,
 					descriptorbuffer.descriptorCount = 1,
 					descriptorbuffer.descriptorType = vk::DescriptorType::eUniformBuffer,
 					descriptorbuffer.pBufferInfo = &bufferInfo;
 				vk::WriteDescriptorSet descriptorimage{};
-				descriptorimage.dstSet = *gameObject.descriptorSets[i],
+					descriptorimage.dstSet = *gameObject.descriptorSets[i],
 					descriptorimage.dstBinding = 1,
 					descriptorimage.dstArrayElement = 0,
 					descriptorimage.descriptorCount = 1,
@@ -673,6 +696,9 @@ namespace lte {
 
 		commandBuffer.bindIndexBuffer(*indexBuffer,0,vk::IndexType::eUint32);
 
+		uint64_t objectid = 0;
+		uint64_t vertexOffsets = 0;
+		uint64_t indexOffsets = 0;
 		for (const auto& gameObject : meshes)
 		{
 			// Bind the descriptor set for this object
@@ -684,7 +710,15 @@ namespace lte {
 				nullptr);
 
 			// Draw the object
-			commandBuffer.drawIndexed(indices.size(), 1, 0, 0, 0);
+
+			if (indices.size() > objectid) {
+				commandBuffer.drawIndexed(indices[objectid].size(), 1, indexOffsets, vertexOffsets, 0);
+				vertexOffsets += vertices[objectid].size();
+				indexOffsets += indices[objectid].size();
+			}
+			
+			objectid++;
+
 		}
 
 
@@ -978,17 +1012,17 @@ namespace lte {
 	{
 		meshes[0].position = { 0.0f, 0.0f, 0.0f };
 		meshes[0].rotation = { 0.0f, 0.0f, 0.0f };
-		meshes[0].scale = { 1.0f, 1.0f, 1.0f };
+		meshes[0].scale = {0.4f, 0.4f, 0.4f };
 
 		// Object 2 - Left
 		meshes[1].position = { -2.0f, 0.0f, -1.0f };
 		meshes[1].rotation = { 0.0f, glm::radians(45.0f), 0.0f };
-		meshes[1].scale = { 0.75f, 0.75f, 0.75f };
+		meshes[1].scale =	{ 1.45f, 1.45f, 1.45f };
 
 		// Object 3 - Right
 		meshes[2].position = { 2.0f, 0.0f, -1.0f };
 		meshes[2].rotation = { 0.0f, glm::radians(-45.0f), 0.0f };
-		meshes[2].scale = { 0.75f, 0.75f, 0.75f };
+		meshes[2].scale = { 0.85f, 0.85f, 0.85f };
 	}
 
 	void VulkanDevice::prepareModels() {

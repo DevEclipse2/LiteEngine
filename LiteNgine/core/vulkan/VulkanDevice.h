@@ -267,6 +267,9 @@ namespace lte {
 		std::vector<std::string> models{"models/Arrow.obj" , "models/viking_room.obj" , "models/opp2.obj"};
 		std::vector<std::string> textures{"textures/Arrow.png","textures/viking_room.png" ,"textures/texture.png"};
 		void prepareModels();
+		std::vector<vk::raii::Image> imagesArr{};
+		std::vector<vk::raii::DeviceMemory> imageMem{};
+
 
 	};
 
