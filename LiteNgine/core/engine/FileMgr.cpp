@@ -25,7 +25,24 @@ namespace lte {
 
 		return result | FileMgr::unknownError;
 	}
+	uint8_t FileMgr::readStrFile(const std::string* path, std::string* pFile, std::string format) {
+		uint8_t result{};
+		if (!checkPath(*path))
+		{
+			result |= FileMgr::noFile;
+			return result | FileMgr::failure;
+		}
+		if (pFile == nullptr) {
+			result |= FileMgr::noDestination;
+			return result | FileMgr::failure;
+		}
+		std::fstream input("dat.json");
+		std::stringstream buffer{};
+		buffer << input.rdbuf();
+		std::string file;
+		file = buffer.str();
 
+	}
 	uint8_t FileMgr::readJsonFile(const std::string* path, nlohmann::json* pFile , std::string format)
 	{
 		uint8_t result{};

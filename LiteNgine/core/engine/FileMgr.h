@@ -24,8 +24,9 @@ namespace lte {
 		~FileMgr();
 		uint8_t readBinFile(const std::string* path, std::vector<char>* charptr, uint16_t format);
 		uint8_t readJsonFile(const std::string* path, nlohmann::json* pFile, std::string format);
+		uint8_t readStrFile(const std::string* path, std::string* pFile, std::string format);
 
-		void readSlateFile(std::string* pName, uuid uuid, nlohmann::json* pData);
+		//svoid readSlateFile(std::string* pName, uuid uuid, nlohmann::json* pData);
 
 	private:
 		bool checkPath(const std::string& path);
