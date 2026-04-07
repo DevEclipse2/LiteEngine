@@ -25,7 +25,10 @@ namespace lte {
 		createTextureImage();
 		createTextureImageView();
 		createTextureSampler();
-		loadModel();
+		prepareModels();
+		for (int i = 0; i < models.size(); i++) {
+			loadModel(i);
+		}
 		createVertexBuffer();
 		createIndexBuffer();
 		setupMeshes();
@@ -284,8 +287,10 @@ namespace lte {
 	void VulkanDevice::createVertexBuffer() {
 		//assert(vertexBuffer == nullptr);
 
-		vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
+		vk::DeviceSize bufferSize =  0;
+		for (const auto& inner : vertices) {
+			bufferSize += sizeof(Vertex) * inner.size();
+		}
 
 		vk::BufferCreateInfo stagingInfo{};
 			stagingInfo.size = bufferSize,
@@ -297,7 +302,7 @@ namespace lte {
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
 		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-		memcpy(dataStaging, vertices.data(), bufferSize);
+		memcpy(dataStaging, vertices[0].data(), bufferSize);
 		stagingBufferMemory.unmapMemory();
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, vertexBuffer, vertexBufferMemory);
@@ -324,7 +329,10 @@ namespace lte {
 
 	void VulkanDevice::createIndexBuffer() {
 
-		vk::DeviceSize bufferSize = sizeof(indices[0]) * (indices.size());
+		vk::DeviceSize bufferSize = 0;
+		for (const auto& inner : indices) {
+			bufferSize += sizeof(uint32_t) * inner.size();
+		}
 
 		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory stagingBufferMemory({});
@@ -983,4 +991,10 @@ namespace lte {
 		meshes[2].scale = { 0.75f, 0.75f, 0.75f };
 	}
 
+	void VulkanDevice::prepareModels() {
+		for (int i = 0; i < models.size(); i++) {
+			vertices.emplace_back(std::vector<Vertex>());
+			indices.emplace_back(std::vector<uint32_t>());
+		}
+	}
 }

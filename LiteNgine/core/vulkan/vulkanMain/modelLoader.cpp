@@ -4,20 +4,21 @@
 #include <tiny_obj_loader.h>
 
 namespace lte {
-	void VulkanDevice::loadModel()
+	void VulkanDevice::loadModel(int index)
 	{
 
 		tinyobj::attrib_t                attrib;
 		std::vector<tinyobj::shape_t>    shapes;
 		std::vector<tinyobj::material_t> materials;
 		std::string                      warn, err;
-
+		std::vector<Vertex>* pVertices = &vertices[index];
+		std::vector<uint32_t>* pIndices = &indices[index];
 		/*bool LoadObj(attrib_t * attrib, std::vector<shape_t> *shapes, std::vector<material_t> *materials, std::string * err, const char* filename, const char* mtl_basedir = NULL,bool triangulate = true);*/
 
 		std::cout << "loading! \n";
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, models[index].c_str()))
 		{
-			throw std::runtime_error(warn + err);
+			std::cout << (warn + err) << "\n";
 		}
 		std::cout << "loading complete! \n";
 
@@ -44,10 +45,10 @@ namespace lte {
 				if (!uniqueVertices.contains(vertex))
 				{
 					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
+					pVertices->push_back(vertex);
 				}
 
-				indices.push_back(uniqueVertices[vertex]);
+				pIndices->push_back(uniqueVertices[vertex]);
 			}
 		}
 		std::cout << "indexing complete! \n";

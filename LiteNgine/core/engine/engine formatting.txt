@@ -17,3 +17,11 @@ slate
 string  and value
 
 
+SLATE
+$UUID$ abcdefghijklmnop |
+{
+	$NAME$ "name" |
+	$PARENTUUID$ abcdefghijklmnop |
+	$CHILDUUID$ [uuid|uuid|uuid|uuid] |
+	$BARNACLES$ [number,number,number,number,number]
+}

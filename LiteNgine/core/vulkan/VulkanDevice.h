@@ -158,8 +158,8 @@ namespace lte {
 		void createIndexBuffer();
 		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
 		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
+		std::vector<std::vector<Vertex>> vertices;
+		std::vector <std::vector<uint32_t>> indices;
 		vk::raii::Buffer vertexBuffer = nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
 		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
@@ -244,7 +244,7 @@ namespace lte {
 		//vk::Format depthFormat = findDepthFormat();
 
 
-		void loadModel();
+		void loadModel(int index);
 
 
 		vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
@@ -264,6 +264,9 @@ namespace lte {
 		void setupMeshes();
 
 
+		std::vector<std::string> models{"models/Arrow.obj" , "models/viking_room.obj" , "models/opp2.obj"};
+		std::vector<std::string> textures{"textures/Arrow.png","textures/viking_room.png" ,"textures/texture.png"};
+		void prepareModels();
 
 	};
 
