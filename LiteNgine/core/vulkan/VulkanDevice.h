@@ -214,7 +214,7 @@ namespace lte {
 
 
 		//texture stuff
-		void createTextureImage();
+		void createTextureImage(uint32_t index,std::string path);
 		uint32_t mipLevels;
 		vk::raii::Image        textureImage = nullptr;
 		//std::unique_ptr<vk::raii::Image> textureImage;
@@ -228,7 +228,7 @@ namespace lte {
 
 
 
-		void createTextureImageView();
+		void createTextureImageView(vk::raii::Image* image);
 		vk::raii::ImageView createImageView(const vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
 		void createTextureSampler();
 		vk::raii::ImageView textureImageView	= nullptr;
@@ -244,7 +244,7 @@ namespace lte {
 		//vk::Format depthFormat = findDepthFormat();
 
 
-		void loadModel(int index);
+		void loadModel(uint32_t index,std::string path);
 
 
 		vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
@@ -267,9 +267,10 @@ namespace lte {
 		std::vector<std::string> models{"models/Arrow.obj" , "models/viking_room.obj" , "models/opp2.obj"};
 		std::vector<std::string> textures{"textures/Arrow.png","textures/viking_room.png" ,"textures/texture.png"};
 		void prepareModels();
+
 		std::vector<vk::raii::Image> imagesArr{};
 		std::vector<vk::raii::DeviceMemory> imageMem{};
-
+		std::vector<vk::raii::ImageView> imageViewArr{};
 
 	};
 

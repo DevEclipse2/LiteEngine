@@ -22,13 +22,19 @@ namespace lte {
 		createDescriptorSetLayout();
 		createGraphicsPipeline();//throws validation error
 		createCommandPool();
-		createTextureImage();
-		createTextureImageView();
-		createTextureSampler();
+
+		
+
 		prepareModels();
 		for (int i = 0; i < models.size(); i++) {
-			loadModel(i);
+			//multiple textures
+			createTextureImage(i,textures[i]);
+			createTextureImageView(&imagesArr[i]);
+			loadModel(i,models[i]);
+
 		}
+		createTextureSampler();
+
 		createVertexBuffer();
 		createIndexBuffer();
 		setupMeshes();
@@ -558,6 +564,7 @@ namespace lte {
 
 	void VulkanDevice::createDescriptorSets() {
 
+		uint32_t meshNo = 0;
 		for (auto& gameObject : meshes) 
 		{
 			// Create descriptor sets for each frame in flight
@@ -578,7 +585,7 @@ namespace lte {
 
 				vk::DescriptorImageInfo imageInfo{};
 					imageInfo.sampler = *textureSampler,
-					imageInfo.imageView = *textureImageView,
+					imageInfo.imageView = *imageViewArr[meshNo],
 					imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
 
@@ -603,6 +610,7 @@ namespace lte {
 
 				device.updateDescriptorSets(descriptorWrites, {});
 			}
+			meshNo++;
 		}
 	}
 
@@ -1029,6 +1037,9 @@ namespace lte {
 		for (int i = 0; i < models.size(); i++) {
 			vertices.emplace_back(std::vector<Vertex>());
 			indices.emplace_back(std::vector<uint32_t>());
+			imagesArr.emplace_back(nullptr);
+			imageMem.emplace_back(nullptr);
+
 		}
 	}
 }

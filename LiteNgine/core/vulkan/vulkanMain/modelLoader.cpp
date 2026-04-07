@@ -4,7 +4,7 @@
 #include <tiny_obj_loader.h>
 
 namespace lte {
-	void VulkanDevice::loadModel(int index)
+	void VulkanDevice::loadModel(uint32_t index, std::string path)
 	{
 
 		tinyobj::attrib_t                attrib;
