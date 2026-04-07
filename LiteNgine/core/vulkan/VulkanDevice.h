@@ -67,9 +67,6 @@ namespace lte {
 			}
 		};
 
-		const std::string MODEL_PATH = "models/viking_room.obj";
-		const std::string TEXTURE_PATH = "textures/viking_room.png";
-
 
 		#ifdef NDEBUG
 			static constexpr bool enableValidationLayers = false;
@@ -216,9 +213,9 @@ namespace lte {
 		//texture stuff
 		void createTextureImage(uint32_t index,std::string path);
 		uint32_t mipLevels;
-		vk::raii::Image        textureImage = nullptr;
+		//vk::raii::Image        textureImage = nullptr;
 		//std::unique_ptr<vk::raii::Image> textureImage;
-		vk::raii::DeviceMemory textureImageMemory = nullptr;
+		//vk::raii::DeviceMemory textureImageMemory = nullptr;
 		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
 		std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands();
 		void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer);
@@ -231,7 +228,7 @@ namespace lte {
 		void createTextureImageView(vk::raii::Image* image);
 		vk::raii::ImageView createImageView(const vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
 		void createTextureSampler();
-		vk::raii::ImageView textureImageView	= nullptr;
+		//vk::raii::ImageView textureImageView	= nullptr;
 		vk::raii::Sampler textureSampler		= nullptr;
 		
 		vk::raii::Image depthImage = nullptr;
@@ -260,6 +257,8 @@ namespace lte {
 
 		//profilin
 		float prevtime = 0.0f;
+
+
 		std::array<meshObject, MAX_OBJECTS> meshes;
 		void setupMeshes();
 
