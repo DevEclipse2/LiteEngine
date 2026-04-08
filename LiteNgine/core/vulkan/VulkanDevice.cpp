@@ -1042,4 +1042,17 @@ namespace lte {
 
 		}
 	}
+
+	vk::Device  VulkanDevice::getDevice() {
+		return device;
+	}
+	GLFWwindow* VulkanDevice::getWindow() {
+		return window.getGLFWWindow();
+	}
+
+	void VulkanDevice::getFrameBufferSize(int* width, int* height)
+	{
+		glfwGetFramebufferSize(window.getGLFWWindow(), width, height);
+
+	};
 }

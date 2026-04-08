@@ -27,6 +27,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
+
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 constexpr int MAX_OBJECTS = 3;
 
@@ -83,7 +88,10 @@ namespace lte {
 		void Exit();
 		
 		bool framebufferResized = false;
-
+		void getFrameBufferSize(int* width, int* height);
+		vk::Device getDevice();
+		GLFWwindow* getWindow();
+		vk::Format getSwapChainFormat();
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -110,7 +118,6 @@ namespace lte {
 		//logical device creation
 		vk::raii::Queue queue				= nullptr;
 		void createLogicalDevice();
-
 		//windows surface recreation
 		vk::raii::SurfaceKHR surface		= nullptr;
 		void createSurface();
@@ -270,6 +277,8 @@ namespace lte {
 		std::vector<vk::raii::Image> imagesArr{};
 		std::vector<vk::raii::DeviceMemory> imageMem{};
 		std::vector<vk::raii::ImageView> imageViewArr{};
+
+		
 
 	};
 
