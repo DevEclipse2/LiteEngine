@@ -455,7 +455,7 @@ namespace lte {
 		// Update uniform buffers for each object
 		for (auto& gameObject : meshes) {
 			// Apply continuous rotation to the object
-			gameObject.rotation.y += 0.001f; // Slow rotation around Y axis
+
 
 			// Get the model matrix for this object
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1018,18 +1018,18 @@ namespace lte {
 	
 	void VulkanDevice::setupMeshes()
 	{
-		meshes[0].position = { 0.0f, 0.0f, 0.0f };
+		meshes[0].position = { -2.0f, 0.0f, -1.0f };
 		meshes[0].rotation = { 0.0f, 0.0f, 0.0f };
-		meshes[0].scale = {0.4f, 0.4f, 0.4f };
+		meshes[0].scale = {0.1f, 0.1f, 0.1f };
 
 		// Object 2 - Left
 		meshes[1].position = { -2.0f, 0.0f, -1.0f };
-		meshes[1].rotation = { 0.0f, glm::radians(45.0f), 0.0f };
+		meshes[1].rotation = { 0.0f, 0.0f, 0.0f };
 		meshes[1].scale =	{ 1.45f, 1.45f, 1.45f };
 
 		// Object 3 - Right
 		meshes[2].position = { 2.0f, 0.0f, -1.0f };
-		meshes[2].rotation = { 0.0f, glm::radians(-45.0f), 0.0f };
+		meshes[2].rotation = { 0.0f, 0.0f, 0.0f };
 		meshes[2].scale = { 0.85f, 0.85f, 0.85f };
 	}
 

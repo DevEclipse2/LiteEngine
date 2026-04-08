@@ -171,6 +171,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\engine\FileMgr.cpp" />
     <ClCompile Include="core\vulkan\ConsoleLog.cpp" />
     <ClCompile Include="core\vulkan\App.cpp" />
     <ClCompile Include="core\vulkan\basic.cpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\engine\FileMgr.h" />
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
     <ClInclude Include="core\vulkan\App.h" />
     <ClInclude Include="core\vulkan\VulkanDevice.h" />
