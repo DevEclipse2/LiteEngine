@@ -89,9 +89,13 @@ namespace lte {
 		
 		bool framebufferResized = false;
 		void getFrameBufferSize(int* width, int* height);
-		vk::Device getDevice();
+		vk::raii::Device* getDevice();
 		GLFWwindow* getWindow();
 		vk::Format getSwapChainFormat();
+		vk::raii::PhysicalDevice* getPhysicalDevice();
+		vk::raii::Instance* getInstance();
+		vk::raii::Queue* getQueue();
+		uint32_t getQueueFamily();
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -114,7 +118,7 @@ namespace lte {
 		vk::raii::PhysicalDevice physicalDevice = nullptr;
 		bool isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevice);
 		void ListFeatures(vk::PhysicalDeviceProperties* props, vk::PhysicalDeviceFeatures* feats,vk::PhysicalDeviceMemoryProperties* memoryprops);
-		vk::raii::Device device = nullptr;
+		vk::raii::Device device				= nullptr;
 		//logical device creation
 		vk::raii::Queue queue				= nullptr;
 		void createLogicalDevice();
@@ -270,15 +274,13 @@ namespace lte {
 		void setupMeshes();
 
 
-		std::vector<std::string> models{"models/Arrow.obj" , "models/viking_room.obj" , "models/opp2.obj"};
-		std::vector<std::string> textures{"textures/Arrow.png","textures/viking_room.png" ,"textures/texture.png"};
+		std::vector<std::string> models{"models/Bibii.obj" , "models/kirky.obj"};
+		std::vector<std::string> textures{"textures/Bibi.png","textures/Arrow.png" };
 		void prepareModels();
 
 		std::vector<vk::raii::Image> imagesArr{};
 		std::vector<vk::raii::DeviceMemory> imageMem{};
 		std::vector<vk::raii::ImageView> imageViewArr{};
-
-		
 
 	};
 

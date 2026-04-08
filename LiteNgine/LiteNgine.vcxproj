@@ -127,7 +127,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui</AdditionalIncludeDirectories>
       <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
@@ -153,7 +153,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui</AdditionalIncludeDirectories>
       <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
@@ -172,6 +172,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="core\engine\FileMgr.cpp" />
+    <ClCompile Include="core\engine\Gui.cpp" />
     <ClCompile Include="core\vulkan\ConsoleLog.cpp" />
     <ClCompile Include="core\vulkan\App.cpp" />
     <ClCompile Include="core\vulkan\basic.cpp" />
@@ -186,9 +187,17 @@
     <ClCompile Include="core\vulkan\vulkanMain\image.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
+    <ClCompile Include="imGui\imgui.cpp" />
+    <ClCompile Include="imGui\imgui_demo.cpp" />
+    <ClCompile Include="imGui\imgui_draw.cpp" />
+    <ClCompile Include="imGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imGui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="imGui\imgui_tables.cpp" />
+    <ClCompile Include="imGui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\engine\FileMgr.h" />
+    <ClInclude Include="core\engine\Gui.h" />
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
     <ClInclude Include="core\vulkan\App.h" />
     <ClInclude Include="core\vulkan\VulkanDevice.h" />
@@ -197,6 +206,14 @@
     <ClInclude Include="core\vulkan\VertexHandler.h" />
     <ClInclude Include="core\vulkan\testNcoolShit\TestAnim.h" />
     <ClInclude Include="core\vulkan\vulkanMain\Swapchain.h" />
+    <ClInclude Include="imGui\imconfig.h" />
+    <ClInclude Include="imGui\imgui.h" />
+    <ClInclude Include="imGui\imgui_impl_glfw.h" />
+    <ClInclude Include="imGui\imgui_impl_vulkan.h" />
+    <ClInclude Include="imGui\imgui_internal.h" />
+    <ClInclude Include="imGui\imstb_rectpack.h" />
+    <ClInclude Include="imGui\imstb_textedit.h" />
+    <ClInclude Include="imGui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />

@@ -15,8 +15,8 @@ namespace lte {
 		std::vector<uint32_t>* pIndices = &indices[index];
 		/*bool LoadObj(attrib_t * attrib, std::vector<shape_t> *shapes, std::vector<material_t> *materials, std::string * err, const char* filename, const char* mtl_basedir = NULL,bool triangulate = true);*/
 
-		std::cout << "loading!" << models[index].c_str() << "\n";
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, models[index].c_str()))
+		std::cout << "loading!" << path.c_str() << "\n";
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str()))
 		{
 			std::cout << (warn + err) << "\n";
 		}
@@ -38,7 +38,7 @@ namespace lte {
 
 				vertex.texCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
-					1.0f - attrib.texcoords[2 * index.texcoord_index + 1] };
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1] }; // throws index out of range exception
 
 				vertex.color = { 1.0f, 1.0f, 1.0f };
 

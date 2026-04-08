@@ -8,45 +8,90 @@ namespace lte{
 		InitGUI();
 	}
 	void Gui::createDescriptorPool() {
-		VkDescriptorPoolSize poolSizes[] = {
-			{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , 1000},
-			{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE ,1000},
-			{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ,1000},
-			{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER ,1000},
-			{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER ,1000},
-			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ,1000},
-			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ,1000},
-			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ,1000},
-			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC ,1000},
-			{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT , 1000}
-		};
+				
+		vk::DescriptorPoolSize poolSizes[] = {
+			{vk::DescriptorType::eSampler, 1000},
+			{vk::DescriptorType::eCombinedImageSampler , 1000},
+			{vk::DescriptorType::eSampledImage ,1000},
+			{vk::DescriptorType::eStorageImage ,1000},
+			{vk::DescriptorType::eUniformTexelBuffer ,1000},
+			{vk::DescriptorType::eStorageTexelBuffer ,1000},
+			{vk::DescriptorType::eUniformBuffer ,1000},
+			{vk::DescriptorType::eStorageBuffer ,1000},
+			{vk::DescriptorType::eUniformBufferDynamic ,1000},
+			{vk::DescriptorType::eStorageBufferDynamic ,1000},
+			{vk::DescriptorType::eInputAttachment , 1000} };
 		
-		VkDescriptorPoolCreateInfo PoolCreateInfo = {};
-			PoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-			PoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+		vk::DescriptorPoolCreateInfo PoolCreateInfo = {};
+			PoolCreateInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo,
+			PoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
 			PoolCreateInfo.maxSets = 1000 * IM_ARRAYSIZE(poolSizes),
 			PoolCreateInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes),
 			PoolCreateInfo.pPoolSizes = poolSizes;
 
-			VkResult res = vkCreateDescriptorPool(pDevice->getDevice(), &PoolCreateInfo, NULL, &descriptorPool);;
-			 
+			descriptorPool = vk::raii::DescriptorPool(*(pDevice->getDevice()), PoolCreateInfo);
+			//VkResult res = vk::DescriptorPool(pDevice->getDevice(), &PoolCreateInfo, NULL, &descriptorPool);;
+			 /*std::array poolSize{
+		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
+		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT)
+		};
+		vk::DescriptorPoolCreateInfo poolInfo{
+			poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+			poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT,
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSize.size()),
+			poolInfo.pPoolSizes = poolSize.data()};
+		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);*/
 	}
 
 
 	void Gui::InitGUI() {
 		ImGui::CreateContext();
-		ImGuiIO io = ImGui::GetIO();
+		ImGuiIO io = ImGui::GetIO(); // important stuff
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 		io.DisplaySize.x = (float)fbWidth;
 		io.DisplaySize.y = (float)fbHeight;
 
 		ImGui::GetStyle().FontScaleMain = 1.5f;
 		ImGui::StyleColorsDark();
+
+		float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+		style.FontScaleDpi = main_scale;        // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
+		io.ConfigDpiScaleFonts = true;          // [Experimental] Automatically overwrite style.FontScaleDpi in Begin() when Monitor DPI changes. This will scale fonts but _NOT_ scale sizes/padding for now.
+		io.ConfigDpiScaleViewports = true;      // [Experimental] Scale Dear ImGui and Platform Windows when Monitor DPI changes.
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+
 		bool InstallGlfwCallbacks = true;
 		ImGui_ImplGlfw_InitForVulkan(pDevice->getWindow(), InstallGlfwCallbacks);
-		VkFormat colorFormat = 
+		vk::Format colorFormat = pDevice->getSwapChainFormat();
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		//init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
+		init_info.Instance = **(pDevice->getInstance());
+		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
+		init_info.Device = **(pDevice->getDevice());
+		init_info.QueueFamily = (pDevice->getQueueFamily());
+		init_info.Queue = **(pDevice->getQueue());
+		init_info.PipelineCache = g_PipelineCache;
+		init_info.DescriptorPool = g_DescriptorPool;
+		init_info.MinImageCount = g_MinImageCount;
+		init_info.ImageCount = wd->ImageCount;
+		init_info.Allocator = g_Allocator;
+		init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
+		init_info.PipelineInfoMain.Subpass = 0;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.CheckVkResultFn = check_vk_result;
+		ImGui_ImplVulkan_Init(&init_info);
+
 	}
 }

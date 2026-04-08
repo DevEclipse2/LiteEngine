@@ -25,9 +25,10 @@ namespace lte {
 
 		
 
-		prepareModels();
+		
 		for (int i = 0; i < models.size(); i++) {
 			//multiple textures
+			prepareModels();
 			createTextureImage(i,textures[i]);
 			createTextureImageView(&imagesArr[i]);
 			loadModel(i,models[i]);
@@ -441,7 +442,7 @@ namespace lte {
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		
 		std::cout << "fps: " << 1 / (time - prevtime) << "Delta :" << (time-prevtime) * 1000 << "miliseconds" << '\n';
-		prevtime = time;
+		
 		UniformBufferObject ubo{};
 
 		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -455,7 +456,8 @@ namespace lte {
 		// Update uniform buffers for each object
 		for (auto& gameObject : meshes) {
 			// Apply continuous rotation to the object
-
+			const float rotationSpeed = 0.5f;                          // Rotation speed in radians per second
+			gameObject.rotation.y += rotationSpeed * (time - prevtime);
 
 			// Get the model matrix for this object
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -471,6 +473,7 @@ namespace lte {
 			// Copy the UBO data to the mapped memory
 			memcpy(gameObject.uniformBuffersMapped[frameIndex], &ubo, sizeof(ubo));
 		}
+		prevtime = time;
 	}
 	void VulkanDevice::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
 		vk::BufferCreateInfo bufferInfo{};
@@ -1018,8 +1021,8 @@ namespace lte {
 	
 	void VulkanDevice::setupMeshes()
 	{
-		meshes[0].position = { -2.0f, 0.0f, -1.0f };
-		meshes[0].rotation = { 0.0f, 0.0f, 0.0f };
+		meshes[0].position = { 0.0f, 0.0f, -1.0f };
+		meshes[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f};
 		meshes[0].scale = {0.1f, 0.1f, 0.1f };
 
 		// Object 2 - Left
@@ -1029,22 +1032,19 @@ namespace lte {
 
 		// Object 3 - Right
 		meshes[2].position = { 2.0f, 0.0f, -1.0f };
-		meshes[2].rotation = { 0.0f, 0.0f, 0.0f };
+		meshes[2].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
 		meshes[2].scale = { 0.85f, 0.85f, 0.85f };
 	}
 
 	void VulkanDevice::prepareModels() {
-		for (int i = 0; i < models.size(); i++) {
 			vertices.emplace_back(std::vector<Vertex>());
 			indices.emplace_back(std::vector<uint32_t>());
 			imagesArr.emplace_back(nullptr);
 			imageMem.emplace_back(nullptr);
-
-		}
 	}
 
-	vk::Device  VulkanDevice::getDevice() {
-		return device;
+	vk::raii::Device*  VulkanDevice::getDevice() {
+		return &device;
 	}
 	GLFWwindow* VulkanDevice::getWindow() {
 		return window.getGLFWWindow();
@@ -1055,4 +1055,16 @@ namespace lte {
 		glfwGetFramebufferSize(window.getGLFWWindow(), width, height);
 
 	};
+
+	vk::Format VulkanDevice::getSwapChainFormat() {
+		return swapChainSurfaceFormat.format;
+	}
+	vk::raii::PhysicalDevice* VulkanDevice::getPhysicalDevice() {
+		return &physicalDevice;
+	}
+	vk::raii::Instance* VulkanDevice::getInstance() { return &instance; }
+	vk::raii::Queue* VulkanDevice::getQueue() { return &queue; }
+	uint32_t  VulkanDevice::getQueueFamily() { return queueIndex; }
+
+
 }
