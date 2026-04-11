@@ -21,8 +21,11 @@ enjoy your cake!
 
 current featurs: 
 loading of multiple meshes
+
 loading of multiple textures
+
 display of multiple models
+
 the ability to look bad WITHOUT DLSS 5
 
 currently working on : gui and file loading ( will finish once i get back from vietnam ) 
@@ -41,7 +44,11 @@ stuff to do next :
 
 
 known issues : 
+
 engine shits the bed when a model has multiple textures
+
 engine is horribly unoptimised on my laptop (sth to do with outdated drivers)
+
 gltf loading is included but i cant be bothered to properly integrate it
+
 something something idk how to code or be funny
