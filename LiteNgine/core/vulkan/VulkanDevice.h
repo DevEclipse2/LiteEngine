@@ -274,8 +274,8 @@ namespace lte {
 		void setupMeshes();
 
 
-		std::vector<std::string> models{"models/Bibii.obj" , "models/kirky.obj"};
-		std::vector<std::string> textures{"textures/Bibi.png","textures/Arrow.png" };
+		std::vector<std::string> models{"models/model.obj" , "models/kirky.obj"};
+		std::vector<std::string> textures{"textures/texture.png","textures/Arrow.png" };
 		void prepareModels();
 
 		std::vector<vk::raii::Image> imagesArr{};
