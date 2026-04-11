@@ -8,12 +8,15 @@ https://youtu.be/GXbOLOo_GtU
 
 other picutues in stuff folder
 sorry i am not able to include a proper exe (because im in another *@#&ing country) 
+
 here is how to use the exe
-create 2 folders in the same directory as the exe ( in build)
-one is called textures, the other models
-name the model model (obj format) and the texture texture (png)
-watch it spin or not due to the incessant amount of problems
-ignore all errors
+
+1. create 2 folders in the same directory as the exe ( in build)
+2. one is called textures, the other models
+3. name the model model (obj format) and the texture texture (png)
+4. watch it spin or not due to the incessant amount of problems
+5. ignore all errors
+   
 enjoy your cake!
 
 current featurs: 
