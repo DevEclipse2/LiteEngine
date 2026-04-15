@@ -161,6 +161,29 @@ namespace lte {
 		descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);*/
 	}
 
+	void VulkanDevice::createComputeShaderDescriptorSetLayout() {
+		std::array layoutBindings{
+			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr),
+			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr),
+			vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr) };
+
+		vk::DescriptorSetLayoutCreateInfo layoutInfo{ }; 
+			layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size()), 
+			layoutInfo.pBindings = layoutBindings.data();
+		computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
+	}
+
+
+	void VulkanDevice::createComputePipeline() {
+		vk::raii::ShaderModule computeModule = createShaderModule(shaderLoader.readFile("shaders/Particles.spv"));
+		vk::PipelineShaderStageCreateInfo computeShaderStageInfo({}, vk::ShaderStageFlagBits::eCompute, computeModule, "compMain");
+		/*vk::PipelineLayoutCreateInfo      pipelineLayoutInfo{};
+		pipelineLayoutInfo.setLayoutCount = 1, pipelineLayoutInfo.pSetLayouts = &*computeDescriptorSetLayout;
+		computePipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
+		vk::ComputePipelineCreateInfo pipelineInfo{ .stage = computeShaderStageInfo, .layout = *computePipelineLayout };
+		computePipeline = vk::raii::Pipeline(device, nullptr, pipelineInfo);*/
+
+	}
 
 	void VulkanDevice::createGraphicsPipeline() {
 
@@ -177,6 +200,8 @@ namespace lte {
 		//defines pipeline
 
 		vk::PipelineShaderStageCreateInfo shaderStages[]				= { vertShaderStageInfo, fragShaderStageInfo };
+
+
 
 		auto                                   bindingDescription		= Vertex::getBindingDescription();
 		auto                                   attributeDescriptions	= Vertex::getAttributeDescriptions();
@@ -290,6 +315,48 @@ namespace lte {
 		poolInfo.queueFamilyIndex = queueIndex;
 		commandPool = vk::raii::CommandPool(device, poolInfo);
 	}
+	void VulkanDevice::createParticleBuffer() {
+		std::default_random_engine     rndEngine(static_cast<unsigned>(time(nullptr)));
+		std::uniform_real_distribution rndDist(0.0f, 1.0f);
+		std::vector<Particle> particles(particle_count);
+		for (auto& particle : particles)
+		{
+			float r = 0.25f * sqrtf(rndDist(rndEngine));
+			float theta = rndDist(rndEngine) * 2.0f * 3.14159265358979323846f;
+			float x = r * cosf(theta) * HEIGHT / WIDTH;
+			float y = r * sinf(theta);
+			particle.position = glm::vec2(x, y);
+			particle.velocity = normalize(glm::vec2(x, y)) * 0.00025f;
+			particle.color = glm::vec4(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine), 1.0f);
+		}
+
+		vk::DeviceSize bufferSize = sizeof(Particle) * particle_count;
+		vk::raii::Buffer shaderStorageBufferTemp({});
+		vk::raii::DeviceMemory shaderStorageBufferTempMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, shaderStorageBufferTemp, shaderStorageBufferTempMemory);
+		vk::raii::Buffer       stagingBuffer({});
+		vk::raii::DeviceMemory stagingBufferMemory({});
+		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(dataStaging, particles.data(), (size_t)bufferSize);
+		stagingBufferMemory.unmapMemory();
+
+		shaderStorageBuffers.clear();
+		shaderStorageBuffersMemory.clear();
+
+		// Copy initial particle data to all storage buffers
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vk::raii::Buffer       shaderStorageBufferTemp({});
+			vk::raii::DeviceMemory shaderStorageBufferTempMemory({});
+			createBuffer(bufferSize, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, shaderStorageBufferTemp, shaderStorageBufferTempMemory);
+			copyBuffer(stagingBuffer, shaderStorageBufferTemp, bufferSize);
+			shaderStorageBuffers.emplace_back(std::move(shaderStorageBufferTemp));
+			shaderStorageBuffersMemory.emplace_back(std::move(shaderStorageBufferTempMemory));
+		}
+	}
+
 
 	void VulkanDevice::createVertexBuffer() {
 		//assert(vertexBuffer == nullptr);
@@ -564,7 +631,17 @@ namespace lte {
 			poolInfo.pPoolSizes = poolSize.data()};
 		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);*/
 	}
-
+	void VulkanDevice::createComputeDescriptorPool() {
+		std::array poolSize{
+			vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
+			vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, MAX_FRAMES_IN_FLIGHT * 2) };
+		vk::DescriptorPoolCreateInfo poolInfo{};
+		poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+		poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT;
+		poolInfo.poolSizeCount = poolSize.size();
+		poolInfo.pPoolSizes = poolSize.data();
+		descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
+	}
 	void VulkanDevice::createDescriptorSets() {
 
 		uint32_t meshNo = 0;
@@ -614,6 +691,59 @@ namespace lte {
 				device.updateDescriptorSets(descriptorWrites, {});
 			}
 			meshNo++;
+		}
+	}
+
+	
+
+	void VulkanDevice::createComputeDescriptorSets() {
+		std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, computeDescriptorSetLayout);
+		vk::DescriptorSetAllocateInfo        allocInfo{};
+		allocInfo.descriptorPool = *descriptorPool;
+		allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT;
+		allocInfo.pSetLayouts = layouts.data();
+		computeDescriptorSets.clear();
+		computeDescriptorSets = device.allocateDescriptorSets(allocInfo);
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vk::DescriptorBufferInfo bufferInfo(uniformBuffers[i], 0, sizeof(UniformBufferObject));
+
+			vk::DescriptorBufferInfo storageBufferInfoLastFrame(shaderStorageBuffers[(i - 1) % MAX_FRAMES_IN_FLIGHT], 0, sizeof(Particle) * particle_count);
+			vk::DescriptorBufferInfo storageBufferInfoCurrentFrame(shaderStorageBuffers[i], 0, sizeof(Particle) * particle_count);
+			vk::WriteDescriptorSet setZ{};
+				setZ.dstSet = *computeDescriptorSets[i],
+				setZ.dstBinding = 0,
+				setZ.dstArrayElement = 0,
+				setZ.descriptorCount = 1,
+				setZ.descriptorType = vk::DescriptorType::eUniformBuffer,
+				setZ.pImageInfo = nullptr,
+				setZ.pBufferInfo = &bufferInfo,
+				setZ.pTexelBufferView = nullptr;
+			vk::WriteDescriptorSet setO{};
+				setO.dstSet = *computeDescriptorSets[i],
+				setO.dstBinding = 1,
+				setO.dstArrayElement = 0,
+				setO.descriptorCount = 1,
+				setO.descriptorType = vk::DescriptorType::eStorageBuffer,
+				setO.pImageInfo = nullptr,
+				setO.pBufferInfo = &storageBufferInfoLastFrame,
+				setO.pTexelBufferView = nullptr;
+			vk::WriteDescriptorSet setT{};
+				setT.dstSet = *computeDescriptorSets[i], 
+				setT.dstBinding = 2,
+				setT.dstArrayElement = 0,
+				setT.descriptorCount = 1,
+				setT.descriptorType = vk::DescriptorType::eStorageBuffer,
+				setT.pImageInfo = nullptr,
+				setT.pBufferInfo = &storageBufferInfoCurrentFrame,
+				setT.pTexelBufferView = nullptr;
+			std::array               descriptorWrites{
+				setZ,
+				setO,
+				setT,
+			};
+			device.updateDescriptorSets(descriptorWrites, {});
 		}
 	}
 
@@ -1053,7 +1183,8 @@ namespace lte {
 	void VulkanDevice::getFrameBufferSize(int* width, int* height)
 	{
 		glfwGetFramebufferSize(window.getGLFWWindow(), width, height);
-
+		WIDTH = *width;
+		HEIGHT = *height;
 	};
 
 	vk::Format VulkanDevice::getSwapChainFormat() {

@@ -107,10 +107,10 @@ namespace lte {
 
 		//creates graphics queue
 		std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
-
+		
 		for (uint32_t qfpIndex = 0; qfpIndex < queueFamilyProperties.size(); qfpIndex++)
 		{
-			if ((queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eGraphics) &&
+			if ((queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eGraphics & vk::QueueFlagBits::eCompute) &&
 				physicalDevice.getSurfaceSupportKHR(qfpIndex, *surface))
 			{
 				// found a queue family that supports both graphics and present
@@ -150,6 +150,7 @@ namespace lte {
 			deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 		device = vk::raii::Device(physicalDevice, deviceCreateInfo);
 		queue = vk::raii::Queue(device, queueIndex, 0);
+		computeQueue = std::make_unique<vk::raii::Queue>(*device, queueIndex, 0);
 	}
 
 }

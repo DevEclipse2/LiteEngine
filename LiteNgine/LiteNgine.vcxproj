@@ -194,6 +194,7 @@
     <ClCompile Include="imGui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="imGui\imgui_tables.cpp" />
     <ClCompile Include="imGui\imgui_widgets.cpp" />
+    <ClCompile Include="ThreadMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\engine\FileMgr.h" />
@@ -214,8 +215,10 @@
     <ClInclude Include="imGui\imstb_rectpack.h" />
     <ClInclude Include="imGui\imstb_textedit.h" />
     <ClInclude Include="imGui\imstb_truetype.h" />
+    <ClInclude Include="ThreadMgr.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\Particle.slang" />
     <None Include="shaders\shader.slang" />
   </ItemGroup>
   <ItemGroup>

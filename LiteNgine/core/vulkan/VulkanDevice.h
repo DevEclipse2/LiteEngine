@@ -31,6 +31,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
+#include <random>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 constexpr int MAX_OBJECTS = 3;
@@ -72,6 +73,25 @@ namespace lte {
 			}
 		};
 
+		struct Particle
+		{
+			glm::vec2 position;
+			glm::vec2 velocity;
+			glm::vec4 color;
+
+			static vk::VertexInputBindingDescription getBindingDescription()
+			{
+				return { 0, sizeof(Particle), vk::VertexInputRate::eVertex };
+			}
+
+			static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions()
+			{
+				return {
+					vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32Sfloat, offsetof(Particle, position)),
+					vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Particle, color)),
+				};
+			}
+		};
 
 		#ifdef NDEBUG
 			static constexpr bool enableValidationLayers = false;
@@ -89,6 +109,8 @@ namespace lte {
 		
 		bool framebufferResized = false;
 		void getFrameBufferSize(int* width, int* height);
+		int WIDTH = 800;
+		int HEIGHT = 600;
 		vk::raii::Device* getDevice();
 		GLFWwindow* getWindow();
 		vk::Format getSwapChainFormat();
@@ -121,6 +143,7 @@ namespace lte {
 		vk::raii::Device device				= nullptr;
 		//logical device creation
 		vk::raii::Queue queue				= nullptr;
+		std::unique_ptr<vk::raii::Queue> computeQueue		= nullptr;
 		void createLogicalDevice();
 		//windows surface recreation
 		vk::raii::SurfaceKHR surface		= nullptr;
@@ -282,6 +305,18 @@ namespace lte {
 		std::vector<vk::raii::DeviceMemory> imageMem{};
 		std::vector<vk::raii::ImageView> imageViewArr{};
 
+
+		void createParticleBuffer();
+		int particle_count = 120;
+		void createComputePipeline();
+		std::vector<vk::raii::Buffer> shaderStorageBuffers;
+		std::vector<vk::raii::DeviceMemory> shaderStorageBuffersMemory;
+		void createComputeShaderDescriptorSetLayout();
+		vk::raii::DescriptorSetLayout computeDescriptorSetLayout = nullptr;
+		void createComputeDescriptorSets();
+		void createComputeDescriptorPool();
+		vk::raii::DescriptorPool descriptorPool = nullptr;
+		std::vector<vk::raii::DescriptorSet> computeDescriptorSets;
 	};
 
 	

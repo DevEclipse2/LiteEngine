@@ -1,7 +1,7 @@
 #pragma once
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
+#include "../imGui/imgui.h"
+#include "../imGui/imgui_impl_glfw.h"
+#include "../imGui/imgui_impl_vulkan.h"
 #include "../vulkan/VulkanDevice.h"
 #include <vulkan/vulkan_raii.hpp>
 namespace lte {

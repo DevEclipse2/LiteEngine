@@ -84,6 +84,9 @@
     <ClCompile Include="core\engine\Gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ThreadMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\VulkanDevice.h">
@@ -140,9 +143,13 @@
     <ClInclude Include="core\engine\Gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ThreadMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
+    <None Include="shaders\Particle.slang" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\engine\engine formatting.txt" />
