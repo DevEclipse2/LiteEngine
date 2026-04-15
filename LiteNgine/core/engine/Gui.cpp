@@ -1,5 +1,38 @@
 #include "Gui.h"
 namespace lte{
+	Gui::Gui(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice,
+		vk::raii::Queue& graphicsQueue, uint32_t graphicsQueueFamily)
+		: device(&device), physicalDevice(&physicalDevice),
+		graphicsQueue(&graphicsQueue), graphicsQueueFamily(graphicsQueueFamily),
+		// Initialize buffers directly
+		vertexBuffer(*device, 1,
+			,
+		indexBuffer(*device, 1,
+			vk::BufferUsageFlagBits::eIndexBuffer,
+			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent) 
+	{
+		vk::BufferCreateInfo info({}, 1 ,vk::BufferUsageFlagBits::eVertexBuffer,
+			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		vertexBuffer = device.createBuffer(info);
+		// Set up dynamic rendering info
+		renderingInfo.colorAttachmentCount = 1;
+		vk::Format formats[] = { colorFormat };
+		renderingInfo.pColorAttachmentFormats = &colorFormat;
+	}
+	Gui::~Gui(){
+		// Wait for device to finish operations before destroying resources
+		// NOTE: waitIdle() is acceptable in destructors/cleanup code but should NEVER be used
+		// in the main rendering loop as it causes severe performance issues. For frame
+		// synchronization, use fences and semaphores instead.
+		if (device) {
+			device->waitIdle();
+		}
+
+		// All resources are automatically cleaned up by their destructors
+		// No manual cleanup needed
+
+		// ImGui context is destroyed separately
+	}
 	void Gui::Init(VulkanDevice* device)
 	{
 		pDevice = device;
@@ -76,15 +109,15 @@ namespace lte{
 		ImGui_ImplGlfw_InitForVulkan(pDevice->getWindow(), InstallGlfwCallbacks);
 		vk::Format colorFormat = pDevice->getSwapChainFormat();
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		//init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
+		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
 		init_info.Instance = **(pDevice->getInstance());
 		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
 		init_info.Device = **(pDevice->getDevice());
 		init_info.QueueFamily = (pDevice->getQueueFamily());
 		init_info.Queue = **(pDevice->getQueue());
-		init_info.PipelineCache = g_PipelineCache;
-		init_info.DescriptorPool = g_DescriptorPool;
-		init_info.MinImageCount = g_MinImageCount;
+		init_info.PipelineCache = *pipelineCache;
+		init_info.DescriptorPool = *descriptorPool;
+		init_info.MinImageCount = 2; //stuff
 		init_info.ImageCount = wd->ImageCount;
 		init_info.Allocator = g_Allocator;
 		init_info.PipelineInfoMain.RenderPass = wd->RenderPass;

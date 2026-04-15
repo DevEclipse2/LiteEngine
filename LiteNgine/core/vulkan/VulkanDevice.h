@@ -118,6 +118,8 @@ namespace lte {
 		vk::raii::Instance* getInstance();
 		vk::raii::Queue* getQueue();
 		uint32_t getQueueFamily();
+		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
+
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -188,7 +190,6 @@ namespace lte {
 		//void updateVertexBuffer();
 		void createIndexBuffer();
 		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
-		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
 		std::vector<std::vector<Vertex>> vertices;
 		std::vector <std::vector<uint32_t>> indices;
 		vk::raii::Buffer vertexBuffer = nullptr;
