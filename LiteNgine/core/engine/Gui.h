@@ -18,6 +18,8 @@ namespace lte {
 		void Destroy();
 
 		vk::CommandBuffer PrepareBuffer(uint32_t Image);
+		bool drawFrame();
+		void updateBuffers();
 	private:
 
 		// Dynamic state tracking for performance optimization

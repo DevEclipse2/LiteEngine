@@ -8,6 +8,9 @@ namespace lte {
 		while (!ltWindow.shouldClose()) {
 			glfwPollEvents();
 			vkDevice.drawFrame();
+			if (uiProc.drawFrame()) {
+				uiProc.updateBuffers();
+			}
 		}
 		vkDevice.Exit();
 	}

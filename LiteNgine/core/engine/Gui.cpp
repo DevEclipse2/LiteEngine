@@ -5,6 +5,8 @@ namespace lte{
 		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
 		createDescriptorPool();
 		InitGUI();
+		initResources();
+		setStyle(2);
 		/*
 		vk::BufferCreateInfo vertexInfo({}, 1 ,vk::BufferUsageFlagBits::eVertexBuffer,
 			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
@@ -35,6 +37,77 @@ namespace lte{
 	void Gui::Init(VulkanDevice* device)
 	{
 		
+	}
+
+	bool Gui::drawFrame()
+	{
+		ImGui::NewFrame();
+		// Create your UI elements here
+		// For example:
+		ImGui::Begin("Vulkan ImGui Demo");
+		ImGui::Text("Hello, Vulkan!");
+		if (ImGui::Button("Click me!")) {
+			// Handle button click
+		}
+		ImGui::End();
+
+		// End the frame
+		ImGui::EndFrame();
+
+		// Render to generate draw data
+		ImGui::Render();
+
+		// Check if buffers need updating
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (drawData && drawData->CmdListsCount > 0) {
+			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
+				needsUpdateBuffers = true;
+				return true;
+			}
+		}
+		return false;
+	}
+	void Gui::updateBuffers() {
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData || drawData->CmdListsCount == 0) {
+			return;
+		}
+
+		// Calculate required buffer sizes
+		vk::DeviceSize vertexBufferSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
+		vk::DeviceSize indexBufferSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
+
+		// Resize buffers if needed
+		if (drawData->TotalVtxCount > vertexCount) {
+			// Recreate vertex buffer with new size
+			vertexBuffer = Buffer(*device, vertexBufferSize,
+				vk::BufferUsageFlagBits::eVertexBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+			vertexCount = drawData->TotalVtxCount;
+		}
+
+		if (drawData->TotalIdxCount > indexCount) {
+			// Recreate index buffer with new size
+			indexBuffer = Buffer(*device, indexBufferSize,
+				vk::BufferUsageFlagBits::eIndexBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+			indexCount = drawData->TotalIdxCount;
+		}
+
+		// Upload data to buffers
+		ImDrawVert* vtxDst = static_cast<ImDrawVert*>(vertexBuffer.map());
+		ImDrawIdx* idxDst = static_cast<ImDrawIdx*>(indexBuffer.map());
+
+		for (int n = 0; n < drawData->CmdListsCount; n++) {
+			const ImDrawList* cmdList = drawData->CmdLists[n];
+			memcpy(vtxDst, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
+			memcpy(idxDst, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
+			vtxDst += cmdList->VtxBuffer.Size;
+			idxDst += cmdList->IdxBuffer.Size;
+		}
+
+		vertexBuffer.unmap();
+		indexBuffer.unmap();
 	}
 	void Gui::createDescriptorPool() {
 				
@@ -118,13 +191,13 @@ namespace lte{
 		// Create image view for shader access
 
 		vk::ImageViewCreateInfo imageViewCreateInfo{};
-		imageViewCreateInfo.viewType = vk::ImageViewType::e2D,
+			imageViewCreateInfo.viewType = vk::ImageViewType::e2D,
 			imageViewCreateInfo.format = vk::Format::eR8G8B8A8Unorm,
 			imageViewCreateInfo.subresourceRange = { vk::ImageAspectFlagBits::eColor};
-		imageViewCreateInfo.image = fontImage;
+			imageViewCreateInfo.image = fontImage;
 		// The image view defines how shaders interpret the raw image data
 		fontImageView = vk::raii::ImageView(*(pDevice->getDevice()), imageViewCreateInfo);
-		vk::raii::Buffer stagingBuffer (*(pDevice->getDevice()), );
+		vk::raii::Buffer stagingBuffer = (*pDevice->getDevice(), uploadSize);
 		vk::raii::DeviceMemory memory({});
 		pDevice->createBuffer(uploadSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, memory);
 
@@ -138,7 +211,6 @@ namespace lte{
 		void* dataStaging = memory.mapMemory(0, uploadSize);
 		memcpy(dataStaging, fontData, uploadSize);
 		memory.unmapMemory();
-
 		// Transition image to optimal layout for data reception
 		// Vulkan requires explicit layout transitions for optimal performance and correctness
 		pDevice->transitionImageLayout(fontImage,
@@ -154,8 +226,123 @@ namespace lte{
 		// Final layout optimization enables efficient sampling during UI rendering
 		pDevice->transitionImageLayout(fontImage,
 			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal , 0);
+		// Configure texture sampling parameters for optimal text rendering
+   // These settings directly impact text quality and performance
+		vk::SamplerCreateInfo samplerInfo{};
+		samplerInfo.magFilter = vk::Filter::eLinear;                    // Smooth scaling when magnified
+		samplerInfo.minFilter = vk::Filter::eLinear;                    // Smooth scaling when minified
+		samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;        // Smooth transitions between mip levels
+		samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;  // Prevent texture wrapping
+		samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;  // Clean edge handling
+		samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;  // 3D consistency
+		samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;   // White border for clamped areas
 
+		sampler = device->createSampler(samplerInfo);                   // Create the GPU sampler object
+
+		// Create descriptor pool for shader resource binding
+		// Descriptors provide the interface between shaders and GPU resources
+		vk::DescriptorPoolSize poolSize{vk::DescriptorType::eCombinedImageSampler, 1};
+
+		vk::DescriptorPoolCreateInfo poolInfo{};
+		poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;     // Allow individual descriptor set freeing
+		poolInfo.maxSets = 2;                                                      // Maximum number of descriptor sets
+		poolInfo.poolSizeCount = 1;                                                // Number of pool size specifications
+		poolInfo.pPoolSizes = &poolSize;                                           // Pool size configuration
+
+		descriptorPool = device->createDescriptorPool(poolInfo);                   // Create descriptor pool
+
+		// Create descriptor set layout defining shader resource interface
+		// This layout must match the binding declarations in the ImGui shaders
+		vk::DescriptorSetLayoutBinding binding{};
+		binding.descriptorType = vk::DescriptorType::eCombinedImageSampler;        // Combined texture and sampler
+		binding.descriptorCount = 1;                                               // Single texture binding
+		binding.stageFlags = vk::ShaderStageFlagBits::eFragment;                   // Used in fragment shader
+		binding.binding = 0;                                                       // Shader binding point 0
+
+		vk::DescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.bindingCount = 1;                                               // Number of bindings in layout
+		layoutInfo.pBindings = &binding;                                           // Binding configuration array
+
+		descriptorSetLayout = device->createDescriptorSetLayout(layoutInfo);       // Create layout object
+
+		// Allocate descriptor set from pool using the defined layout
+		// This creates the actual binding that connects GPU resources to shaders
+		vk::DescriptorSetAllocateInfo allocInfo{};
+		allocInfo.descriptorPool = *descriptorPool;                                // Source pool for allocation
+		allocInfo.descriptorSetCount = 1;                                          // Number of sets to allocate
+		vk::DescriptorSetLayout layouts[] = { *descriptorSetLayout };                // Layout template array
+		allocInfo.pSetLayouts = layouts;                                           // Layout configuration
+
+		descriptorSet = std::move(device->allocateDescriptorSets(allocInfo).front()); // Allocate and store set
+
+		// Update descriptor set with actual font texture and sampler resources
+		// This final step connects the physical GPU resources to the shader binding points
+		vk::DescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;           // Expected image layout
+		imageInfo.imageView = fontImageView;                           // Font texture view
+		imageInfo.sampler = *sampler;                                              // Texture sampler
+
+		vk::WriteDescriptorSet writeSet{};
+		writeSet.dstSet = *descriptorSet;                                          // Target descriptor set
+		writeSet.descriptorCount = 1;                                              // Number of resources to bind
+		writeSet.descriptorType = vk::DescriptorType::eCombinedImageSampler;       // Resource type
+		writeSet.pImageInfo = &imageInfo;                                          // Image resource information
+		writeSet.dstBinding = 0;                                                   // Binding point in shader
+
+		device->updateDescriptorSets(1, &writeSet, 0, nullptr);                   // Execute the binding update
+
+		// Create pipeline cache
+		vk::PipelineCacheCreateInfo pipelineCacheInfo{};
+		pipelineCache = device->createPipelineCache(pipelineCacheInfo);
+
+		// Create pipeline layout
+		vk::PushConstantRange pushConstantRange{};
+		pushConstantRange.stageFlags = vk::ShaderStageFlagBits::eVertex;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(PushConstBlock);
+
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.setLayoutCount = 1;
+		vk::DescriptorSetLayout setLayouts[] = { *descriptorSetLayout };
+		pipelineLayoutInfo.pSetLayouts = setLayouts;
+		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+
+		pipelineLayout = device->createPipelineLayout(pipelineLayoutInfo);
+
+		bool InstallGlfwCallbacks = true;
+		ImGui_ImplGlfw_InitForVulkan(pDevice->getWindow(), InstallGlfwCallbacks);
+		vk::Format colorFormat = pDevice->getSwapChainFormat();
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
+		init_info.Instance = **(pDevice->getInstance());
+		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
+		init_info.Device = **(pDevice->getDevice());
+		init_info.QueueFamily = (pDevice->getQueueFamily());
+		init_info.Queue = **(pDevice->getQueue());
+		init_info.PipelineCache = *pipelineCache;
+		init_info.DescriptorPool = *descriptorPool;
+		init_info.MinImageCount = pDevice->minImageCount; //stuff
+		init_info.UseDynamicRendering = true;
+		init_info.ImageCount = pDevice->minImageCount;
+		//init_info.Allocator = g_Allocator;
+		//init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
+		//init_info.PipelineInfoMain.Subpass = 0;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		//init_info.CheckVkResultFn = check_vk_result;
+		ImGui_ImplVulkan_Init(&init_info);
+
+		// Create the graphics pipeline with dynamic rendering
+		// ... (shader loading, pipeline state setup, etc.)
+
+		// For brevity, we're omitting the full pipeline creation code here
+		// In a real implementation, you would:
+		// 1. Load the vertex and fragment shaders
+		// 2. Set up all the pipeline state (vertex input, input assembly, rasterization, etc.)
+		// 3. Include the renderingInfo in the pipeline creation to enable dynamic rendering
+	
 	}
+
 	void Gui::InitGUI() {
 		IMGUI_CHECKVERSION();
 		//IMGUI_DEBUG_LOG();
@@ -187,27 +374,6 @@ namespace lte{
 		}
 
 
-		bool InstallGlfwCallbacks = true;
-		ImGui_ImplGlfw_InitForVulkan(pDevice->getWindow(), InstallGlfwCallbacks);
-		vk::Format colorFormat = pDevice->getSwapChainFormat();
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
-		init_info.Instance = **(pDevice->getInstance());
-		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
-		init_info.Device = **(pDevice->getDevice());
-		init_info.QueueFamily = (pDevice->getQueueFamily());
-		init_info.Queue = **(pDevice->getQueue());
-		init_info.PipelineCache = *pipelineCache;
-		init_info.DescriptorPool = *descriptorPool;
-		init_info.MinImageCount = pDevice->minImageCount; //stuff
-		init_info.UseDynamicRendering = true;
-		init_info.ImageCount = pDevice->minImageCount;
-		//init_info.Allocator = g_Allocator;
-		//init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
-		//init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-		//init_info.CheckVkResultFn = check_vk_result;
-		ImGui_ImplVulkan_Init(&init_info);
-
+		
 	}
 }

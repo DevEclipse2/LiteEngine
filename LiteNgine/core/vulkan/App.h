@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include "Lt_Window.h"
 #include "VulkanDevice.h"
+#include "../../core/engine/Gui.h"
 namespace lte 
 {
 	class main {
@@ -15,6 +16,7 @@ namespace lte
 		Lt_Window ltWindow{ WIDTH, HEIGHT ,"LiteEngine : Agstrum" };
 		Lt_Window* ptr = &ltWindow;
 		VulkanDevice vkDevice	{ ptr };
+		Gui uiProc{&vkDevice};
 
 	};
 }
