@@ -318,11 +318,9 @@ namespace lte {
 		vk::raii::DescriptorSetLayout computeDescriptorSetLayout = nullptr;
 		void createComputeDescriptorSets();
 		void createComputeDescriptorPool();
-		vk::raii::DescriptorPool descriptorPool = nullptr;
+		vk::raii::DescriptorPool computeDescriptorPool = nullptr;
 		std::vector<vk::raii::DescriptorSet> computeDescriptorSets;
 
-		std::vector<vk::raii::Buffer> shaderStorageBuffers;
-		std::vector<vk::raii::DeviceMemory> shaderStorageBuffersMemory;
 
 	};
 

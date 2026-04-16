@@ -76,27 +76,27 @@ namespace lte{
 		// Calculate required buffer sizes
 		vk::DeviceSize vertexBufferSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
 		vk::DeviceSize indexBufferSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
-
+		vk::raii::DeviceMemory memory({});
+		vk::raii::DeviceMemory Indexmemory({});
 		// Resize buffers if needed
 		if (drawData->TotalVtxCount > vertexCount) {
 			// Recreate vertex buffer with new size
-			vertexBuffer = Buffer(*device, vertexBufferSize,
-				vk::BufferUsageFlagBits::eVertexBuffer,
-				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+			
+			pDevice->createBuffer(vertexBufferSize, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer, memory);
 			vertexCount = drawData->TotalVtxCount;
 		}
 
 		if (drawData->TotalIdxCount > indexCount) {
 			// Recreate index buffer with new size
-			indexBuffer = Buffer(*device, indexBufferSize,
-				vk::BufferUsageFlagBits::eIndexBuffer,
-				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+			pDevice->createBuffer(indexBufferSize, vk::BufferUsageFlagBits::eIndexBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, indexBuffer, Indexmemory);
 			indexCount = drawData->TotalIdxCount;
 		}
 
 		// Upload data to buffers
-		ImDrawVert* vtxDst = static_cast<ImDrawVert*>(vertexBuffer.map());
-		ImDrawIdx* idxDst = static_cast<ImDrawIdx*>(indexBuffer.map());
+		ImDrawVert* vtxDst = static_cast<ImDrawVert*>(memory.mapMemory(0,vertexBufferSize));
+		ImDrawIdx* idxDst = static_cast<ImDrawIdx*>(Indexmemory.mapMemory(0,indexBufferSize));
 
 		for (int n = 0; n < drawData->CmdListsCount; n++) {
 			const ImDrawList* cmdList = drawData->CmdLists[n];
@@ -105,9 +105,8 @@ namespace lte{
 			vtxDst += cmdList->VtxBuffer.Size;
 			idxDst += cmdList->IdxBuffer.Size;
 		}
-
-		vertexBuffer.unmap();
-		indexBuffer.unmap();
+		memory.unmapMemory();
+		Indexmemory.unmapMemory();
 	}
 	void Gui::createDescriptorPool() {
 				
@@ -197,7 +196,7 @@ namespace lte{
 			imageViewCreateInfo.image = fontImage;
 		// The image view defines how shaders interpret the raw image data
 		fontImageView = vk::raii::ImageView(*(pDevice->getDevice()), imageViewCreateInfo);
-		vk::raii::Buffer stagingBuffer = (*pDevice->getDevice(), uploadSize);
+		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory memory({});
 		pDevice->createBuffer(uploadSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, memory);
 
@@ -289,7 +288,7 @@ namespace lte{
 		writeSet.pImageInfo = &imageInfo;                                          // Image resource information
 		writeSet.dstBinding = 0;                                                   // Binding point in shader
 
-		device->updateDescriptorSets(1, &writeSet, 0, nullptr);                   // Execute the binding update
+		device->updateDescriptorSets(writeSet, {});                   // Execute the binding update
 
 		// Create pipeline cache
 		vk::PipelineCacheCreateInfo pipelineCacheInfo{};

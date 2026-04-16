@@ -462,7 +462,9 @@ namespace lte {
 		stagingInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
 		stagingInfo.sharingMode = vk::SharingMode::eExclusive;
 
-		vk::raii::Buffer stagingBuffer(device, stagingInfo);
+		
+		
+		stagingBuffer(device, stagingInfo);
 
 		vk::MemoryRequirements memRequirementsStaging = stagingBuffer.getMemoryRequirements();
 		vk::MemoryAllocateInfo memoryAllocateInfoStaging{};

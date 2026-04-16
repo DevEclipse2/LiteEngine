@@ -49,7 +49,6 @@ namespace lte {
 		int fbWidth;
 		int fbHeight;
 		std::vector<vk::CommandBuffer> cmdBufs;
-		vk::raii::DescriptorPool descriptorPool = nullptr;
 		vk::raii::Sampler sampler{ nullptr };                    // Texture sampling configuration for font rendering
 		vk::raii::Buffer vertexBuffer = nullptr;                                    // Dynamic vertex buffer for UI geometry
 		vk::raii::Buffer indexBuffer = nullptr;                                     // Dynamic index buffer for UI triangle connectivity
@@ -75,7 +74,11 @@ namespace lte {
 		vk::raii::Queue* graphicsQueue = nullptr;              // Command submission queue for UI rendering
 		uint32_t graphicsQueueFamily = 0;                      // Queue family index for validation
 		
-		
+		/*
+		Severity	Code	Description	Project	File	Line	Suppression State
+Error	C2665	'vk::raii::Queue::Queue': no overloaded function could convert all the argument types	LiteNgine	C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\include\memory	3465	
+
+		*/
 	};
 }
 

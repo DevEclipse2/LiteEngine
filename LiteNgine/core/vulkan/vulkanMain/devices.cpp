@@ -13,7 +13,7 @@ namespace lte {
 		bool supportsVulkan1_3 = physicalDevice.getProperties().apiVersion >= vk::ApiVersion13;
 		auto queueFamilies = physicalDevice.getQueueFamilyProperties();
 		bool supportsGraphics =
-			std::ranges::any_of(queueFamilies, [](auto const& qfp) { return !!(qfp.queueFlags & vk::QueueFlagBits::eGraphics); });
+			std::ranges::any_of(queueFamilies, [](auto const& qfp) { return !!(qfp.queueFlags & vk::QueueFlagBits::eGraphics & vk::QueueFlagBits::eCompute); });
 
 		auto availableDeviceExtensions = physicalDevice.enumerateDeviceExtensionProperties();
 		bool supportsAllRequiredExtensions =
@@ -53,11 +53,6 @@ namespace lte {
 		{
 			throw std::runtime_error("failed to find GPUs with Vulkan support!");
 		}
-		if (physicalDevices.empty())
-		{
-			throw std::runtime_error("failed to find GPUs with Vulkan support!");
-		}
-
 		// Use an ordered map to automatically sort candidates by increasing score
 		std::multimap<int, vk::raii::PhysicalDevice> candidates;
 
