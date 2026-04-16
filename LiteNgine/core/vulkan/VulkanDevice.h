@@ -122,7 +122,8 @@ namespace lte {
 		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
 		uint32_t minImageCount = 0;
 		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
-
+		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
+		void copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height);
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -256,8 +257,7 @@ namespace lte {
 		//vk::raii::DeviceMemory textureImageMemory = nullptr;
 		std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands();
 		void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer);
-		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
-		void copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height);
+		
 		void generateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
 

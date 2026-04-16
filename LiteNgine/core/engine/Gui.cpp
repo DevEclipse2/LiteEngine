@@ -124,17 +124,37 @@ namespace lte{
 		imageViewCreateInfo.image = fontImage;
 		// The image view defines how shaders interpret the raw image data
 		fontImageView = vk::raii::ImageView(*(pDevice->getDevice()), imageViewCreateInfo);
-		vk::raii::Buffer stagingBuffer = nullptr;
-		vk::raii::DeviceMemory memory = nullptr;
+		vk::raii::Buffer stagingBuffer (*(pDevice->getDevice()), );
+		vk::raii::DeviceMemory memory({});
 		pDevice->createBuffer(uploadSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, memory);
 
 			
 
 		// Map staging buffer memory and copy font data
-		// Direct memory mapping provides the fastest path for data transfer
-		void* data = **stagingBuffer.map();                          // Map GPU memory to CPU address space
-		memcpy(data, fontData, uploadSize);                        // Copy font atlas data to GPU memory
-		stagingBuffer.unmap();
+		// Direct memory mapping provides the fastest path for data transfer		
+		
+		//createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
+		void* dataStaging = memory.mapMemory(0, uploadSize);
+		memcpy(dataStaging, fontData, uploadSize);
+		memory.unmapMemory();
+
+		// Transition image to optimal layout for data reception
+		// Vulkan requires explicit layout transitions for optimal performance and correctness
+		pDevice->transitionImageLayout(fontImage,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal , 0);
+		//pDevice->transitionImageLayout(fontImage, vk::Format::eR8G8B8A8Unorm,
+		//	vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 0);
+		// Execute the actual buffer-to-image copy operation
+		// This transfers font data from staging buffer to the final GPU image
+		pDevice->copyBufferToImage(stagingBuffer, fontImage,
+			static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+
+		// Transition image to shader-readable layout for rendering
+		// Final layout optimization enables efficient sampling during UI rendering
+		pDevice->transitionImageLayout(fontImage,
+			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal , 0);
+
 	}
 	void Gui::InitGUI() {
 		IMGUI_CHECKVERSION();
@@ -186,7 +206,7 @@ namespace lte{
 		//init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
 		//init_info.PipelineInfoMain.Subpass = 0;
 		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-		init_info.CheckVkResultFn = check_vk_result;
+		//init_info.CheckVkResultFn = check_vk_result;
 		ImGui_ImplVulkan_Init(&init_info);
 
 	}

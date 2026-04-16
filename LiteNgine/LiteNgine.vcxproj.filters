@@ -66,6 +66,9 @@
     <ClCompile Include="ThreadMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\vulkanMain\requestData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\VulkanDevice.h">

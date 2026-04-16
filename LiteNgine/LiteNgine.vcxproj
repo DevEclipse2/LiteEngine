@@ -186,6 +186,7 @@
     <ClCompile Include="core\vulkan\vulkanMain\extras.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\image.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp" />
+    <ClCompile Include="core\vulkan\vulkanMain\requestData.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
   </ItemGroup>
