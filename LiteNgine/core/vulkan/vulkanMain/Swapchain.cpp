@@ -48,12 +48,14 @@ namespace lte {
 	}
 	uint32_t VulkanDevice::chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities)
 	{
-		auto minImageCount = (std::max)(3u, surfaceCapabilities.minImageCount);
+		auto minImageC = (std::max)(3u, surfaceCapabilities.minImageCount);
 		if ((0 < surfaceCapabilities.maxImageCount) && (surfaceCapabilities.maxImageCount < minImageCount))
 		{
-			minImageCount = surfaceCapabilities.maxImageCount;
+			minImageC = surfaceCapabilities.maxImageCount;
 		}
-		return minImageCount;
+		minImageCount = minImageC;
+		return minImageC;
+		
 
 
 	}

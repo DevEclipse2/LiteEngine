@@ -1,9 +1,10 @@
 #pragma once
-#include "../imGui/imgui.h"
-#include "../imGui/imgui_impl_glfw.h"
-#include "../imGui/imgui_impl_vulkan.h"
+#define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
+#include "../../dep/backends/imgui.h"
+#include "../../dep/backends/imgui_impl_glfw.h"
+#include "../../dep/backends/imgui_impl_vulkan.h"
 #include "../vulkan/VulkanDevice.h"
-#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vulkan_raii.hpp>d
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include "../vulkan/VulkanDevice.h"
@@ -11,8 +12,7 @@ namespace lte {
 	class Gui
 	{
 	public:
-		Gui(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice,
-			vk::raii::Queue& graphicsQueue, uint32_t graphicsQueueFamily);
+		Gui(VulkanDevice* vulkDev);
 		~Gui();
 		void Init(VulkanDevice* device);
 		void Destroy();
@@ -41,19 +41,21 @@ namespace lte {
 
 		void createDescriptorPool();
 		void InitGUI();
-		VulkanDevice* pDevice;
+		void setStyle(uint32_t index);
+		void initResources();
+		VulkanDevice* pDevice = nullptr;
 		int fbWidth;
 		int fbHeight;
 		std::vector<vk::CommandBuffer> cmdBufs;
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		vk::raii::Sampler sampler{ nullptr };                    // Texture sampling configuration for font rendering
-		vk::raii::Buffer vertexBuffer;                                    // Dynamic vertex buffer for UI geometry
-		vk::raii::DeviceMemory vertexBufferMem;
-		vk::raii::Buffer indexBuffer;                                     // Dynamic index buffer for UI triangle connectivity
+		vk::raii::Buffer vertexBuffer = nullptr;                                    // Dynamic vertex buffer for UI geometry
+		vk::raii::Buffer indexBuffer = nullptr;                                     // Dynamic index buffer for UI triangle connectivity
 		uint32_t vertexCount = 0;                              // Current vertex count for draw commands
 		uint32_t indexCount = 0;                               // Current index count for draw commands
-		vk::raii::Image fontImage;                                        // GPU texture containing ImGui font atlas
-		vk::raii::ImageView fontImageView;                                // Shader-accessible view of font texture
+		vk::raii::Image fontImage = nullptr;                                        // GPU texture containing ImGui font atlas
+		vk::raii::DeviceMemory fontMemory = nullptr;                                        // GPU texture containing ImGui font atlas
+		vk::raii::ImageView fontImageView = nullptr;                                // Shader-accessible view of font texture
 
 		// Vulkan pipeline infrastructure for UI rendering
 		// These objects define the complete GPU processing pipeline for ImGui elements
@@ -70,6 +72,8 @@ namespace lte {
 		vk::raii::PhysicalDevice* physicalDevice = nullptr;    // GPU hardware info for capability queries
 		vk::raii::Queue* graphicsQueue = nullptr;              // Command submission queue for UI rendering
 		uint32_t graphicsQueueFamily = 0;                      // Queue family index for validation
+		
+		
 	};
 }
 

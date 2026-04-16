@@ -27,9 +27,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
+#include "../../dep/backends/imgui.h"
+#include "../../dep/backends/imgui_impl_glfw.h"
+#include "../../dep/backends/imgui_impl_vulkan.h"
 
 #include <random>
 
@@ -118,7 +118,10 @@ namespace lte {
 		vk::raii::Instance* getInstance();
 		vk::raii::Queue* getQueue();
 		uint32_t getQueueFamily();
+		vk::raii::Pipeline* getPipeline();
 		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
+		uint32_t minImageCount = 0;
+		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
 
 	private:
 
@@ -178,7 +181,7 @@ namespace lte {
 		vk::raii::PipelineLayout pipelineLayout = nullptr;
 		vk::raii::Pipeline graphicsPipeline = nullptr;
 		static std::vector<char> readFile(const std::string& filename);
-
+		
 
 		//command pool 
 		void createCommandPool();
@@ -251,7 +254,6 @@ namespace lte {
 		//vk::raii::Image        textureImage = nullptr;
 		//std::unique_ptr<vk::raii::Image> textureImage;
 		//vk::raii::DeviceMemory textureImageMemory = nullptr;
-		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
 		std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands();
 		void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer);
 		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
@@ -318,6 +320,10 @@ namespace lte {
 		void createComputeDescriptorPool();
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		std::vector<vk::raii::DescriptorSet> computeDescriptorSets;
+
+		std::vector<vk::raii::Buffer> shaderStorageBuffers;
+		std::vector<vk::raii::DeviceMemory> shaderStorageBuffersMemory;
+
 	};
 
 	
