@@ -111,19 +111,22 @@ namespace lte {
 		void getFrameBufferSize(int* width, int* height);
 		int WIDTH = 800;
 		int HEIGHT = 600;
-		vk::raii::Device* getDevice();
-		GLFWwindow* getWindow();
-		vk::Format getSwapChainFormat();
-		vk::raii::PhysicalDevice* getPhysicalDevice();
-		vk::raii::Instance* getInstance();
-		vk::raii::Queue* getQueue();
-		uint32_t getQueueFamily();
-		vk::raii::Pipeline* getPipeline();
+		
 		void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory);
 		uint32_t minImageCount = 0;
 		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
 		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
 		void copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height);
+		
+		std::vector<vk::raii::CommandBuffer>*	getCommandBuffer();
+		vk::raii::Device*						getDevice();
+		GLFWwindow*								getWindow();
+		vk::Format								getSwapChainFormat();
+		vk::raii::PhysicalDevice*				getPhysicalDevice();
+		vk::raii::Instance*						getInstance();
+		vk::raii::Queue*						getQueue();
+		uint32_t								getQueueFamily();
+		vk::raii::Pipeline*						getPipeline();
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();

@@ -73,7 +73,9 @@ namespace lte {
 		vk::raii::PhysicalDevice* physicalDevice = nullptr;    // GPU hardware info for capability queries
 		vk::raii::Queue* graphicsQueue = nullptr;              // Command submission queue for UI rendering
 		uint32_t graphicsQueueFamily = 0;                      // Queue family index for validation
-		
+		std::vector<vk::raii::CommandBuffer>* commandBuffers;
+		void recordCommandBuffer(ImDrawData* data , uint8_t index);
+		void handleKey(int key, int scancode, int action, int mods);
 		/*
 		Severity	Code	Description	Project	File	Line	Suppression State
 Error	C2665	'vk::raii::Queue::Queue': no overloaded function could convert all the argument types	LiteNgine	C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\include\memory	3465	

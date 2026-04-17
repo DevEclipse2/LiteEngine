@@ -6,6 +6,7 @@ namespace lte{
 		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
 		createDescriptorPool();
 		InitGUI();
+		commandBuffers = pDevice->getCommandBuffer();
 		initResources();
 		setStyle(2);
 		/*
@@ -40,6 +41,7 @@ namespace lte{
 	bool Gui::drawFrame()
 	{
 		ImGui::NewFrame();
+
 		// Create your UI elements here
 		// For example:
 		ImGui::Begin("Vulkan ImGui Demo");
@@ -55,8 +57,17 @@ namespace lte{
 		// Render to generate draw data
 		ImGui::Render();
 
-		// Check if buffers need updating
 		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData || drawData->CmdListsCount == 0) {
+			return true;
+		}
+
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+
+			recordCommandBuffer(drawData , i);
+		// Check if buffers need updating
+		}
+
 		if (drawData && drawData->CmdListsCount > 0) {
 			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
 				needsUpdateBuffers = true;
@@ -64,6 +75,116 @@ namespace lte{
 			}
 		}
 		return false;
+	}
+	void Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
+	{
+		// Begin dynamic rendering
+		vk::RenderingAttachmentInfo colorAttachment{};
+		// Note: In a real implementation, you would set imageView, imageLayout,
+		// loadOp, storeOp, and clearValue based on your swapchain image
+
+		vk::RenderingInfo renderingInfo{};
+		renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
+													   static_cast<uint32_t>(data->DisplaySize.y)} };
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.pColorAttachments = &colorAttachment;
+		auto& commandBuffer = commandBuffers->at(index);
+		commandBuffer.beginRendering(renderingInfo);
+		// Bind the pipeline used for ImGui
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
+
+		// Configure viewport for UI pixel coordinates
+		vk::Viewport viewport{};
+		viewport.width = data->DisplaySize.x;
+		viewport.height = data->DisplaySize.y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		commandBuffer.setViewport(0, viewport);
+
+		// Convert from ImGui coordinates into NDC via a simple scale/translate
+		pushConstBlock.scale = glm::vec2(2.0f / data->DisplaySize.x, 2.0f / data->DisplaySize.y);
+		pushConstBlock.translate = glm::vec2(-1.0f);
+		commandBuffer.pushConstants<PushConstBlock>(*pipelineLayout, vk::ShaderStageFlagBits::eVertex,
+			0,pushConstBlock);
+
+		// We already filled these buffers this frame
+		vk::Buffer vertexBuffers[] = { vertexBuffer };
+		vk::DeviceSize offsets[] = { 0 };
+		commandBuffer.bindVertexBuffers(0, vertexBuffers, offsets);
+		commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
+
+		int vertexOffset = 0;
+		int indexOffset = 0;
+
+		for (int i = 0; i < data->CmdListsCount; i++) {
+			const ImDrawList* cmdList = data->CmdLists[i];
+
+			for (int j = 0; j < cmdList->CmdBuffer.Size; j++) {
+				const ImDrawCmd* pcmd = &cmdList->CmdBuffer[j];
+
+				// Clip per draw call
+				vk::Rect2D scissor{};
+				scissor.offset.x = std::max(static_cast<int32_t>(pcmd->ClipRect.x), 0);
+				scissor.offset.y = std::max(static_cast<int32_t>(pcmd->ClipRect.y), 0);
+				scissor.extent.width = static_cast<uint32_t>(pcmd->ClipRect.z - pcmd->ClipRect.x);
+				scissor.extent.height = static_cast<uint32_t>(pcmd->ClipRect.w - pcmd->ClipRect.y);
+				commandBuffer.setScissor(0, scissor);
+
+				// Bind font (and any UI) textures for this draw
+				commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+					*pipelineLayout, 0, *descriptorSet, {});
+
+				// Issue indexed draw for this UI batch
+				commandBuffer.drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
+				indexOffset += pcmd->ElemCount;
+			}
+
+			vertexOffset += cmdList->VtxBuffer.Size;
+		}
+		commandBuffer.endRendering();
+	}
+	void Gui::handleKey(int key, int scancode, int action, int mods) {
+		ImGuiIO& io = ImGui::GetIO();
+
+		// This example uses GLFW key codes and actions, but you can adapt this
+		// to work with any windowing library's input system
+
+		// Map the platform-specific key action to ImGui's key state
+		// In GLFW: GLFW_PRESS = 1, GLFW_RELEASE = 0
+		const int KEY_PRESSED = 1;  // Generic key pressed value
+		const int KEY_RELEASED = 0; // Generic key released value
+
+		if (action == KEY_PRESSED)
+			io.KeysDown[key] = true;
+		if (action == KEY_RELEASED)
+			io.KeysDown[key] = false;
+
+		// Update modifier keys
+		// These key codes are GLFW-specific, but you would use your windowing library's
+		// equivalent key codes for other libraries
+		const int KEY_LEFT_CTRL = 341;   // GLFW_KEY_LEFT_CONTROL
+		const int KEY_RIGHT_CTRL = 345;  // GLFW_KEY_RIGHT_CONTROL
+		const int KEY_LEFT_SHIFT = 340;  // GLFW_KEY_LEFT_SHIFT
+		const int KEY_RIGHT_SHIFT = 344; // GLFW_KEY_RIGHT_SHIFT
+		const int KEY_LEFT_ALT = 342;    // GLFW_KEY_LEFT_ALT
+		const int KEY_RIGHT_ALT = 346;   // GLFW_KEY_RIGHT_ALT
+		const int KEY_LEFT_SUPER = 343;  // GLFW_KEY_LEFT_SUPER
+		const int KEY_RIGHT_SUPER = 347; // GLFW_KEY_RIGHT_SUPER
+
+		io.KeyCtrl = io.KeysDown[KEY_LEFT_CTRL] || io.KeysDown[KEY_RIGHT_CTRL];
+		io.KeyShift = io.KeysDown[KEY_LEFT_SHIFT] || io.KeysDown[KEY_RIGHT_SHIFT];
+		io.KeyAlt = io.KeysDown[KEY_LEFT_ALT] || io.KeysDown[KEY_RIGHT_ALT];
+		io.KeySuper = io.KeysDown[KEY_LEFT_SUPER] || io.KeysDown[KEY_RIGHT_SUPER];
+	}
+
+	bool ImGuiVulkanUtil::getWantKeyCapture() {
+		return ImGui::GetIO().WantCaptureKeyboard;
+	}
+
+	void ImGuiVulkanUtil::charPressed(uint32_t key) {
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddInputCharacter(key);
 	}
 	void Gui::updateBuffers() {
 		ImDrawData* drawData = ImGui::GetDrawData();
@@ -180,7 +301,7 @@ namespace lte{
 		
 		// Create optimized GPU image for font texture storage
 		// This image will be sampled by shaders during UI rendering
-		
+		device = pDevice->getDevice();
 		pDevice->createImage(texWidth, texHeight, 1,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
 			vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
 			vk::MemoryPropertyFlagBits::eDeviceLocal, fontImage, fontMemory);
@@ -234,7 +355,7 @@ namespace lte{
 		samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;  // 3D consistency
 		samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;   // White border for clamped areas
 
-		sampler = device->createSampler(samplerInfo);                   // Create the GPU sampler object
+		sampler = pDevice->getDevice()->createSampler(samplerInfo);                   // Create the GPU sampler object
 
 		// Create descriptor pool for shader resource binding
 		// Descriptors provide the interface between shaders and GPU resources

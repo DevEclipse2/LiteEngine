@@ -1067,6 +1067,9 @@ namespace lte {
 			meshes.resize(models.size());
 		}
 	}
+	std::vector<vk::raii::CommandBuffer>* VulkanDevice::getCommandBuffer() {
+		return &commandBuffers;
+	}
 
 	void VulkanDevice::prepareModels() {
 			vertices.emplace_back(std::vector<Vertex>());
