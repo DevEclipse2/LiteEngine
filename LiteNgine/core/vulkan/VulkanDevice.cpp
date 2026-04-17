@@ -331,11 +331,11 @@ namespace lte {
 		}
 
 		vk::DeviceSize bufferSize = sizeof(Particle) * particle_count;
-		vk::raii::Buffer shaderStorageBufferTemp({});
-		vk::raii::DeviceMemory shaderStorageBufferTempMemory({});
+		vk::raii::Buffer shaderStorageBufferTemp = nullptr;
+		vk::raii::DeviceMemory shaderStorageBufferTempMemory = nullptr;
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, shaderStorageBufferTemp, shaderStorageBufferTempMemory);
-		vk::raii::Buffer       stagingBuffer({});
-		vk::raii::DeviceMemory stagingBufferMemory({});
+		vk::raii::Buffer       stagingBuffer = nullptr;
+		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
 		void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
@@ -348,8 +348,8 @@ namespace lte {
 		// Copy initial particle data to all storage buffers
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			vk::raii::Buffer       shaderStorageBufferTemp({});
-			vk::raii::DeviceMemory shaderStorageBufferTempMemory({});
+			vk::raii::Buffer       shaderStorageBufferTemp = nullptr;
+			vk::raii::DeviceMemory shaderStorageBufferTempMemory = nullptr;
 			createBuffer(bufferSize, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, shaderStorageBufferTemp, shaderStorageBufferTempMemory);
 			copyBuffer(stagingBuffer, shaderStorageBufferTemp, bufferSize);
 			shaderStorageBuffers.emplace_back(std::move(shaderStorageBufferTemp));
@@ -373,7 +373,7 @@ namespace lte {
 			stagingInfo.usage = vk::BufferUsageFlagBits::eTransferSrc, 
 			stagingInfo.sharingMode = vk::SharingMode::eExclusive;
 		vk::raii::Buffer stagingBuffer(device, stagingInfo);
-		vk::raii::DeviceMemory stagingBufferMemory({});
+		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
 
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
@@ -422,8 +422,8 @@ namespace lte {
 			indicesPacked.insert(indicesPacked.end(), subVector.begin(), subVector.end());
 		}
 		vk::DeviceSize bufferSize = sizeof(uint32_t) * indicesPacked.size();
-		vk::raii::Buffer stagingBuffer({});
-		vk::raii::DeviceMemory stagingBufferMemory({});
+		vk::raii::Buffer stagingBuffer= nullptr;
+		vk::raii::DeviceMemory stagingBufferMemory= nullptr;
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 		
 		void* data = stagingBufferMemory.mapMemory(0, bufferSize);
@@ -497,7 +497,6 @@ namespace lte {
 				return i;
 			}
 		}
-
 		throw std::runtime_error("failed to find suitable memory type!");
 	}
 
@@ -1050,19 +1049,23 @@ namespace lte {
 	
 	void VulkanDevice::setupMeshes()
 	{
-		meshes[0].position = { 0.0f, 0.0f, -1.0f };
+		meshes.push_back(meshObject{});
+		meshes.push_back(meshObject{});
+		meshes.push_back(meshObject{});
+		meshes[0].position = {0.0f, 0.0f, -1.0f};
 		meshes[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f};
 		meshes[0].scale = {0.1f, 0.1f, 0.1f };
+		
+		meshes[1].position = {-2.0f, 0.0f, -1.0f};
+		meshes[1].rotation = {0.0f, 0.0f, 0.0f};
+		meshes[1].scale = {1.45f, 1.45f, 1.45f};
 
-		// Object 2 - Left
-		meshes[1].position = { -2.0f, 0.0f, -1.0f };
-		meshes[1].rotation = { 0.0f, 0.0f, 0.0f };
-		meshes[1].scale =	{ 1.45f, 1.45f, 1.45f };
-
-		// Object 3 - Right
-		meshes[2].position = { 2.0f, 0.0f, -1.0f };
-		meshes[2].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
-		meshes[2].scale = { 0.85f, 0.85f, 0.85f };
+		meshes[2].position = {2.0f, 0.0f, -1.0f};
+		meshes[2].rotation = {glm::radians(90.0f), 0.0f, 0.0f};
+		meshes[2].scale = {0.85f, 0.85f, 0.85f};
+		while (meshes.size() > models.size()) {
+			meshes.erase(meshes.end());
+		}
 	}
 
 	void VulkanDevice::prepareModels() {

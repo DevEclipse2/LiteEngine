@@ -2,6 +2,7 @@
 namespace lte{
 	Gui::Gui(VulkanDevice* vulkDev) : pDevice{ vulkDev }
 	{
+		return;
 		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
 		createDescriptorPool();
 		InitGUI();
@@ -34,10 +35,7 @@ namespace lte{
 
 		// ImGui context is destroyed separately
 	}
-	void Gui::Init(VulkanDevice* device)
-	{
-		
-	}
+
 
 	bool Gui::drawFrame()
 	{

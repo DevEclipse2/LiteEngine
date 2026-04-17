@@ -1,23 +1,23 @@
 #pragma once
+#include <vulkan/vulkan_raii.hpp>
+#define GLFW_INCLUDE_VULKAN
+#include "../vulkan/VulkanDevice.h"
 #define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 #include "../../dep/backends/imgui.h"
 #include "../../dep/backends/imgui_impl_glfw.h"
 #include "../../dep/backends/imgui_impl_vulkan.h"
-#include "../vulkan/VulkanDevice.h"
-#include <vulkan/vulkan_raii.hpp>d
-#define GLFW_INCLUDE_VULKAN
+
 #include <GLFW/glfw3.h>
-#include "../vulkan/VulkanDevice.h"
 namespace lte {
 	class Gui
 	{
 	public:
 		Gui(VulkanDevice* vulkDev);
 		~Gui();
-		void Init(VulkanDevice* device);
-		void Destroy();
+		
+		//void Destroy();
 
-		vk::CommandBuffer PrepareBuffer(uint32_t Image);
+		//vk::CommandBuffer PrepareBuffer(uint32_t Image);
 		bool drawFrame();
 		void updateBuffers();
 	private:

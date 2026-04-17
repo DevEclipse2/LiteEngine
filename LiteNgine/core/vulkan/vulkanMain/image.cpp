@@ -11,8 +11,8 @@ namespace lte {
         if (!pixels) {
             throw std::runtime_error("failed to load texture image!");
         }
-        vk::raii::Buffer stagingBuffer({});
-        vk::raii::DeviceMemory stagingBufferMemory({});
+        vk::raii::Buffer stagingBuffer = nullptr;
+        vk::raii::DeviceMemory stagingBufferMemory= nullptr;
         createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
         void* data = stagingBufferMemory.mapMemory(0, imageSize);

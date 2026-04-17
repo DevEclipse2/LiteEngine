@@ -167,9 +167,9 @@ namespace lte {
 		vk::SurfaceFormatKHR swapChainSurfaceFormat;
 		uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities);
 		vk::raii::SwapchainKHR swapChain = nullptr;
-		std::vector<vk::Image> swapChainImages;
+		std::vector<vk::Image> swapChainImages{};
 		void createImageViews();
-		std::vector<vk::raii::ImageView> swapChainImageViews;
+		std::vector<vk::raii::ImageView> swapChainImageViews{};
 
 		//shader description set 
 		void createDescriptorSetLayout();
@@ -187,36 +187,32 @@ namespace lte {
 		//command pool 
 		void createCommandPool();
 		uint32_t    queueIndex = ~0;
-		std::vector<vk::raii::CommandBuffer> commandBuffers;
+		std::vector<vk::raii::CommandBuffer> commandBuffers{};
 		
 
 		void createVertexBuffer();
 		//void updateVertexBuffer();
 		void createIndexBuffer();
 		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
-		std::vector<std::vector<Vertex>> vertices;
-		std::vector <std::vector<uint32_t>> indices;
-		vk::raii::Buffer vertexBuffer = nullptr;
-		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+		std::vector<std::vector<Vertex>> vertices{};
+		std::vector <std::vector<uint32_t>> indices{};
+		vk::raii::Buffer vertexBuffer				= nullptr;
+		vk::raii::DeviceMemory vertexBufferMemory	= nullptr;
 		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
-		vk::raii::Buffer indexBuffer = nullptr;
-		vk::raii::DeviceMemory indexBufferMemory = nullptr;
+		vk::raii::Buffer indexBuffer				= nullptr;
+		vk::raii::DeviceMemory indexBufferMemory	= nullptr;
 		void createUniformBuffers();
 		void updateUniformBuffer(uint32_t frameindex);
-		std::vector<vk::raii::Buffer> uniformBuffers;
-		std::vector<vk::raii::DeviceMemory> uniformBuffersMemory;
-		std::vector<void*> uniformBuffersMapped;
+		std::vector<vk::raii::Buffer> uniformBuffers{};
+		std::vector<vk::raii::DeviceMemory> uniformBuffersMemory{};
+		std::vector<void*> uniformBuffersMapped{};
 
 		void createDescriptorPool();
 
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		void createDescriptorSets();
 		//vk::raii::DescriptorPool descriptorPool = nullptr;
-		std::vector<vk::raii::DescriptorSet> descriptorSets;
-
-		//test 
-		TestAnim testAnim;
-		int frameNumber;
+		std::vector<vk::raii::DescriptorSet> descriptorSets{};
 
 
 		void createCommandBuffer();
@@ -234,9 +230,9 @@ namespace lte {
 		);
 
 		//sync objects
-		std::vector<vk::raii::Semaphore> presentCompleteSemaphores;
-		std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
-		std::vector<vk::raii::Fence> inFlightFences;
+		std::vector<vk::raii::Semaphore> presentCompleteSemaphores{};
+		std::vector<vk::raii::Semaphore> renderFinishedSemaphores{};
+		std::vector<vk::raii::Fence> inFlightFences{};
 		void createSyncObjects();
 		//multiple frame handlers
 		uint32_t frameIndex = 0;
@@ -296,12 +292,12 @@ namespace lte {
 		float prevtime = 0.0f;
 
 
-		std::array<meshObject, MAX_OBJECTS> meshes;
+		std::vector<meshObject> meshes;
 		void setupMeshes();
 
 
-		std::vector<std::string> models{"models/model.obj" , "models/kirky.obj"};
-		std::vector<std::string> textures{"textures/texture.png","textures/Arrow.png" };
+		std::vector<std::string> models{"models/viking_room.obj" , "models/Arrow.obj"};
+		std::vector<std::string> textures{"textures/viking_room.png","textures/Arrow.png" };
 		void prepareModels();
 
 		std::vector<vk::raii::Image> imagesArr{};
@@ -312,16 +308,16 @@ namespace lte {
 		void createParticleBuffer();
 		int particle_count = 120;
 		void createComputePipeline();
-		std::vector<vk::raii::Buffer> shaderStorageBuffers;
-		std::vector<vk::raii::DeviceMemory> shaderStorageBuffersMemory;
+		std::vector<vk::raii::Buffer> shaderStorageBuffers{};
+		std::vector<vk::raii::DeviceMemory> shaderStorageBuffersMemory{};
 		void createComputeShaderDescriptorSetLayout();
 		vk::raii::DescriptorSetLayout computeDescriptorSetLayout = nullptr;
 		void createComputeDescriptorSets();
 		void createComputeDescriptorPool();
 		vk::raii::DescriptorPool computeDescriptorPool = nullptr;
-		std::vector<vk::raii::DescriptorSet> computeDescriptorSets;
+		std::vector<vk::raii::DescriptorSet> computeDescriptorSets{};
 
-
+		uint64_t frameNumber = 0;
 	};
 
 	

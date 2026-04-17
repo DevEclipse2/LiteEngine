@@ -95,9 +95,6 @@ namespace lte {
 			throw std::runtime_error("failed to find a suitable GPU!");
 		}
 	}
-
-
-
 	void VulkanDevice::createLogicalDevice() {
 
 		//creates graphics queue
@@ -105,13 +102,15 @@ namespace lte {
 		
 		for (uint32_t qfpIndex = 0; qfpIndex < queueFamilyProperties.size(); qfpIndex++)
 		{
-			if ((queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eGraphics & vk::QueueFlagBits::eCompute) &&
+			if ((queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eGraphics) && (queueFamilyProperties[qfpIndex].queueFlags & vk::QueueFlagBits::eCompute) &&
 				physicalDevice.getSurfaceSupportKHR(qfpIndex, *surface))
 			{
+				
 				// found a queue family that supports both graphics and present
 				queueIndex = qfpIndex;
 				break;
 			}
+			
 		}
 		if (queueIndex == ~0)
 		{
@@ -145,7 +144,8 @@ namespace lte {
 			deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 		device = vk::raii::Device(physicalDevice, deviceCreateInfo);
 		queue = vk::raii::Queue(device, queueIndex, 0);
-		computeQueue = std::make_unique<vk::raii::Queue>(*device, queueIndex, 0);
+		//computeQueue = vk::raii::Queue(device,computeQueueIndex,0);
+		computeQueue = std::make_unique<vk::raii::Queue>(queue);
 	}
 
 }

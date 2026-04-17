@@ -10,8 +10,8 @@ namespace lte {
 			// Create uniform buffers for each frame in flight
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 				vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
-				vk::raii::Buffer buffer({});
-				vk::raii::DeviceMemory bufferMem({});
+				vk::raii::Buffer buffer= nullptr;
+				vk::raii::DeviceMemory bufferMem= nullptr;
 				createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
 					vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
 					buffer, bufferMem);
