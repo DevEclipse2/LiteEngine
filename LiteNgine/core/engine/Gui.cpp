@@ -156,11 +156,12 @@ namespace lte{
 		const int KEY_RELEASED = 0; // Generic key released value
 
 		if (action == KEY_PRESSED)
-			io.KeysDown[key] = true;
+			io.AddKeyEvent(static_cast<ImGuiKey>(key),true);
 		if (action == KEY_RELEASED)
-			io.KeysDown[key] = false;
+			io.AddKeyEvent(static_cast<ImGuiKey>(key), false);
+		
 
-		// Update modifier keys
+		/*// Update modifier keys
 		// These key codes are GLFW-specific, but you would use your windowing library's
 		// equivalent key codes for other libraries
 		const int KEY_LEFT_CTRL = 341;   // GLFW_KEY_LEFT_CONTROL
@@ -175,14 +176,14 @@ namespace lte{
 		io.KeyCtrl = io.KeysDown[KEY_LEFT_CTRL] || io.KeysDown[KEY_RIGHT_CTRL];
 		io.KeyShift = io.KeysDown[KEY_LEFT_SHIFT] || io.KeysDown[KEY_RIGHT_SHIFT];
 		io.KeyAlt = io.KeysDown[KEY_LEFT_ALT] || io.KeysDown[KEY_RIGHT_ALT];
-		io.KeySuper = io.KeysDown[KEY_LEFT_SUPER] || io.KeysDown[KEY_RIGHT_SUPER];
+		io.KeySuper = io.KeysDown[KEY_LEFT_SUPER] || io.KeysDown[KEY_RIGHT_SUPER];*/
 	}
 
-	bool ImGuiVulkanUtil::getWantKeyCapture() {
+	bool Gui::getWantKeyCapture() {
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 
-	void ImGuiVulkanUtil::charPressed(uint32_t key) {
+	void Gui::charPressed(uint32_t key) {
 		ImGuiIO& io = ImGui::GetIO();
 		io.AddInputCharacter(key);
 	}
