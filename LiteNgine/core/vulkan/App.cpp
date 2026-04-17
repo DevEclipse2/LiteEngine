@@ -11,6 +11,7 @@ namespace lte {
 			if (uiProc.drawFrame()) {
 				uiProc.updateBuffers();
 			}
+			uiProc.drawFrame();
 		}
 		vkDevice.Exit();
 	}
