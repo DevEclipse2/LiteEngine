@@ -2,7 +2,7 @@
 namespace lte{
 	Gui::Gui(VulkanDevice* vulkDev) : pDevice{ vulkDev }
 	{
-		return;
+		
 		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
 		createDescriptorPool();
 		InitGUI();
@@ -181,7 +181,7 @@ namespace lte{
 		// Create optimized GPU image for font texture storage
 		// This image will be sampled by shaders during UI rendering
 		
-		pDevice->createImage(texWidth, texHeight, 0,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
+		pDevice->createImage(texWidth, texHeight, 1,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
 			vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
 			vk::MemoryPropertyFlagBits::eDeviceLocal, fontImage, fontMemory);
 
@@ -211,7 +211,7 @@ namespace lte{
 		// Transition image to optimal layout for data reception
 		// Vulkan requires explicit layout transitions for optimal performance and correctness
 		pDevice->transitionImageLayout(fontImage,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal , 0);
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal , 1);
 		//pDevice->transitionImageLayout(fontImage, vk::Format::eR8G8B8A8Unorm,
 		//	vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 0);
 		// Execute the actual buffer-to-image copy operation
@@ -222,7 +222,7 @@ namespace lte{
 		// Transition image to shader-readable layout for rendering
 		// Final layout optimization enables efficient sampling during UI rendering
 		pDevice->transitionImageLayout(fontImage,
-			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal , 0);
+			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal , 1);
 		// Configure texture sampling parameters for optimal text rendering
    // These settings directly impact text quality and performance
 		vk::SamplerCreateInfo samplerInfo{};

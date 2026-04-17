@@ -1003,7 +1003,7 @@ namespace lte {
 
 	void VulkanDevice::createDepthResources() {
 		vk::Format depthFormat = findDepthFormat();
-		createImage(swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+		createImage(swapChainExtent.width, swapChainExtent.height, 2, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
 		//createImage(swapChainExtent.width, swapChainExtent.height, 1, vk::SampleCountFlagBits::e1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
 		depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 	}
@@ -1054,7 +1054,7 @@ namespace lte {
 		meshes.push_back(meshObject{});
 		meshes[0].position = {0.0f, 0.0f, -1.0f};
 		meshes[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f};
-		meshes[0].scale = {0.1f, 0.1f, 0.1f };
+		meshes[0].scale = {1.1f, 1.1f,1.1f };
 		
 		meshes[1].position = {-2.0f, 0.0f, -1.0f};
 		meshes[1].rotation = {0.0f, 0.0f, 0.0f};
@@ -1064,7 +1064,7 @@ namespace lte {
 		meshes[2].rotation = {glm::radians(90.0f), 0.0f, 0.0f};
 		meshes[2].scale = {0.85f, 0.85f, 0.85f};
 		while (meshes.size() > models.size()) {
-			meshes.erase(meshes.end());
+			meshes.resize(models.size());
 		}
 	}
 

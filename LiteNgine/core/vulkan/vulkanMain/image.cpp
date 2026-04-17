@@ -39,7 +39,6 @@ namespace lte {
             imageInfo.imageType = vk::ImageType::e2D, 
             imageInfo.format = format,
             imageInfo.extent = vk::Extent3D{width, height, 1},
-            imageInfo.mipLevels = 1, 
             imageInfo.arrayLayers = 1,
             imageInfo.samples = vk::SampleCountFlagBits::e1, 
             imageInfo.tiling = tiling,
