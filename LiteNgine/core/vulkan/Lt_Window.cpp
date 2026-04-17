@@ -30,6 +30,7 @@ namespace lte {
 
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+		
 	}
 	void Lt_Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{

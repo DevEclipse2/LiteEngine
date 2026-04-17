@@ -7,8 +7,11 @@ namespace lte{
 		createDescriptorPool();
 		InitGUI();
 		commandBuffers = pDevice->getCommandBuffer();
+		pFrameIndex = pDevice->getpFrameIndex();
+		pipeline = pDevice->getPipeline();
 		initResources();
 		setStyle(2);
+		updateBuffers();
 		/*
 		vk::BufferCreateInfo vertexInfo({}, 1 ,vk::BufferUsageFlagBits::eVertexBuffer,
 			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
@@ -40,6 +43,7 @@ namespace lte{
 
 	bool Gui::drawFrame()
 	{
+		ImGui_ImplVulkan_NewFrame();
 		ImGui::NewFrame();
 
 		// Create your UI elements here
@@ -51,9 +55,13 @@ namespace lte{
 		}
 		ImGui::End();
 
-		// End the frame
+		ImGui::Begin("Another Window", &showWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("Hello from another window!");
+		if (ImGui::Button("Close Me"))
+			showWindow = false;
+		ImGui::End();
 		ImGui::EndFrame();
-
+		ImGui::UpdatePlatformWindows();
 		// Render to generate draw data
 		ImGui::Render();
 
@@ -62,12 +70,8 @@ namespace lte{
 			return true;
 		}
 
-		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 
-			recordCommandBuffer(drawData , i);
-		// Check if buffers need updating
-		}
-
+		recordCommandBuffer(drawData , *pFrameIndex);
 		if (drawData && drawData->CmdListsCount > 0) {
 			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
 				needsUpdateBuffers = true;
@@ -78,24 +82,28 @@ namespace lte{
 	}
 	void Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
 	{
+		auto& commandBuffer = commandBuffers->at(index);
+		commandBuffer.reset();
+		commandBuffer.begin({});
+
 		// Begin dynamic rendering
 		vk::RenderingAttachmentInfo colorAttachment{};
 		// Note: In a real implementation, you would set imageView, imageLayout,
 		// loadOp, storeOp, and clearValue based on your swapchain image
-
+		
 		vk::RenderingInfo renderingInfo{};
 		renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
 													   static_cast<uint32_t>(data->DisplaySize.y)} };
 		renderingInfo.layerCount = 1;
 		renderingInfo.colorAttachmentCount = 1;
 		renderingInfo.pColorAttachments = &colorAttachment;
-		auto& commandBuffer = commandBuffers->at(index);
+		
 		commandBuffer.beginRendering(renderingInfo);
 		// Bind the pipeline used for ImGui
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
 
 		// Configure viewport for UI pixel coordinates
-		vk::Viewport viewport{};
+ 		vk::Viewport viewport{};
 		viewport.width = data->DisplaySize.x;
 		viewport.height = data->DisplaySize.y;
 		viewport.minDepth = 0.0f;

@@ -14,5 +14,6 @@ namespace lte {
 
 	vk::Format VulkanDevice::getSwapChainFormat() {return swapChainSurfaceFormat.format;}
 	vk::raii::PhysicalDevice* VulkanDevice::getPhysicalDevice() {return &physicalDevice;}
+	uint32_t* VulkanDevice::getpFrameIndex() { return &frameIndex; }
 
 }

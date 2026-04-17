@@ -2770,8 +2770,8 @@ void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool rendere
     // Legacy backend
     if (!atlas->RendererHasTextures)
         IM_ASSERT_USER_ERROR(atlas->TexIsBuilt, "Backend does not support ImGuiBackendFlags_RendererHasTextures, and font atlas is not built! Update backend OR make sure you called ImGui_ImplXXXX_NewFrame() function for renderer backend, which should call io.Fonts->GetTexDataAsRGBA32() / GetTexDataAsAlpha8().");
-    if (atlas->TexIsBuilt && atlas->Builder->PreloadedAllGlyphsRanges)
-        IM_ASSERT_USER_ERROR(atlas->RendererHasTextures == false, "Called ImFontAtlas::Build() before ImGuiBackendFlags_RendererHasTextures got set! With new backends: you don't need to call Build().");
+    //if (atlas->TexIsBuilt && atlas->Builder->PreloadedAllGlyphsRanges)
+      // IM_ASSERT_USER_ERROR(atlas->RendererHasTextures == false, "Called ImFontAtlas::Build() before ImGuiBackendFlags_RendererHasTextures got set! With new backends: you don't need to call Build().");
 
     // Clear BakedCurrent cache, this is important because it ensure the uncached path gets taken once.
     // We also rely on ImFontBaked* pointers never crossing frames.

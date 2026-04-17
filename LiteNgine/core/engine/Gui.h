@@ -62,7 +62,7 @@ namespace lte {
 		// These objects define the complete GPU processing pipeline for ImGui elements
 		vk::raii::PipelineCache pipelineCache{ nullptr };        // Pipeline compilation cache for faster startup
 		vk::raii::PipelineLayout pipelineLayout{ nullptr };      // Resource binding layout (textures, uniforms)
-		vk::raii::Pipeline pipeline{ nullptr };                  // Complete graphics pipeline for UI rendering
+		vk::raii::Pipeline* pipeline{ nullptr };                  // Complete graphics pipeline for UI rendering
 		vk::raii::DescriptorPool descriptorPool{ nullptr };      // Pool for allocating descriptor sets
 		vk::raii::DescriptorSetLayout descriptorSetLayout{ nullptr }; // Layout defining shader resource bindings
 		vk::raii::DescriptorSet descriptorSet{ nullptr };        // Actual resource bindings for font texture
@@ -78,6 +78,8 @@ namespace lte {
 		void handleKey(int key, int scancode, int action, int mods);
 		void charPressed(uint32_t key);
 		bool getWantKeyCapture();
+		bool showWindow;
+		uint32_t* pFrameIndex;
 	};
 }
 

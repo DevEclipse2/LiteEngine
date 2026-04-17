@@ -127,6 +127,7 @@ namespace lte {
 		vk::raii::Queue*						getQueue();
 		uint32_t								getQueueFamily();
 		vk::raii::Pipeline*						getPipeline();
+		uint32_t*								getpFrameIndex();
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
