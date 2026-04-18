@@ -1,4 +1,15 @@
 #include "Gui.h"
+
+void CheckVKResult(VkResult err) {
+	if (err == 0) {
+		return;
+	}
+	std::cout << stderr << "[vulkan] error : VkResult = %d\n" << err;
+	if (err < 0) {
+		abort();
+	}
+}
+
 namespace lte{
 	Gui::Gui(VulkanDevice* vulkDev) : pDevice{ vulkDev }
 	{
@@ -8,7 +19,6 @@ namespace lte{
 		InitGUI();
 		
 		initResources();
-		setStyle(2);
 		updateBuffers();
 		/*
 		vk::BufferCreateInfo vertexInfo({}, 1 ,vk::BufferUsageFlagBits::eVertexBuffer,
@@ -28,6 +38,8 @@ namespace lte{
 		// NOTE: waitIdle() is acceptable in destructors/cleanup code but should NEVER be used
 		// in the main rendering loop as it causes severe performance issues. For frame
 		// synchronization, use fences and semaphores instead.
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
 		if (device) {
 			device->waitIdle();
 		}
@@ -49,18 +61,9 @@ namespace lte{
 		pColorImageMemory = pDevice->getpColorImageMemory();
 		pColorImageView = pDevice->getpColorImageView();
 		pDepthImageView = pDevice->getDepthImageView();
+		depthFormat = pDevice->getDepthFormat();
 		swapChainImageViews = pDevice->getSwapChainImageViews();
-		commandBuffers.clear();
-
-		vk::CommandPoolCreateInfo poolInfo{};
-			poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-			poolInfo.queueFamilyIndex = pDevice->getQueueIndex();
-		commandPool = vk::raii::CommandPool(*device, poolInfo);
-		vk::CommandBufferAllocateInfo allocInfo{};
-			allocInfo.commandPool = commandPool,
-			allocInfo.level = vk::CommandBufferLevel::ePrimary,
-			allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
-		commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);
+		
 	}
 	std::vector<vk::raii::CommandBuffer>* Gui::getpCommandBuffers() {
 		return &commandBuffers;
@@ -352,6 +355,17 @@ namespace lte{
 	}
 
 	void Gui::initResources() {
+
+		// Create the graphics pipeline with dynamic rendering
+		// ... (shader loading, pipeline state setup, etc.)
+
+		// For brevity, we're omitting the full pipeline creation code here
+		// In a real implementation, you would:
+		// 1. Load the vertex and fragment shaders
+		// 2. Set up all the pipeline state (vertex input, input assembly, rasterization, etc.)
+		// 3. Include the renderingInfo in the pipeline creation to enable dynamic rendering
+
+
 		// Extract font atlas data from ImGui's internal font system
 		// ImGui generates a texture atlas containing all glyphs needed for text rendering
 		ImGuiIO& io = ImGui::GetIO();
@@ -492,37 +506,6 @@ namespace lte{
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		pipelineLayout = device->createPipelineLayout(pipelineLayoutInfo);
-
-		bool InstallGlfwCallbacks = true;
-		ImGui_ImplGlfw_InitForVulkan(pDevice->getWindow(), InstallGlfwCallbacks);
-		vk::Format colorFormat = pDevice->getSwapChainFormat();
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
-		init_info.Instance = **(pDevice->getInstance());
-		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
-		init_info.Device = **(pDevice->getDevice());
-		init_info.QueueFamily = (pDevice->getQueueFamily());
-		init_info.Queue = **(pDevice->getQueue());
-		init_info.PipelineCache = *pipelineCache;
-		init_info.DescriptorPool = *descriptorPool;
-		init_info.MinImageCount = pDevice->minImageCount; //stuff
-		init_info.UseDynamicRendering = true;
-		init_info.ImageCount = pDevice->minImageCount;
-		//init_info.Allocator = g_Allocator;
-		//init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
-		//init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-		//init_info.CheckVkResultFn = check_vk_result;
-		ImGui_ImplVulkan_Init(&init_info);
-
-		// Create the graphics pipeline with dynamic rendering
-		// ... (shader loading, pipeline state setup, etc.)
-
-		// For brevity, we're omitting the full pipeline creation code here
-		// In a real implementation, you would:
-		// 1. Load the vertex and fragment shaders
-		// 2. Set up all the pipeline state (vertex input, input assembly, rasterization, etc.)
-		// 3. Include the renderingInfo in the pipeline creation to enable dynamic rendering
 	
 	}
 
@@ -541,22 +524,66 @@ namespace lte{
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 		ImGui::GetStyle().FontScaleMain = 1.5f;
-		ImGui::StyleColorsDark();
+		setStyle(2);
 
 		float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
+		bool InstallGlfwCallbacks = true;
+		ImGui_ImplGlfw_InitForVulkan(pDevice->getWindow(), InstallGlfwCallbacks);
 		ImGuiStyle style = ImGui::GetStyle();
 		style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
 		style.FontScaleDpi = main_scale;        // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
 		io.ConfigDpiScaleFonts = true;          // [Experimental] Automatically overwrite style.FontScaleDpi in Begin() when Monitor DPI changes. This will scale fonts but _NOT_ scale sizes/padding for now.
 		io.ConfigDpiScaleViewports = true;      // [Experimental] Scale Dear ImGui and Platform Windows when Monitor DPI changes.
-		setStyle(2);
+
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		colorFormat = pDevice->getSwapChainFormat();
+		vk::PipelineRenderingCreateInfoKHR pipelineCreateInfo{ };
+		pipelineCreateInfo.sType = vk::StructureType::ePipelineRenderingCreateInfoKHR;
+		pipelineCreateInfo.pNext = NULL;
+		pipelineCreateInfo.viewMask = 0;
+		pipelineCreateInfo.colorAttachmentCount = 1;
+		pipelineCreateInfo.pColorAttachmentFormats = &colorFormat;
+		pipelineCreateInfo.depthAttachmentFormat = depthFormat;
+		pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
+
+
+		
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
+		init_info.Instance = **(pDevice->getInstance());
+		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
+		init_info.Device = **(pDevice->getDevice());
+		init_info.QueueFamily = (pDevice->getQueueFamily());
+		init_info.DescriptorPool = *descriptorPool;
+		init_info.PipelineCache = NULL;
+		init_info.PipelineInfoMain.PipelineRenderingCreateInfo =  pipelineCreateInfo;
+
+		init_info.Queue = **(pDevice->getQueue());
+		init_info.PipelineCache = *pipelineCache;
+		init_info.MinImageCount = pDevice->minImageCount; //stuff
+		init_info.UseDynamicRendering = true;
+		init_info.ImageCount = pDevice->minImageCount;
+		init_info.Allocator = NULL;
+		init_info.PipelineInfoMain.RenderPass = NULL;
+		init_info.PipelineInfoMain.Subpass = 0;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
+		ImGui_ImplVulkan_Init(&init_info);
+		vk::CommandPoolCreateInfo poolInfo{};
+		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			poolInfo.queueFamilyIndex = pDevice->getQueueIndex();
+		commandPool = vk::raii::CommandPool(*device, poolInfo);
+		vk::CommandBufferAllocateInfo allocInfo{};
+		allocInfo.commandPool = commandPool,
+			allocInfo.level = vk::CommandBufferLevel::ePrimary,
+			allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+		commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);
 		
 	}
 }

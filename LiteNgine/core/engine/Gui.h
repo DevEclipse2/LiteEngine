@@ -41,7 +41,7 @@ namespace lte {
 		// Modern Vulkan rendering configuration
 		vk::PipelineRenderingCreateInfo renderingInfo{};        // Dynamic rendering setup parameters
 		vk::Format colorFormat = vk::Format::eB8G8R8A8Unorm;   // Target framebuffer format
-
+		vk::Format depthFormat;
 
 		void createDescriptorPool();
 		void InitGUI();
@@ -81,6 +81,7 @@ namespace lte {
 		void charPressed(uint32_t key);
 		bool getWantKeyCapture();
 		bool showWindow;
+		void createPipeline();
 		uint32_t* pFrameIndex;
 
 		void getPtrs();
@@ -89,7 +90,6 @@ namespace lte {
 		vk::raii::ImageView*	pColorImageView;
 		vk::raii::ImageView*	pDepthImageView;
 		std::vector<vk::raii::ImageView>* swapChainImageViews;
-
 
 		vk::raii::CommandPool commandPool = nullptr;
 	};

@@ -16,7 +16,7 @@ namespace lte {
 	vk::raii::PhysicalDevice* VulkanDevice::getPhysicalDevice() {return &physicalDevice;}
 	uint32_t* VulkanDevice::getpFrameIndex() { return &frameIndex; }
 	std::vector<vk::raii::Image>* VulkanDevice::getpImages() { return &imagesArr; }
-
+	vk::Format					VulkanDevice::getDepthFormat() { return findDepthFormat(); }
 	vk::raii::Image* VulkanDevice::getpColorImage() { return &colorImage; }
 	vk::raii::DeviceMemory* VulkanDevice::getpColorImageMemory() { return &colorImageMemory; }
 	vk::raii::ImageView* VulkanDevice::getpColorImageView() { return &colorImageView; }

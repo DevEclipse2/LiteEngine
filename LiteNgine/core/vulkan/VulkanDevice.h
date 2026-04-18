@@ -142,6 +142,7 @@ namespace lte {
 		vk::raii::ImageView*					getDepthImageView();
 		std::vector<vk::raii::ImageView>*		getSwapChainImageViews();
 		uint32_t								getQueueIndex();
+		vk::Format								getDepthFormat();
 		void setGuiCommandBuffers(std::vector<vk::raii::CommandBuffer>* pCmd);
 		void setGuiRef(Gui* gui);
 	private:
