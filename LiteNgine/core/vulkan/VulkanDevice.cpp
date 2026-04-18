@@ -856,7 +856,7 @@ namespace lte {
 		}
 		gui->drawFrame();
 
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		/*vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex], *pUiCommandBuffer->at(frameIndex) };
 
 		const vk::SubmitInfo submitInfo{
@@ -866,7 +866,16 @@ namespace lte {
 										static_cast<uint32_t>(std::size(PackedBuffer)),
 										&*PackedBuffer,
 										1,
-										&*renderFinishedSemaphores[imageIndex]};
+										&*renderFinishedSemaphores[imageIndex]};*/
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::SubmitInfo submitInfo{
+										1,
+										&*presentCompleteSemaphores[frameIndex],
+										&waitDestinationStageMask,
+										1,
+										&*commandBuffers[frameIndex],
+										1,
+										&*renderFinishedSemaphores[imageIndex] };
 		queue.submit(submitInfo, *inFlightFences[frameIndex]);
 																			//bruhhhhhhh
 		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex};

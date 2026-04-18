@@ -110,42 +110,30 @@ namespace lte{
 		}
 		return false;
 	}
-	void Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
+	void Gui::doDynamicRendering(vk::raii::CommandBuffer &commandBuffer , ImDrawData* data) 
 	{
-		auto& commandBuffer = commandBuffers[index];
-		commandBuffer.reset();
-		vk::CommandBufferBeginInfo info{};
-		info.sType = vk::StructureType::eCommandBufferBeginInfo;
-		info.pNext = NULL;
-		info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-		info.pInheritanceInfo = NULL;
-		commandBuffer.begin(info);
-
-		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
-		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		// Begin dynamic rendering
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.sType = vk::StructureType::eRenderingAttachmentInfo;
-			attachmentInfo.pNext = NULL;
-			attachmentInfo.imageView = *pColorImageView,
+		attachmentInfo.sType = vk::StructureType::eRenderingAttachmentInfo;
+		attachmentInfo.pNext = NULL;
+		attachmentInfo.imageView = *pColorImageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
 			attachmentInfo.resolveImageView = swapChainImageViews->at(*pFrameIndex),
 			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
-			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
-			attachmentInfo.clearValue = clearColor;
+			attachmentInfo.loadOp = vk::AttachmentLoadOp::eLoad,
+			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
+			//attachmentInfo.clearValue = clearColor;
 		// Note: In a real implementation, you would set imageView, imageLayout,
 		// loadOp, storeOp, and clearValue based on your swapchain image
-		
-		vk::RenderingAttachmentInfo depthAttachmentInfo{};
-			depthAttachmentInfo.imageView = *pDepthImageView,
-			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
-			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
-			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,
-			depthAttachmentInfo.clearValue = clearDepth;
 
+		vk::RenderingAttachmentInfo depthAttachmentInfo{};
+		depthAttachmentInfo.imageView = *pDepthImageView,
+			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
+			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eLoad,
+			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
+			//depthAttachmentInfo.clearValue = clearDepth;
 
 		vk::RenderingInfo renderingInfo{};
 			renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
@@ -153,69 +141,87 @@ namespace lte{
 			renderingInfo.layerCount = 1;
 			renderingInfo.colorAttachmentCount = 1;
 			renderingInfo.pColorAttachments = &attachmentInfo;
-		
-		
-
 		// Configure viewport for UI pixel coordinates
- 		vk::Viewport viewport{};
+		vk::Viewport viewport{};
 		viewport.width = data->DisplaySize.x;
 		viewport.height = data->DisplaySize.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		
-		commandBuffer.beginRendering(renderingInfo);
-		// Bind the pipeline used for ImGui
+
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
 		commandBuffer.setViewport(0, viewport);
+		commandBuffer.beginRendering(renderingInfo);
+		// Bind the pipeline used for ImGui
+		
 		
 
-		// Convert from ImGui coordinates into NDC via a simple scale/translate
-		pushConstBlock.scale = glm::vec2(2.0f / data->DisplaySize.x, 2.0f / data->DisplaySize.y);
-		pushConstBlock.translate = glm::vec2(-1.0f);
-		commandBuffer.pushConstants<PushConstBlock>(*pipelineLayout, vk::ShaderStageFlagBits::eVertex,
-			0,pushConstBlock);
+	}
+	void Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
+	{
+		auto& commandBuffer = commandBuffers[index];
+		//commandBuffer.reset();
+		vk::CommandBufferBeginInfo info{};
+		info.sType = vk::StructureType::eCommandBufferBeginInfo;
+		info.pNext = NULL;
+		info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+		info.pInheritanceInfo = NULL;
+		commandBuffer.begin(info);
+		doDynamicRendering(commandBuffer , data);
+		
 
-		// We already filled these buffers this frame
-		vk::Buffer vertexBuffers[] = { vertexBuffer };
-		vk::DeviceSize offsets[] = { 0 };
-		commandBuffer.bindVertexBuffers(0, vertexBuffers, offsets);
-		commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
+		//// Convert from ImGui coordinates into NDC via a simple scale/translate
+		//pushConstBlock.scale = glm::vec2(2.0f / data->DisplaySize.x, 2.0f / data->DisplaySize.y);
+		//pushConstBlock.translate = glm::vec2(-1.0f);
+		//commandBuffer.pushConstants<PushConstBlock>(*pipelineLayout, vk::ShaderStageFlagBits::eVertex,
+		//	0,pushConstBlock);
 
-		int vertexOffset = 0;
-		int indexOffset = 0;
+		//// We already filled these buffers this frame
+		//vk::Buffer vertexBuffers[] = { vertexBuffer };
+		//vk::DeviceSize offsets[] = { 0 };
+		//commandBuffer.bindVertexBuffers(0, vertexBuffers, offsets);
+		//commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
 
-		for (int i = 0; i < data->CmdListsCount; i++) {
-			const ImDrawList* cmdList = data->CmdLists[i];
+		//int vertexOffset = 0;
+		//int indexOffset = 0;
 
-			for (int j = 0; j < cmdList->CmdBuffer.Size; j++) {
-				const ImDrawCmd* pcmd = &cmdList->CmdBuffer[j];
+		//for (int i = 0; i < data->CmdListsCount; i++) {
+		//	const ImDrawList* cmdList = data->CmdLists[i];
 
-				// Clip per draw call
-				vk::Rect2D scissor{};
-				scissor.offset.x = std::max(static_cast<int32_t>(pcmd->ClipRect.x), 0);
-				scissor.offset.y = std::max(static_cast<int32_t>(pcmd->ClipRect.y), 0);
-				scissor.extent.width = static_cast<uint32_t>(pcmd->ClipRect.z - pcmd->ClipRect.x);
-				scissor.extent.height = static_cast<uint32_t>(pcmd->ClipRect.w - pcmd->ClipRect.y);
-				commandBuffer.setScissor(0, scissor);
+		//	for (int j = 0; j < cmdList->CmdBuffer.Size; j++) {
+		//		const ImDrawCmd* pcmd = &cmdList->CmdBuffer[j];
 
-				// Bind font (and any UI) textures for this draw
-				commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
-					*pipelineLayout, 0, *descriptorSet, {});
+		//		// Clip per draw call
+		//		vk::Rect2D scissor{};
+		//		scissor.offset.x = std::max(static_cast<int32_t>(pcmd->ClipRect.x), 0);
+		//		scissor.offset.y = std::max(static_cast<int32_t>(pcmd->ClipRect.y), 0);
+		//		scissor.extent.width = static_cast<uint32_t>(pcmd->ClipRect.z - pcmd->ClipRect.x);
+		//		scissor.extent.height = static_cast<uint32_t>(pcmd->ClipRect.w - pcmd->ClipRect.y);
+		//		commandBuffer.setScissor(0, scissor);
 
-				// Issue indexed draw for this UI batch
-				commandBuffer.drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
-				indexOffset += pcmd->ElemCount;
-			}
+		//		// Bind font (and any UI) textures for this draw
+		//		commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+		//			*pipelineLayout, 0, *descriptorSet, {});
 
-			vertexOffset += cmdList->VtxBuffer.Size;
-		}
+		//		// Issue indexed draw for this UI batch
+		//		commandBuffer.drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
+		//		indexOffset += pcmd->ElemCount;
+		//	}
+
+		//	vertexOffset += cmdList->VtxBuffer.Size;
+		//}
+		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
 		commandBuffer.endRendering();
-		pDevice->transitionImageLayout(
+		pDevice->transition_image_layout(
 			pImages->at(*pFrameIndex),
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
-			1
+			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+			{},                                                     // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::ImageAspectFlagBits::eColor
 		);
+		commandBuffer.endRendering();
 		commandBuffer.end();
 	}
 	void Gui::handleKey(int key, int scancode, int action, int mods) {
@@ -304,27 +310,30 @@ namespace lte{
 	}
 	void Gui::createDescriptorPool() {
 				
-		vk::DescriptorPoolSize poolSizes[] = {
-			{vk::DescriptorType::eSampler, 1000},
-			{vk::DescriptorType::eCombinedImageSampler , 1000},
-			{vk::DescriptorType::eSampledImage ,1000},
-			{vk::DescriptorType::eStorageImage ,1000},
-			{vk::DescriptorType::eUniformTexelBuffer ,1000},
-			{vk::DescriptorType::eStorageTexelBuffer ,1000},
-			{vk::DescriptorType::eUniformBuffer ,1000},
-			{vk::DescriptorType::eStorageBuffer ,1000},
-			{vk::DescriptorType::eUniformBufferDynamic ,1000},
-			{vk::DescriptorType::eStorageBufferDynamic ,1000},
-			{vk::DescriptorType::eInputAttachment , 1000} };
-		
-		vk::DescriptorPoolCreateInfo PoolCreateInfo = {};
-			PoolCreateInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo,
-			PoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-			PoolCreateInfo.maxSets = 1000 * IM_ARRAYSIZE(poolSizes),
-			PoolCreateInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes),
-			PoolCreateInfo.pPoolSizes = poolSizes;
+		VkDescriptorPoolSize PoolSizes[] = {
+		{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+		{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+		};
 
-			descriptorPool = vk::raii::DescriptorPool(*device, PoolCreateInfo);
+		VkDescriptorPoolCreateInfo PoolCreateInfo = {
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+			.maxSets = 1000 * IM_ARRAYSIZE(PoolSizes),
+			.poolSizeCount = (uint32_t)IM_ARRAYSIZE(PoolSizes),
+			.pPoolSizes = PoolSizes
+		};
+
+		VkResult res = vkCreateDescriptorPool(**device, &PoolCreateInfo, NULL, &descriptorPoolHandle);
+		CheckVKResult(res);
 			//VkResult res = vk::DescriptorPool(pDevice->getDevice(), &PoolCreateInfo, NULL, &descriptorPool);;
 			 /*std::array poolSize{
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
@@ -393,7 +402,6 @@ namespace lte{
 			vk::MemoryPropertyFlagBits::eDeviceLocal, fontImage, fontMemory);
 
 		// Create image view for shader access
-
 		vk::ImageViewCreateInfo imageViewCreateInfo{};
 			imageViewCreateInfo.viewType = vk::ImageViewType::e2D,
 			imageViewCreateInfo.format = vk::Format::eR8G8B8A8Unorm,
@@ -405,13 +413,11 @@ namespace lte{
 		vk::raii::DeviceMemory memory({});
 		pDevice->createBuffer(uploadSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, memory);
 
-			
-
 		// Map staging buffer memory and copy font data
 		// Direct memory mapping provides the fastest path for data transfer		
 		
-		//createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
-		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
+		/*createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+		stagingBuffer.bindMemory(stagingBufferMemory, 0);*/
 		void* dataStaging = memory.mapMemory(0, uploadSize);
 		memcpy(dataStaging, fontData, uploadSize);
 		memory.unmapMemory();
@@ -513,7 +519,14 @@ namespace lte{
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		pipelineLayout = device->createPipelineLayout(pipelineLayoutInfo);
-	
+
+		VkCommandBufferAllocateInfo cmdBufAllocInfo = {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+		.pNext = NULL,
+		.commandPool = *commandPool,
+		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+		.commandBufferCount = static_cast<uint32_t>(commandBuffers.size())
+		};
 	}
 
 	void Gui::InitGUI() {
@@ -567,10 +580,9 @@ namespace lte{
 		init_info.PhysicalDevice = **(pDevice->getPhysicalDevice());
 		init_info.Device = **(pDevice->getDevice());
 		init_info.QueueFamily = (pDevice->getQueueFamily());
-		init_info.DescriptorPool = *descriptorPool;
+		init_info.DescriptorPool = descriptorPoolHandle;
 		init_info.PipelineCache = NULL;
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo =  pipelineCreateInfo;
-
 		init_info.Queue = **(pDevice->getQueue());
 		init_info.PipelineCache = *pipelineCache;
 		init_info.MinImageCount = pDevice->minImageCount; //stuff
@@ -583,11 +595,11 @@ namespace lte{
 		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
 		ImGui_ImplVulkan_Init(&init_info);
 		vk::CommandPoolCreateInfo poolInfo{};
-		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
 			poolInfo.queueFamilyIndex = pDevice->getQueueIndex();
 		commandPool = vk::raii::CommandPool(*device, poolInfo);
 		vk::CommandBufferAllocateInfo allocInfo{};
-		allocInfo.commandPool = commandPool,
+			allocInfo.commandPool = commandPool,
 			allocInfo.level = vk::CommandBufferLevel::ePrimary,
 			allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 		commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);

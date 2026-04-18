@@ -75,7 +75,7 @@ namespace lte {
 		vk::raii::Queue* graphicsQueue = nullptr;              // Command submission queue for UI rendering
 		uint32_t graphicsQueueFamily = 0;                      // Queue family index for validation
 		std::vector<vk::raii::CommandBuffer> commandBuffers{};
-		std::vector<vk::raii::Image>* pImages;
+		std::vector<vk::raii::Image> Images;
 		void recordCommandBuffer(ImDrawData* data , uint8_t index);
 		void handleKey(int key, int scancode, int action, int mods);
 		void charPressed(uint32_t key);
@@ -90,8 +90,9 @@ namespace lte {
 		vk::raii::ImageView*	pColorImageView;
 		vk::raii::ImageView*	pDepthImageView;
 		std::vector<vk::raii::ImageView>* swapChainImageViews;
-
+		VkDescriptorPool descriptorPoolHandle;
 		vk::raii::CommandPool commandPool = nullptr;
+		void doDynamicRendering(vk::raii::CommandBuffer& commandBuffer , ImDrawData* data);
 	};
 }
 
