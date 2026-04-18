@@ -850,16 +850,23 @@ namespace lte {
 		device.resetFences(*inFlightFences[frameIndex]);
 		commandBuffers[frameIndex].reset();
 		recordCommandBuffer(imageIndex);
+		
+		if (gui->drawFrame()) {
+			gui->updateBuffers();
+		}
+		gui->drawFrame();
+
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex], *pUiCommandBuffer->at(frameIndex) };
+
 		const vk::SubmitInfo submitInfo{
 										1,
 										&* presentCompleteSemaphores[frameIndex],
 										& waitDestinationStageMask,
-										1,
-										&* commandBuffers[frameIndex],
+										static_cast<uint32_t>(std::size(PackedBuffer)),
+										&*PackedBuffer,
 										1,
 										&*renderFinishedSemaphores[imageIndex]};
-
 		queue.submit(submitInfo, *inFlightFences[frameIndex]);
 																			//bruhhhhhhh
 		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex};

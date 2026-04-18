@@ -4,14 +4,11 @@ namespace lte {
 	void main::run() {
 
 		ltWindow.setVkDevice(&vkDevice);
-
+		vkDevice.setGuiRef(&uiProc);
+		vkDevice.setGuiCommandBuffers(uiProc.getpCommandBuffers());
 		while (!ltWindow.shouldClose()) {
 			glfwPollEvents();
 			vkDevice.drawFrame();
-			if (uiProc.drawFrame()) {
-				uiProc.updateBuffers();
-			}
-			uiProc.drawFrame();
 		}
 		vkDevice.Exit();
 	}

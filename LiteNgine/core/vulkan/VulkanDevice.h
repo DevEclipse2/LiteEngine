@@ -27,9 +27,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 
-#include "../../dep/backends/imgui.h"
-#include "../../dep/backends/imgui_impl_glfw.h"
-#include "../../dep/backends/imgui_impl_vulkan.h"
+#include "../engine/Gui.h"
 
 #include <random>
 
@@ -39,7 +37,7 @@ constexpr int MAX_OBJECTS = 3;
 namespace lte {
 	class Lt_Window;
 	class ShaderLoader;
-
+	class Gui;
 	
 
 
@@ -143,12 +141,15 @@ namespace lte {
 		vk::raii::ImageView*					getpColorImageView();
 		vk::raii::ImageView*					getDepthImageView();
 		std::vector<vk::raii::ImageView>*		getSwapChainImageViews();
+		uint32_t								getQueueIndex();
+		void setGuiCommandBuffers(std::vector<vk::raii::CommandBuffer>* pCmd);
+		void setGuiRef(Gui* gui);
 	private:
-
+		Gui* gui = nullptr;
 		std::vector<const char*> getRequiredInstanceExtensions();
-
+		std::vector<vk::raii::CommandBuffer>* pUiCommandBuffer;
 		vk::raii::Context  context;
-
+		
 		vk::raii::Instance instance = nullptr;
 		int createInstance();
 

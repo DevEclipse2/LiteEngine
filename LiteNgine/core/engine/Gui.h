@@ -9,6 +9,7 @@
 
 #include <GLFW/glfw3.h>
 namespace lte {
+	class VulkanDevice;
 	class Gui
 	{
 	public:
@@ -20,6 +21,7 @@ namespace lte {
 		//vk::CommandBuffer PrepareBuffer(uint32_t Image);
 		bool drawFrame();
 		void updateBuffers();
+		std::vector<vk::raii::CommandBuffer>* getpCommandBuffers();
 	private:
 
 		// Dynamic state tracking for performance optimization
@@ -48,7 +50,6 @@ namespace lte {
 		VulkanDevice* pDevice = nullptr;
 		int fbWidth;
 		int fbHeight;
-		std::vector<vk::CommandBuffer> cmdBufs;
 		vk::raii::Sampler sampler{ nullptr };                    // Texture sampling configuration for font rendering
 		vk::raii::Buffer vertexBuffer = nullptr;                                    // Dynamic vertex buffer for UI geometry
 		vk::raii::Buffer indexBuffer = nullptr;                                     // Dynamic index buffer for UI triangle connectivity
@@ -88,6 +89,9 @@ namespace lte {
 		vk::raii::ImageView*	pColorImageView;
 		vk::raii::ImageView*	pDepthImageView;
 		std::vector<vk::raii::ImageView>* swapChainImageViews;
+
+
+		vk::raii::CommandPool commandPool = nullptr;
 	};
 }
 

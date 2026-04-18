@@ -23,4 +23,11 @@ namespace lte {
 	vk::raii::ImageView* VulkanDevice::getDepthImageView() { return &depthImageView; }
 	std::vector<vk::raii::ImageView>* VulkanDevice::getSwapChainImageViews() { return &swapChainImageViews; }
 
+	void VulkanDevice::setGuiCommandBuffers(std::vector<vk::raii::CommandBuffer>* pCmd) {
+		pUiCommandBuffer = pCmd;
+	}
+	void VulkanDevice::setGuiRef(Gui* pGui) {
+		gui = pGui;
+	}
+	uint32_t				VulkanDevice::getQueueIndex() { return queueIndex; }
 }

@@ -16,7 +16,7 @@ namespace lte
 		Lt_Window ltWindow{ WIDTH, HEIGHT ,"LiteEngine : Agstrum" };
 		Lt_Window* ptr = &ltWindow;
 		VulkanDevice vkDevice	{ ptr };
-		Gui uiProc{&vkDevice};
+		Gui uiProc {&vkDevice};
 
 	};
 }

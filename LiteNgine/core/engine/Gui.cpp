@@ -39,9 +39,7 @@ namespace lte{
 	}
 
 	void Gui::getPtrs() {
-		commandBuffers.emplace_back();
-		commandBuffers.emplace_back();
-		commandBuffers.emplace_back();
+		
 		pFrameIndex = pDevice->getpFrameIndex();
 		pipeline = pDevice->getPipeline();
 		pImages = pDevice->getpImages();
@@ -52,8 +50,21 @@ namespace lte{
 		pColorImageView = pDevice->getpColorImageView();
 		pDepthImageView = pDevice->getDepthImageView();
 		swapChainImageViews = pDevice->getSwapChainImageViews();
-	}
+		commandBuffers.clear();
 
+		vk::CommandPoolCreateInfo poolInfo{};
+			poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			poolInfo.queueFamilyIndex = pDevice->getQueueIndex();
+		commandPool = vk::raii::CommandPool(*device, poolInfo);
+		vk::CommandBufferAllocateInfo allocInfo{};
+			allocInfo.commandPool = commandPool,
+			allocInfo.level = vk::CommandBufferLevel::ePrimary,
+			allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+		commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);
+	}
+	std::vector<vk::raii::CommandBuffer>* Gui::getpCommandBuffers() {
+		return &commandBuffers;
+	}
 
 	bool Gui::drawFrame()
 	{
