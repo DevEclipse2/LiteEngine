@@ -15,5 +15,12 @@ namespace lte {
 	vk::Format VulkanDevice::getSwapChainFormat() {return swapChainSurfaceFormat.format;}
 	vk::raii::PhysicalDevice* VulkanDevice::getPhysicalDevice() {return &physicalDevice;}
 	uint32_t* VulkanDevice::getpFrameIndex() { return &frameIndex; }
+	std::vector<vk::raii::Image>* VulkanDevice::getpImages() { return &imagesArr; }
+
+	vk::raii::Image* VulkanDevice::getpColorImage() { return &colorImage; }
+	vk::raii::DeviceMemory* VulkanDevice::getpColorImageMemory() { return &colorImageMemory; }
+	vk::raii::ImageView* VulkanDevice::getpColorImageView() { return &colorImageView; }
+	vk::raii::ImageView* VulkanDevice::getDepthImageView() { return &depthImageView; }
+	std::vector<vk::raii::ImageView>* VulkanDevice::getSwapChainImageViews() { return &swapChainImageViews; }
 
 }

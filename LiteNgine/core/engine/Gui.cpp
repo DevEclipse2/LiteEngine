@@ -2,13 +2,11 @@
 namespace lte{
 	Gui::Gui(VulkanDevice* vulkDev) : pDevice{ vulkDev }
 	{
+		getPtrs();
 		
-		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
 		createDescriptorPool();
 		InitGUI();
-		commandBuffers = pDevice->getCommandBuffer();
-		pFrameIndex = pDevice->getpFrameIndex();
-		pipeline = pDevice->getPipeline();
+		
 		initResources();
 		setStyle(2);
 		updateBuffers();
@@ -40,9 +38,26 @@ namespace lte{
 		// ImGui context is destroyed separately
 	}
 
+	void Gui::getPtrs() {
+		commandBuffers.emplace_back();
+		commandBuffers.emplace_back();
+		commandBuffers.emplace_back();
+		pFrameIndex = pDevice->getpFrameIndex();
+		pipeline = pDevice->getPipeline();
+		pImages = pDevice->getpImages();
+		device = pDevice->getDevice();
+		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
+		pColorImage = pDevice->getpColorImage();
+		pColorImageMemory = pDevice->getpColorImageMemory();
+		pColorImageView = pDevice->getpColorImageView();
+		pDepthImageView = pDevice->getDepthImageView();
+		swapChainImageViews = pDevice->getSwapChainImageViews();
+	}
+
 
 	bool Gui::drawFrame()
 	{
+
 		ImGui_ImplVulkan_NewFrame();
 		ImGui::NewFrame();
 
@@ -70,8 +85,9 @@ namespace lte{
 			return true;
 		}
 
-
 		recordCommandBuffer(drawData , *pFrameIndex);
+		
+		
 		if (drawData && drawData->CmdListsCount > 0) {
 			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
 				needsUpdateBuffers = true;
@@ -82,25 +98,42 @@ namespace lte{
 	}
 	void Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
 	{
-		auto& commandBuffer = commandBuffers->at(index);
+		auto& commandBuffer = commandBuffers[index];
 		commandBuffer.reset();
 		commandBuffer.begin({});
 
+		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+
 		// Begin dynamic rendering
-		vk::RenderingAttachmentInfo colorAttachment{};
+		vk::RenderingAttachmentInfo attachmentInfo = {};
+			attachmentInfo.imageView = *pColorImageView,
+			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
+			attachmentInfo.resolveImageView = swapChainImageViews->at(*pFrameIndex),
+			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
+			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
+			attachmentInfo.clearValue = clearColor;
 		// Note: In a real implementation, you would set imageView, imageLayout,
 		// loadOp, storeOp, and clearValue based on your swapchain image
 		
+		vk::RenderingAttachmentInfo depthAttachmentInfo{};
+			depthAttachmentInfo.imageView = *pDepthImageView,
+			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
+			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
+			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,
+			depthAttachmentInfo.clearValue = clearDepth;
+
+
 		vk::RenderingInfo renderingInfo{};
-		renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
-													   static_cast<uint32_t>(data->DisplaySize.y)} };
-		renderingInfo.layerCount = 1;
-		renderingInfo.colorAttachmentCount = 1;
-		renderingInfo.pColorAttachments = &colorAttachment;
+			renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
+														   static_cast<uint32_t>(data->DisplaySize.y)} };
+			renderingInfo.layerCount = 1;
+			renderingInfo.colorAttachmentCount = 1;
+			renderingInfo.pColorAttachments = &attachmentInfo;
 		
-		commandBuffer.beginRendering(renderingInfo);
-		// Bind the pipeline used for ImGui
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
+		
 
 		// Configure viewport for UI pixel coordinates
  		vk::Viewport viewport{};
@@ -108,7 +141,12 @@ namespace lte{
 		viewport.height = data->DisplaySize.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
+		
+		commandBuffer.beginRendering(renderingInfo);
+		// Bind the pipeline used for ImGui
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
 		commandBuffer.setViewport(0, viewport);
+		
 
 		// Convert from ImGui coordinates into NDC via a simple scale/translate
 		pushConstBlock.scale = glm::vec2(2.0f / data->DisplaySize.x, 2.0f / data->DisplaySize.y);
@@ -151,6 +189,13 @@ namespace lte{
 			vertexOffset += cmdList->VtxBuffer.Size;
 		}
 		commandBuffer.endRendering();
+		pDevice->transitionImageLayout(
+			pImages->at(*pFrameIndex),
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::ImageLayout::ePresentSrcKHR,
+			1
+		);
+		commandBuffer.end();
 	}
 	void Gui::handleKey(int key, int scancode, int action, int mods) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -258,7 +303,7 @@ namespace lte{
 			PoolCreateInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes),
 			PoolCreateInfo.pPoolSizes = poolSizes;
 
-			descriptorPool = vk::raii::DescriptorPool(*(pDevice->getDevice()), PoolCreateInfo);
+			descriptorPool = vk::raii::DescriptorPool(*device, PoolCreateInfo);
 			//VkResult res = vk::DescriptorPool(pDevice->getDevice(), &PoolCreateInfo, NULL, &descriptorPool);;
 			 /*std::array poolSize{
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
@@ -310,7 +355,7 @@ namespace lte{
 		
 		// Create optimized GPU image for font texture storage
 		// This image will be sampled by shaders during UI rendering
-		device = pDevice->getDevice();
+		
 		pDevice->createImage(texWidth, texHeight, 1,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
 			vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
 			vk::MemoryPropertyFlagBits::eDeviceLocal, fontImage, fontMemory);
@@ -323,7 +368,7 @@ namespace lte{
 			imageViewCreateInfo.subresourceRange = { vk::ImageAspectFlagBits::eColor};
 			imageViewCreateInfo.image = fontImage;
 		// The image view defines how shaders interpret the raw image data
-		fontImageView = vk::raii::ImageView(*(pDevice->getDevice()), imageViewCreateInfo);
+		fontImageView = vk::raii::ImageView(*device, imageViewCreateInfo);
 		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory memory({});
 		pDevice->createBuffer(uploadSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, memory);
@@ -364,7 +409,7 @@ namespace lte{
 		samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;  // 3D consistency
 		samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;   // White border for clamped areas
 
-		sampler = pDevice->getDevice()->createSampler(samplerInfo);                   // Create the GPU sampler object
+		sampler = device->createSampler(samplerInfo);                   // Create the GPU sampler object
 
 		// Create descriptor pool for shader resource binding
 		// Descriptors provide the interface between shaders and GPU resources

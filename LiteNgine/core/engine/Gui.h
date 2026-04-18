@@ -73,13 +73,21 @@ namespace lte {
 		vk::raii::PhysicalDevice* physicalDevice = nullptr;    // GPU hardware info for capability queries
 		vk::raii::Queue* graphicsQueue = nullptr;              // Command submission queue for UI rendering
 		uint32_t graphicsQueueFamily = 0;                      // Queue family index for validation
-		std::vector<vk::raii::CommandBuffer>* commandBuffers;
+		std::vector<vk::raii::CommandBuffer> commandBuffers{};
+		std::vector<vk::raii::Image>* pImages;
 		void recordCommandBuffer(ImDrawData* data , uint8_t index);
 		void handleKey(int key, int scancode, int action, int mods);
 		void charPressed(uint32_t key);
 		bool getWantKeyCapture();
 		bool showWindow;
 		uint32_t* pFrameIndex;
+
+		void getPtrs();
+		vk::raii::Image*		pColorImage;
+		vk::raii::DeviceMemory* pColorImageMemory;
+		vk::raii::ImageView*	pColorImageView;
+		vk::raii::ImageView*	pDepthImageView;
+		std::vector<vk::raii::ImageView>* swapChainImageViews;
 	};
 }
 

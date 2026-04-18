@@ -117,7 +117,16 @@ namespace lte {
 		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory);
 		void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
 		void copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height);
-		
+		void transition_image_layout(
+			vk::Image               image,
+			vk::ImageLayout oldLayout,
+			vk::ImageLayout newLayout,
+			vk::AccessFlags2 srcAccessMask,
+			vk::AccessFlags2 dstAccessMask,
+			vk::PipelineStageFlags2 srcStageMask,
+			vk::PipelineStageFlags2 dstStageMask,
+			vk::ImageAspectFlags    image_aspect_flags
+		);
 		std::vector<vk::raii::CommandBuffer>*	getCommandBuffer();
 		vk::raii::Device*						getDevice();
 		GLFWwindow*								getWindow();
@@ -128,6 +137,12 @@ namespace lte {
 		uint32_t								getQueueFamily();
 		vk::raii::Pipeline*						getPipeline();
 		uint32_t*								getpFrameIndex();
+		std::vector<vk::raii::Image>*			getpImages();
+		vk::raii::Image*						getpColorImage();
+		vk::raii::DeviceMemory*					getpColorImageMemory();
+		vk::raii::ImageView*					getpColorImageView();
+		vk::raii::ImageView*					getDepthImageView();
+		std::vector<vk::raii::ImageView>*		getSwapChainImageViews();
 	private:
 
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -222,16 +237,7 @@ namespace lte {
 		void createCommandBuffer();
 		vk::raii::CommandPool    commandPool = nullptr;
 		void recordCommandBuffer(uint32_t imageIndex);
-		void transition_image_layout(
-			vk::Image               image,
-			vk::ImageLayout oldLayout,
-			vk::ImageLayout newLayout,
-			vk::AccessFlags2 srcAccessMask,
-			vk::AccessFlags2 dstAccessMask,
-			vk::PipelineStageFlags2 srcStageMask,
-			vk::PipelineStageFlags2 dstStageMask,
-			vk::ImageAspectFlags    image_aspect_flags
-		);
+		
 
 		//sync objects
 		std::vector<vk::raii::Semaphore> presentCompleteSemaphores{};

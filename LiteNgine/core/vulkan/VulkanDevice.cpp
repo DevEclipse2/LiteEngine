@@ -755,6 +755,9 @@ namespace lte {
 				vertexOffsets += vertices[objectid].size();
 				indexOffsets += indices[objectid].size();
 			}
+			else {
+				break;
+			}
 			
 			objectid++;
 
@@ -790,12 +793,10 @@ namespace lte {
 		vk::ImageAspectFlags    image_aspect_flags
 	) 
 	{
-		vk::ImageSubresourceRange subresourceRange{};
-			subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor,
-			subresourceRange.baseMipLevel = 0,
-			subresourceRange.levelCount = 1,
-			subresourceRange.baseArrayLayer = 0,
-			subresourceRange.layerCount = 1;
+		if (image == nullptr) {
+			image = swapChainImages[frameIndex];
+		}
+
 		vk::ImageSubresourceRange range{};
 			range.aspectMask = image_aspect_flags,
 			range.baseMipLevel = 0,
