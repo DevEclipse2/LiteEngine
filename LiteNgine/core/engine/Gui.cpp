@@ -114,13 +114,20 @@ namespace lte{
 	{
 		auto& commandBuffer = commandBuffers[index];
 		commandBuffer.reset();
-		commandBuffer.begin({});
+		vk::CommandBufferBeginInfo info{};
+		info.sType = vk::StructureType::eCommandBufferBeginInfo;
+		info.pNext = NULL;
+		info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+		info.pInheritanceInfo = NULL;
+		commandBuffer.begin(info);
 
 		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		// Begin dynamic rendering
 		vk::RenderingAttachmentInfo attachmentInfo = {};
+			attachmentInfo.sType = vk::StructureType::eRenderingAttachmentInfo;
+			attachmentInfo.pNext = NULL;
 			attachmentInfo.imageView = *pColorImageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
