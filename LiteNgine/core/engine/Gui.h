@@ -22,6 +22,7 @@ namespace lte {
 		bool drawFrame();
 		void updateBuffers();
 		std::vector<vk::raii::CommandBuffer>* getpCommandBuffers();
+		void updateFrameBuffer();
 	private:
 
 		// Dynamic state tracking for performance optimization
@@ -80,7 +81,9 @@ namespace lte {
 		void handleKey(int key, int scancode, int action, int mods);
 		void charPressed(uint32_t key);
 		bool getWantKeyCapture();
-		bool showWindow;
+		bool showWindow = true;
+		bool showWindow2 = true;
+		bool showProfiler = true;
 		void createPipeline();
 		uint32_t* pFrameIndex;
 
@@ -93,6 +96,13 @@ namespace lte {
 		VkDescriptorPool descriptorPoolHandle;
 		vk::raii::CommandPool commandPool = nullptr;
 		void doDynamicRendering(vk::raii::CommandBuffer& commandBuffer , ImDrawData* data);
+		void createImages();
+
+		uint32_t fps = 0;
+		float Frametime = 0;
+		uint64_t verticeCount = 0;
+		uint64_t indiceCount = 0;
+		uint64_t modelCount = 0;
 	};
 }
 

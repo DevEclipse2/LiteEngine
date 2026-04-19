@@ -54,9 +54,8 @@ namespace lte {
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		std::cout << "fps: " << 1 / (time - prevtime) << "Delta :" << (time - prevtime) * 1000 << "miliseconds" << '\n';
-
+		fps = 1 / (time - prevtime);
+		frameTime = (time - prevtime) * 1000;
 		UniformBufferObject ubo{};
 
 		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));

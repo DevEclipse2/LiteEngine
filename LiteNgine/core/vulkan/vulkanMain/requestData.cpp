@@ -30,4 +30,20 @@ namespace lte {
 		gui = pGui;
 	}
 	uint32_t				VulkanDevice::getQueueIndex() { return queueIndex; }
+	void VulkanDevice::getProfilingData(uint32_t* pFPS, float* pFrametime, uint64_t* pvertices, uint64_t* pindices, uint64_t* pmodels) { 
+		*pFPS		= fps;
+		*pFrametime = frameTime;
+		uint64_t verticeList = 0; 
+		for (const auto& vList : vertices) {
+			verticeList += vList.size();
+		}
+		
+		*pvertices	= verticeList; 
+		verticeList = 0;
+		for (const auto& vList : indices) {
+			verticeList += vList.size();
+		}
+		*pindices	= verticeList;
+		*pmodels	= models.size();
+	}
 }

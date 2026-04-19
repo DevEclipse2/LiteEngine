@@ -16,6 +16,7 @@ namespace lte{
 		getPtrs();
 		
 		createDescriptorPool();
+		createImages();
 		InitGUI();
 		
 		initResources();
@@ -54,7 +55,6 @@ namespace lte{
 		
 		pFrameIndex = pDevice->getpFrameIndex();
 		pipeline = pDevice->getPipeline();
-		pImages = pDevice->getpImages();
 		device = pDevice->getDevice();
 		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
 		pColorImage = pDevice->getpColorImage();
@@ -68,7 +68,13 @@ namespace lte{
 	std::vector<vk::raii::CommandBuffer>* Gui::getpCommandBuffers() {
 		return &commandBuffers;
 	}
+	void Gui::updateFrameBuffer() {
 
+		pDevice->getFrameBufferSize(&fbWidth, &fbHeight);
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize.x = (float)fbWidth;
+		io.DisplaySize.y = (float)fbHeight;
+	}
 	bool Gui::drawFrame()
 	{
 
@@ -81,6 +87,7 @@ namespace lte{
 		ImGui::Text("Hello, Vulkan!");
 		if (ImGui::Button("Click me!")) {
 			// Handle button click
+			std::cout << "srjitndkf\n";
 		}
 		ImGui::End();
 
@@ -89,6 +96,26 @@ namespace lte{
 		if (ImGui::Button("Close Me"))
 			showWindow = false;
 		ImGui::End();
+
+
+
+		ImGui::Begin("Performance Profiling", &showProfiler);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("runs well, must be asian");
+		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
+		std::string fpsStr = "Fps :" + std::to_string(fps);
+		ImGui::Text(fpsStr.c_str());
+		std::string str = "FrameTime : " + std::to_string(Frametime) + " miliseconds";
+		ImGui::Text(str.c_str());
+		str = "Vertices :" + std::to_string(verticeCount);
+		ImGui::Text(str.c_str());
+		str = "Indices :" + std::to_string(indiceCount);
+		ImGui::Text(str.c_str());
+		str = "models :" + std::to_string(modelCount);
+		ImGui::Text(str.c_str());
+		if (ImGui::Button("Close"))
+			showProfiler = false;
+		ImGui::End();
+			
 		ImGui::EndFrame();
 		ImGui::UpdatePlatformWindows();
 		// Render to generate draw data
@@ -212,7 +239,7 @@ namespace lte{
 		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
 		commandBuffer.endRendering();
 		pDevice->transition_image_layout(
-			pImages->at(*pFrameIndex),
+			fontImage,
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
@@ -236,7 +263,10 @@ namespace lte{
 		const int KEY_RELEASED = 0; // Generic key released value
 
 		if (action == KEY_PRESSED)
-			io.AddKeyEvent(static_cast<ImGuiKey>(key),true);
+		{
+			io.AddKeyEvent(static_cast<ImGuiKey>(key), true);
+			std::cout << "key pressed \n";
+		}
 		if (action == KEY_RELEASED)
 			io.AddKeyEvent(static_cast<ImGuiKey>(key), false);
 		
@@ -431,7 +461,6 @@ namespace lte{
 		// This transfers font data from staging buffer to the final GPU image
 		pDevice->copyBufferToImage(stagingBuffer, fontImage,
 			static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-
 		// Transition image to shader-readable layout for rendering
 		// Final layout optimization enables efficient sampling during UI rendering
 		pDevice->transitionImageLayout(fontImage,
@@ -446,7 +475,6 @@ namespace lte{
 		samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;  // Clean edge handling
 		samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;  // 3D consistency
 		samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;   // White border for clamped areas
-
 		sampler = device->createSampler(samplerInfo);                   // Create the GPU sampler object
 
 		// Create descriptor pool for shader resource binding
@@ -529,6 +557,10 @@ namespace lte{
 		};
 	}
 
+	void Gui::createImages()
+	{
+
+	}
 	void Gui::InitGUI() {
 		IMGUI_CHECKVERSION();
 		//IMGUI_DEBUG_LOG();
@@ -570,9 +602,6 @@ namespace lte{
 		pipelineCreateInfo.pColorAttachmentFormats = &colorFormat;
 		pipelineCreateInfo.depthAttachmentFormat = depthFormat;
 		pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
-
-
-
 		
 		ImGui_ImplVulkan_InitInfo init_info = {};
 		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.

@@ -696,7 +696,7 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
 			vk::ImageAspectFlagBits::eDepth);
 
-		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.05f, 0.1f, 1.0f);
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
@@ -856,7 +856,7 @@ namespace lte {
 		}
 		gui->drawFrame();
 
-		/*vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex], *pUiCommandBuffer->at(frameIndex) };
 
 		const vk::SubmitInfo submitInfo{
@@ -866,8 +866,8 @@ namespace lte {
 										static_cast<uint32_t>(std::size(PackedBuffer)),
 										&*PackedBuffer,
 										1,
-										&*renderFinishedSemaphores[imageIndex]};*/
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+										&*renderFinishedSemaphores[imageIndex]};
+		/*vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo{
 										1,
 										&*presentCompleteSemaphores[frameIndex],
@@ -875,7 +875,7 @@ namespace lte {
 										1,
 										&*commandBuffers[frameIndex],
 										1,
-										&*renderFinishedSemaphores[imageIndex] };
+										&*renderFinishedSemaphores[imageIndex] };*/
 		queue.submit(submitInfo, *inFlightFences[frameIndex]);
 																			//bruhhhhhhh
 		const vk::PresentInfoKHR presentInfoKHR{1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex};
@@ -883,6 +883,7 @@ namespace lte {
 		if (framebufferResized)
 		{
 			framebufferResized = false;
+			gui->updateFrameBuffer();
 			recreateSwapChain();
 			std::cout << "resize" << "\n";
 			return;
@@ -1075,7 +1076,7 @@ namespace lte {
 		
 		meshes[1].position = {-2.0f, 0.0f, -1.0f};
 		meshes[1].rotation = {0.0f, 0.0f, 0.0f};
-		meshes[1].scale = {1.45f, 1.45f, 1.45f};
+		meshes[1].scale = {11.45f, 11.45f, 11.45f};
 
 		meshes[2].position = {2.0f, 0.0f, -1.0f};
 		meshes[2].rotation = {glm::radians(90.0f), 0.0f, 0.0f};
