@@ -1,0 +1,182 @@
+apiVersion: 4206807
+vendorID: 32902
+deviceID: 39745
+deviceName: Intel(R) UHD Graphics
+deviceType: 1
+pipelineCacheUUID: 66:3d:64:30:6f:32:51:32:6e:3f:6d:31:6a:35:68:1
+maxImageDimension1D: 16384
+maxImageDimension2D: 16384
+maxImageDimension3D: 2048
+maxImageArrayLayers: 2048
+maxUniformBufferRange: 134217724
+maxStorageBufferRange: 1073741820
+maxPushConstantsSize: 256
+maxMemoryAllocationCount: 3157700
+maxBoundDescriptorSets: 32
+maxComputeWorkGroupCount[0]: 65536
+maxComputeWorkGroupCount[1]: 65536
+maxComputeWorkGroupCount[2]: 65536
+maxComputeWorkGroupInvocations: 1024
+maxSamplerAllocationCount: 4000
+maxSamplerAnisotropy: 16
+bufferImageGranularity: 1
+core features sample:
+  geometryShader: 1
+  tessellationShader: 1
+  samplerAnisotropy: 1
+  shaderInt64: 1
+  fillModeNonSolid: 1
+  multiDrawIndirect: 1
+memoryHeap count: 1
+  heap[0].size: 12799721472
+  heap[0].flags: 1
+memoryType count: 3
+  type[0].propertyFlags: 1 heapIndex: 0
+  type[1].propertyFlags: 7 heapIndex: 0
+  type[2].propertyFlags: 15 heapIndex: 0
+apiVersion: 4206807
+vendorID: 32902
+deviceID: 39745
+deviceName: Intel(R) UHD Graphics
+deviceType: 1
+pipelineCacheUUID: 66:3d:64:30:6f:32:51:32:6e:3f:6d:31:6a:35:68:1
+maxImageDimension1D: 16384
+maxImageDimension2D: 16384
+maxImageDimension3D: 2048
+maxImageArrayLayers: 2048
+maxUniformBufferRange: 134217724
+maxStorageBufferRange: 1073741820
+maxPushConstantsSize: 256
+maxMemoryAllocationCount: 3157700
+maxBoundDescriptorSets: 32
+maxComputeWorkGroupCount[0]: 65536
+maxComputeWorkGroupCount[1]: 65536
+maxComputeWorkGroupCount[2]: 65536
+maxComputeWorkGroupInvocations: 1024
+maxSamplerAllocationCount: 4000
+maxSamplerAnisotropy: 16
+bufferImageGranularity: 1
+core features sample:
+  geometryShader: 1
+  tessellationShader: 1
+  samplerAnisotropy: 1
+  shaderInt64: 1
+  fillModeNonSolid: 1
+  multiDrawIndirect: 1
+memoryHeap count: 1
+  heap[0].size: 12799721472
+  heap[0].flags: 1
+memoryType count: 3
+  type[0].propertyFlags: 1 heapIndex: 0
+  type[1].propertyFlags: 7 heapIndex: 0
+  type[2].propertyFlags: 15 heapIndex: 0
+validation layer: type { Validation } msg: vkCreateSwapchainKHR(): pCreateInfo->imageFormat VK_FORMAT_B8G8R8A8_SRGB with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT.
+The Vulkan spec states: The implied image creation parameters of the swapchain must be supported as reported by vkGetPhysicalDeviceImageFormatProperties (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkSwapchainCreateInfoKHR-imageFormat-01778)
+validation layer: type { Validation } msg: vkCreateSwapchainKHR(): pCreateInfo vkGetPhysicalDeviceImageFormatProperties() unexpectedly failed, with following VkImageCreateInfo
+format (VK_FORMAT_B8G8R8A8_SRGB)
+type (VK_IMAGE_TYPE_2D)
+tiling (VK_IMAGE_TILING_OPTIMAL)
+usage (VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_STORAGE_BIT|VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+flags (VkImageCreateFlags(0))
+The Vulkan spec states: The implied image creation parameters of the swapchain must be supported as reported by vkGetPhysicalDeviceImageFormatProperties (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkSwapchainCreateInfoKHR-imageFormat-01778)
+validation layer: type { Validation } msg: vkCreateSwapchainKHR(): pCreateInfo->imageArrayLayers 1, but Maximum value returned by vkGetPhysicalDeviceImageFormatProperties() is 0 for imageFormat VK_FORMAT_B8G8R8A8_SRGB with tiling VK_IMAGE_TILING_OPTIMAL.
+The Vulkan spec states: The implied image creation parameters of the swapchain must be supported as reported by vkGetPhysicalDeviceImageFormatProperties (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkSwapchainCreateInfoKHR-imageFormat-01778)
+validation layer: type { Validation } msg: vkCreateSwapchainKHR(): pCreateInfo->imageExtent (width = 800, height = 600), which is bigger than max extent (width = 0, height = 0, depth = 0) returned by vkGetPhysicalDeviceImageFormatProperties() for imageFormat VK_FORMAT_B8G8R8A8_SRGB with tiling VK_IMAGE_TILING_OPTIMAL.
+The Vulkan spec states: The implied image creation parameters of the swapchain must be supported as reported by vkGetPhysicalDeviceImageFormatProperties (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkSwapchainCreateInfoKHR-imageFormat-01778)
+validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo->format VK_FORMAT_B8G8R8A8_SRGB with tiling VK_IMAGE_TILING_OPTIMAL doesn't support VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT.
+(supported features: VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT|VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT|VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BLEND_BIT|VK_FORMAT_FEATURE_2_BLIT_SRC_BIT|VK_FORMAT_FEATURE_2_BLIT_DST_BIT|VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_LINEAR_BIT|VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT|VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT|VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_MINMAX_BIT).
+The Vulkan spec states: If usage contains VK_IMAGE_USAGE_STORAGE_BIT, then the image view's format features must contain VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageViewCreateInfo-usage-02275)
+validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo->format VK_FORMAT_B8G8R8A8_SRGB with tiling VK_IMAGE_TILING_OPTIMAL doesn't support VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT.
+(supported features: VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT|VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT|VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BLEND_BIT|VK_FORMAT_FEATURE_2_BLIT_SRC_BIT|VK_FORMAT_FEATURE_2_BLIT_DST_BIT|VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_LINEAR_BIT|VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT|VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT|VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_MINMAX_BIT).
+The Vulkan spec states: If usage contains VK_IMAGE_USAGE_STORAGE_BIT, then the image view's format features must contain VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageViewCreateInfo-usage-02275)
+validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo->format VK_FORMAT_B8G8R8A8_SRGB with tiling VK_IMAGE_TILING_OPTIMAL doesn't support VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT.
+(supported features: VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT|VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT|VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BLEND_BIT|VK_FORMAT_FEATURE_2_BLIT_SRC_BIT|VK_FORMAT_FEATURE_2_BLIT_DST_BIT|VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_LINEAR_BIT|VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT|VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT|VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_MINMAX_BIT).
+The Vulkan spec states: If usage contains VK_IMAGE_USAGE_STORAGE_BIT, then the image view's format features must contain VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageViewCreateInfo-usage-02275)
+validation layer: type { Validation } msg: vkCreateImage(): pCreateInfo->samples is VK_SAMPLE_COUNT_16_BIT and mipLevels is 2, but when not VK_SAMPLE_COUNT_1_BIT the mipLevels must be 1
+The Vulkan spec states: If samples is not VK_SAMPLE_COUNT_1_BIT, then imageType must be VK_IMAGE_TYPE_2D, flags must not contain VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, mipLevels must be equal to 1, and imageCreateMaybeLinear (as defined in Image Creation Limits) must be VK_FALSE, (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageCreateInfo-samples-02257)
+loading!models/viking_room.obj
+loading complete!
+indexing complete!
+loading!models/Arrow.obj
+loading complete!
+indexing complete!
+validation layer: type { Validation } msg: vkCreateSampler(): pCreateInfo->anisotropyEnable is VK_TRUE but the samplerAnisotropy feature was not enabled.
+The Vulkan spec states: If the samplerAnisotropy feature is not enabled, anisotropyEnable must be VK_FALSE (https://docs.vulkan.org/spec/latest/chapters/samplers.html#VUID-VkSamplerCreateInfo-anisotropyEnable-01070)
+validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo->subresourceRange.levelCount is zero.
+The Vulkan spec states: If levelCount is not VK_REMAINING_MIP_LEVELS, it must be greater than 0 (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageSubresourceRange-levelCount-01720)
+validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo->subresourceRange.layerCount is zero.
+The Vulkan spec states: If layerCount is not VK_REMAINING_ARRAY_LAYERS, it must be greater than 0 (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageSubresourceRange-layerCount-01721)
+validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo->subresourceRange.layerCount (0) must be 1 when using viewType VK_IMAGE_VIEW_TYPE_2D (try looking into VK_IMAGE_VIEW_TYPE_*_ARRAY).
+The Vulkan spec states: If viewType is VK_IMAGE_VIEW_TYPE_1D, VK_IMAGE_VIEW_TYPE_2D, or VK_IMAGE_VIEW_TYPE_3D; and subresourceRange.layerCount is not VK_REMAINING_ARRAY_LAYERS, then subresourceRange.layerCount must be 1 (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageViewCreateInfo-imageViewType-04973)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].oldLayout (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) is not compatible with VkImage 0x4f000000004f usage flags VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT.
+The Vulkan spec states: If layouts are not ignored, oldLayout or newLayout is VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL then image must have been created with the VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT usage flag set (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01208)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].oldLayout (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) is not compatible with VkImage 0x4f000000004f usage flags VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT.
+The Vulkan spec states: If layouts are not ignored, oldLayout or newLayout is VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL then image must have been created with the VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT usage flag set (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01208)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+
+
+
+
+validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x22048113398 expects VkImage 0x180000000018 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 8, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+
+vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x22048113398 expects VkImage 0x180000000018 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 9, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+
+
+validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+
+
+vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].oldLayout (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) is not compatible with VkImage 0x4f000000004f usage flags VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT.
+The Vulkan spec states: If layouts are not ignored, oldLayout or newLayout is VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL then image must have been created with the VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT usage flag set (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01208)
+validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].oldLayout (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) is not compatible with VkImage 0x4f000000004f usage flags VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT.
+The Vulkan spec states: If layouts are not ignored, oldLayout or newLayout is VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL then image must have been created with the VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT usage flag set (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01208)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+
+validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+
+validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+
+vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x4f000000004f) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+
+C:\git\LiteEngine\BuildDbg\LiteNgine.exe (process 16532) exited with code -1 (0xffffffff).

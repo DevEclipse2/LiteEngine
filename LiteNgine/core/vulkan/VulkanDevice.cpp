@@ -953,11 +953,13 @@ namespace lte {
 
 	void VulkanDevice::recreateSwapChain() {
 
-		int width = 0, height = 0;
-		glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
-		while (width == 0 || height == 0)
+		
+		WIDTH = 0;
+		HEIGHT = 0;
+		glfwGetFramebufferSize(window.getGLFWWindow(), &WIDTH, &HEIGHT);
+		while (WIDTH == 0 || HEIGHT == 0)
 		{
-			glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
+			glfwGetFramebufferSize(window.getGLFWWindow(), &WIDTH, &HEIGHT);
 			glfwWaitEvents();
 		}
 		device.waitIdle();
@@ -1077,7 +1079,7 @@ namespace lte {
 		
 		meshes[1].position = {-2.0f, 0.0f, -1.0f};
 		meshes[1].rotation = {0.0f, 0.0f, 0.0f};
-		meshes[1].scale = {11.45f, 11.45f, 11.45f};
+		meshes[1].scale = {1.45f, 1.45f, 1.45f};
 
 		meshes[2].position = {2.0f, 0.0f, -1.0f};
 		meshes[2].rotation = {glm::radians(90.0f), 0.0f, 0.0f};

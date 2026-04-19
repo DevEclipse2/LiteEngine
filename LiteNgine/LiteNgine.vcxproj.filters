@@ -185,5 +185,6 @@
     <Text Include="core\engine\engine formatting.txt" />
     <Text Include="core\engine\notes\fileSys.txt" />
     <Text Include="core\engine\notes\codeGraph.txt" />
+    <Text Include="core\engine\Log.txt" />
   </ItemGroup>
 </Project>

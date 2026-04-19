@@ -233,6 +233,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\engine\engine formatting.txt" />
+    <Text Include="core\engine\Log.txt" />
     <Text Include="core\engine\notes\codeGraph.txt" />
     <Text Include="core\engine\notes\fileSys.txt" />
   </ItemGroup>

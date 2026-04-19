@@ -81,6 +81,7 @@ namespace lte{
 		ImGui_ImplVulkan_NewFrame();
 		ImGui::NewFrame();
 		// In your main loop, after ImGui::NewFrame()
+		ImGui::SetNextWindowBgAlpha(0.0f); // 0.0f = fully transparent, 1.0f = fully opaque
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -88,26 +89,16 @@ namespace lte{
 			ImGui::SetNextWindowSize(viewport->WorkSize);*/
 		// Create your UI elements here
 		// For example:
-		ImGui::Begin("Vulkan ImGui Demo");
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+		ImGui::Begin("scene viewport",NULL,window_flags);
 		ImGui::Text("Hello, Vulkan!");
 		if (ImGui::Button("Click me!")) {
 			// Handle button click
 			std::cout << "srjitndkf\n";
 		}
 		ImGui::End();
-		/*if (firstFrame) {
-			ImGui::SetNextWindowPos(viewport->WorkPos);
-			ImVec2 size = viewport->WorkSize;
-			size.x *= 0.5f;
-			ImGui::SetNextWindowSize(size);
-		}*/
-		ImGui::Begin("ViewportPreview", &showWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("its probably here");
-		vk::Image* viewPort = pDevice->getImage(*pFrameIndex);
-		vk::raii::ImageView* viewPortImgView = pDevice->getImageView(*pFrameIndex);
-		//ImGui::Image(*viewPort, viewport->Size());
-		ImGui::End;
 
+		ImGui::Begin("Performance: ", &showWindow2);
 		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
 		std::string fpsStr = "Fps :" + std::to_string(fps);
 		ImGui::Text(fpsStr.c_str());
@@ -262,7 +253,7 @@ namespace lte{
 			vk::ImageLayout::ePresentSrcKHR,
 			1
 		);*/
-		commandBuffer.endRendering();
+		//commandBuffer.endRendering();
 		commandBuffer.end();
 	}
 	void Gui::handleKey(int key, int scancode, int action, int mods) {
