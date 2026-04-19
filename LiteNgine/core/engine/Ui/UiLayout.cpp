@@ -2,7 +2,7 @@
 #include <iostream>
 namespace lte {
 	UiLayout::UiLayout() {
-		Page fullViewport{ ImGuiWindowFlags_NoBackground ,nullptr,{0},{},std::vector<std::string>{"testing new UI layout system!"}};
+		/*Page fullViewport{ ImGuiWindowFlags_NoBackground ,nullptr,{0},{},std::vector<std::string>{"testing new UI layout system!"}};
 		TabNames.emplace_back("Viewport");
 		TabPages.emplace_back(fullViewport);
 		Button button{};
@@ -12,7 +12,7 @@ namespace lte {
 		button.pFunc = []() { std::cout << "button was pressed!\n";};
 		Page buttonText{ NULL, nullptr,{1,0},{button},std::vector<std::string>{"Deploying surprise in 3..2..1.."}};
 		TabNames.emplace_back("button");
-		TabPages.emplace_back(buttonText);
+		TabPages.emplace_back(buttonText);*/
 
 	}
 	void UiLayout::forceInit() {
