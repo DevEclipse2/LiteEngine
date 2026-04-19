@@ -23,6 +23,7 @@ namespace lte {
 		void updateBuffers();
 		std::vector<vk::raii::CommandBuffer>* getpCommandBuffers();
 		void updateFrameBuffer();
+		bool firstFrame = true;
 	private:
 
 		// Dynamic state tracking for performance optimization

@@ -143,6 +143,8 @@ namespace lte {
 		std::vector<vk::raii::ImageView>*		getSwapChainImageViews();
 		uint32_t								getQueueIndex();
 		vk::Format								getDepthFormat();
+		vk::Image*								getImage(uint32_t index);
+		vk::ImageView*							getImageView(uint32_t index);
 		void setGuiCommandBuffers(std::vector<vk::raii::CommandBuffer>* pCmd);
 		void setGuiRef(Gui* gui);
 		void getProfilingData(uint32_t* pFPS, float* pFrametime, uint64_t* vertices, uint64_t* indices, uint64_t* models);

@@ -883,6 +883,7 @@ namespace lte {
 		if (framebufferResized)
 		{
 			framebufferResized = false;
+			gui->firstFrame = true;
 			gui->updateFrameBuffer();
 			recreateSwapChain();
 			std::cout << "resize" << "\n";

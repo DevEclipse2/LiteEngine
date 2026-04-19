@@ -80,7 +80,12 @@ namespace lte{
 
 		ImGui_ImplVulkan_NewFrame();
 		ImGui::NewFrame();
+		// In your main loop, after ImGui::NewFrame()
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		/*	ImGui::SetNextWindowPos(viewport->WorkPos);
+			ImGui::SetNextWindowSize(viewport->WorkSize);*/
 		// Create your UI elements here
 		// For example:
 		ImGui::Begin("Vulkan ImGui Demo");
@@ -90,17 +95,19 @@ namespace lte{
 			std::cout << "srjitndkf\n";
 		}
 		ImGui::End();
+		/*if (firstFrame) {
+			ImGui::SetNextWindowPos(viewport->WorkPos);
+			ImVec2 size = viewport->WorkSize;
+			size.x *= 0.5f;
+			ImGui::SetNextWindowSize(size);
+		}*/
+		ImGui::Begin("ViewportPreview", &showWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("its probably here");
+		vk::Image* viewPort = pDevice->getImage(*pFrameIndex);
+		vk::ImageView* viewPortImgView = pDevice->getImageView(*pFrameIndex);
+		//ImGui::Image(*viewPort, viewport->Size());
+		ImGui::End;
 
-		ImGui::Begin("Another Window", &showWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			showWindow = false;
-		ImGui::End();
-
-
-
-		ImGui::Begin("Performance Profiling", &showProfiler);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("runs well, must be asian");
 		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
 		std::string fpsStr = "Fps :" + std::to_string(fps);
 		ImGui::Text(fpsStr.c_str());
@@ -115,11 +122,12 @@ namespace lte{
 		if (ImGui::Button("Close"))
 			showProfiler = false;
 		ImGui::End();
-			
+
 		ImGui::EndFrame();
 		ImGui::UpdatePlatformWindows();
 		// Render to generate draw data
 		ImGui::Render();
+		firstFrame = false;
 
 		ImDrawData* drawData = ImGui::GetDrawData();
 		if (!drawData || drawData->CmdListsCount == 0) {
@@ -238,15 +246,21 @@ namespace lte{
 		//}
 		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
 		commandBuffer.endRendering();
-		pDevice->transition_image_layout(
+		//pDevice->transition_image_layout(
+		//	fontImage,
+		//	vk::ImageLayout::eColorAttachmentOptimal,
+		//	vk::ImageLayout::ePresentSrcKHR,
+		//	vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+		//	{},                                                     // dstAccessMask
+		//	vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+		//	vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+		//	vk::ImageAspectFlagBits::eColor
+		//);
+		pDevice->transitionImageLayout(
 			fontImage,
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
-			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
-			{},                                                     // dstAccessMask
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
-			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
-			vk::ImageAspectFlagBits::eColor
+			1
 		);
 		commandBuffer.endRendering();
 		commandBuffer.end();
