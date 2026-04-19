@@ -119,7 +119,7 @@ namespace lte{
 		ImGui::Text(str.c_str());
 		str = "models :" + std::to_string(modelCount);
 		ImGui::Text(str.c_str());
-		if (ImGui::Button("Close"))
+		if (ImGui::Button("Close")) 
 			showProfiler = false;
 		ImGui::End();
 
