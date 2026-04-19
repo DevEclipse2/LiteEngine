@@ -27,7 +27,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 
-#include "../engine/Gui.h"
+#include "../engine/ImGuiBackend.h"
 #include <random>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;

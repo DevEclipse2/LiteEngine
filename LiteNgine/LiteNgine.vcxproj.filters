@@ -99,7 +99,10 @@
     <ClCompile Include="dep\backends\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\engine\Gui.cpp">
+    <ClCompile Include="core\engine\ImGuiBackend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\engine\Ui\UiLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,7 +176,10 @@
     <ClInclude Include="dep\backends\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\engine\Gui.h">
+    <ClInclude Include="core\engine\ImGuiBackend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\Ui\UiLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,7 @@ namespace lte {
 		ltWindow.setVkDevice(&vkDevice);
 		vkDevice.setGuiRef(&uiProc);
 		vkDevice.setGuiCommandBuffers(uiProc.getpCommandBuffers());
+		uiProc.setLayoutManager(&uiLayout);
 		while (!ltWindow.shouldClose()) {
 			glfwPollEvents();
 			vkDevice.drawFrame();
