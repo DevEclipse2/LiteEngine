@@ -47,5 +47,5 @@ namespace lte {
 		*pmodels	= models.size();
 	}
 	vk::Image* VulkanDevice::getImage(uint32_t index) {return &swapChainImages[index];}
-	vk::ImageView* VulkanDevice::getImageView(uint32_t index) { return &swapChainImageViews[index]; }
+	vk::raii::ImageView* VulkanDevice::getImageView(uint32_t index) { return &swapChainImageViews[index]; }
 }

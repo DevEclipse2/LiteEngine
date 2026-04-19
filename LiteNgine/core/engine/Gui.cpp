@@ -104,7 +104,7 @@ namespace lte{
 		ImGui::Begin("ViewportPreview", &showWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
 		ImGui::Text("its probably here");
 		vk::Image* viewPort = pDevice->getImage(*pFrameIndex);
-		vk::ImageView* viewPortImgView = pDevice->getImageView(*pFrameIndex);
+		vk::raii::ImageView* viewPortImgView = pDevice->getImageView(*pFrameIndex);
 		//ImGui::Image(*viewPort, viewport->Size());
 		ImGui::End;
 
@@ -246,22 +246,22 @@ namespace lte{
 		//}
 		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
 		commandBuffer.endRendering();
-		//pDevice->transition_image_layout(
-		//	fontImage,
-		//	vk::ImageLayout::eColorAttachmentOptimal,
-		//	vk::ImageLayout::ePresentSrcKHR,
-		//	vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
-		//	{},                                                     // dstAccessMask
-		//	vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
-		//	vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
-		//	vk::ImageAspectFlagBits::eColor
-		//);
-		pDevice->transitionImageLayout(
+		pDevice->transition_image_layout(
+			fontImage,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::ImageLayout::ePresentSrcKHR,
+			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+			{},                                                     // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::ImageAspectFlagBits::eColor
+		);
+		/*pDevice->transitionImageLayout(
 			fontImage,
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
 			1
-		);
+		);*/
 		commandBuffer.endRendering();
 		commandBuffer.end();
 	}
