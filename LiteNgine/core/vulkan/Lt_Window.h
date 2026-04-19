@@ -27,6 +27,9 @@ namespace lte {
 		const int height;
 		std::string windowName;
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void charCallback(GLFWwindow* window, unsigned int codepoint);
+
 
 	};
 }

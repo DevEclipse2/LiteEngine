@@ -28,7 +28,6 @@
 #include <unordered_map>
 
 #include "../engine/Gui.h"
-
 #include <random>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
@@ -148,6 +147,8 @@ namespace lte {
 		void setGuiCommandBuffers(std::vector<vk::raii::CommandBuffer>* pCmd);
 		void setGuiRef(Gui* gui);
 		void getProfilingData(uint32_t* pFPS, float* pFrametime, uint64_t* vertices, uint64_t* indices, uint64_t* models);
+		void charCallback(GLFWwindow* window, unsigned int codepoint);
+		void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	private:
 		Gui* gui = nullptr;
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -335,6 +336,9 @@ namespace lte {
 		uint64_t frameNumber = 0;
 		uint32_t fps = 0;
 		float frameTime;
+		
+		
+		
 	};
 
 	

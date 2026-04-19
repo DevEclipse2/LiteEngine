@@ -30,14 +30,27 @@ namespace lte {
 
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+		glfwSetKeyCallback(window, KeyCallback);
+		glfwSetCharCallback(window, charCallback);
+			/*glfwSetScrollCallback
+		glfwGetCursorPos*/
 		
 	}
+	void Lt_Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		//ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+		vkdevice->keyCallback(window, key, scancode, action, mods);
+	}
+	
 	void Lt_Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		vkdevice->framebufferResized = true;
 	}
 	void Lt_Window::setVkDevice(VulkanDevice* device){
 		vkdevice = device;
+	}
+	void Lt_Window::charCallback(GLFWwindow* window, unsigned int codepoint) {
+		//ImGui_ImplGlfw_CharCallback(window, codepoint);
+		vkdevice->charCallback(window, codepoint);
 	}
 
 }

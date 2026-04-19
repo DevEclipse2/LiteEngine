@@ -24,6 +24,9 @@ namespace lte {
 		std::vector<vk::raii::CommandBuffer>* getpCommandBuffers();
 		void updateFrameBuffer();
 		bool firstFrame = true;
+		void handleKey(int key, int scancode, int action, int mods);
+		void charPressed(uint32_t key);
+		bool getWantKeyCapture();
 	private:
 
 		// Dynamic state tracking for performance optimization
@@ -79,9 +82,8 @@ namespace lte {
 		std::vector<vk::raii::CommandBuffer> commandBuffers{};
 		std::vector<vk::raii::Image> Images;
 		void recordCommandBuffer(ImDrawData* data , uint8_t index);
-		void handleKey(int key, int scancode, int action, int mods);
-		void charPressed(uint32_t key);
-		bool getWantKeyCapture();
+		
+		
 		bool showWindow = true;
 		bool showWindow2 = true;
 		bool showProfiler = true;

@@ -257,6 +257,11 @@ namespace lte{
 		commandBuffer.end();
 	}
 	void Gui::handleKey(int key, int scancode, int action, int mods) {
+		
+		std::cout << "key pressed \n";
+		//ImGui_ImplGlfw_KeyCallback(pDevice->getWindow(), key, scancode,action,mods);
+		return;
+
 		ImGuiIO& io = ImGui::GetIO();
 
 		// This example uses GLFW key codes and actions, but you can adapt this
@@ -270,16 +275,15 @@ namespace lte{
 		if (action == KEY_PRESSED)
 		{
 			io.AddKeyEvent(static_cast<ImGuiKey>(key), true);
-			std::cout << "key pressed \n";
 		}
 		if (action == KEY_RELEASED)
 			io.AddKeyEvent(static_cast<ImGuiKey>(key), false);
 		
 
-		/*// Update modifier keys
+		// Update modifier keys
 		// These key codes are GLFW-specific, but you would use your windowing library's
 		// equivalent key codes for other libraries
-		const int KEY_LEFT_CTRL = 341;   // GLFW_KEY_LEFT_CONTROL
+		/*const int KEY_LEFT_CTRL = 341;   // GLFW_KEY_LEFT_CONTROL
 		const int KEY_RIGHT_CTRL = 345;  // GLFW_KEY_RIGHT_CONTROL
 		const int KEY_LEFT_SHIFT = 340;  // GLFW_KEY_LEFT_SHIFT
 		const int KEY_RIGHT_SHIFT = 344; // GLFW_KEY_RIGHT_SHIFT
@@ -294,11 +298,14 @@ namespace lte{
 		io.KeySuper = io.KeysDown[KEY_LEFT_SUPER] || io.KeysDown[KEY_RIGHT_SUPER];*/
 	}
 
+	//void Gui::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 	bool Gui::getWantKeyCapture() {
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 
 	void Gui::charPressed(uint32_t key) {
+
 		ImGuiIO& io = ImGui::GetIO();
 		io.AddInputCharacter(key);
 	}

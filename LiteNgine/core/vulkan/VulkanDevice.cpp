@@ -1,6 +1,9 @@
 #include "VulkanDevice.h"
 #include "ConsoleLog.h"
-
+#define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
+#include "../../dep/backends/imgui.h"
+#include "../../dep/backends/imgui_impl_glfw.h"
+#include "../../dep/backends/imgui_impl_vulkan.h"
 #define VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS
 namespace lte {
 
@@ -84,6 +87,20 @@ namespace lte {
 		debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 	}
 
+	void VulkanDevice::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		// First check if ImGui wants to capture this input
+		gui->handleKey(key, scancode, action, mods);
+		std::cout << "key pressed \n";
+		// If ImGui doesn't want to capture the keyboard, process for your application
+		if (!gui->getWantKeyCapture()) {
+			// Process key for your application
+		}
+	}
+
+	// Example character input callback for GLFW
+	void VulkanDevice::charCallback(GLFWwindow* window, unsigned int codepoint) {
+		gui->charPressed(codepoint);
+	}
 
 
 
