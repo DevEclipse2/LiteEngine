@@ -24,7 +24,7 @@ namespace lte {
 						[requiredDeviceExtension](auto const& availableDeviceExtension)
 						{ return strcmp(availableDeviceExtension.extensionName, requiredDeviceExtension) == 0; });
 				});
-		auto features = physicalDevice.template getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
+		auto features = physicalDevice.template getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
 		bool supportsRequiredFeatures = 
 			features.template get<vk::PhysicalDeviceFeatures2>().features.samplerAnisotropy &&
 			features.template get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering &&
@@ -118,7 +118,8 @@ namespace lte {
 		}
 		// Create a chain of feature structures
 		// query for Vulkan 1.3 features
-		vk::PhysicalDeviceFeatures deviceFeatures{ deviceFeatures.samplerAnisotropy = true };
+		vk::PhysicalDeviceFeatures deviceFeatures{};
+		deviceFeatures.samplerAnisotropy = VK_TRUE;
 		vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceVulkan11Features,
@@ -131,7 +132,6 @@ namespace lte {
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = VK_TRUE;
-
 		// create a Device
 		float queuePriority = 0.5f;
 		vk::DeviceQueueCreateInfo deviceQueueCreateInfo{};

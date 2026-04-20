@@ -39,27 +39,31 @@ namespace lte {
 		{
 			const auto& page = TabPages[i];
 			ImGui::Begin(TabNames[i].c_str(),page.open, page.flags);
+			uint8_t indexbuttons = 0;
+			uint8_t indexstrings = 0;
 			for (int i = 0; i < page.type.size(); i++)
 			{
 				switch (page.type[i]) {
 				case 0:
 					//std::cout << "string\n";
-					ImGui::Text(page.strings[i].c_str());
+					ImGui::Text(page.strings[indexstrings].c_str());
+					indexstrings++;
 					break;
 				case 1:
-					if (page.buttons[i].useScale) {
-						if (ImGui::Button(page.buttons[i].name.c_str(), page.buttons[i].scale))
+					if (page.buttons[indexbuttons].useScale) {
+						if (ImGui::Button(page.buttons[indexbuttons].name.c_str(), page.buttons[indexbuttons].scale))
 						{
 
-							page.buttons[i].pFunc();
+							page.buttons[indexbuttons].pFunc();
 						}
 					}
 					else {
-						if (ImGui::Button(page.buttons[i].name.c_str(), page.buttons[i].scale))
+						if (ImGui::Button(page.buttons[indexbuttons].name.c_str(), page.buttons[indexbuttons].scale))
 						{
-							page.buttons[i].pFunc();
+							page.buttons[indexbuttons].pFunc();
 						}
 					}
+					indexbuttons++;
 					break;
 				default: std::cerr << "unknown format , terminating...\n";
 				}

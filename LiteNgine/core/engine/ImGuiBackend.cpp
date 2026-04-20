@@ -88,32 +88,32 @@ namespace lte{
 			ImGui::SetNextWindowSize(viewport->WorkSize);*/
 		// Create your UI elements here
 		// For example:
-		layoutMgr->beginDrawData();
+		//layoutMgr->beginDrawData();
 
-		//ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
-		//ImGui::Begin("scene viewport",NULL,window_flags);
-		//ImGui::Text("Hello, Vulkan!");
-		//if (ImGui::Button("Click me!")) {
-		//	// Handle button click
-		//	std::cout << "srjitndkf\n";
-		//}
-		//ImGui::End();
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+		ImGui::Begin("scene viewport",NULL,window_flags);
+		ImGui::Text("Hello, Vulkan!");
+		if (ImGui::Button("Click me!")) {
+			// Handle button click
+			std::cout << "srjitndkf\n";
+		}
+		ImGui::End();
 
-		//ImGui::Begin("Performance: ", &showWindow2);
-		//pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
-		//std::string fpsStr = "Fps :" + std::to_string(fps);
-		//ImGui::Text(fpsStr.c_str());
-		//std::string str = "FrameTime : " + std::to_string(Frametime) + " miliseconds";
-		//ImGui::Text(str.c_str());
-		//str = "Vertices :" + std::to_string(verticeCount);
-		//ImGui::Text(str.c_str());
-		//str = "Indices :" + std::to_string(indiceCount);
-		//ImGui::Text(str.c_str());
-		//str = "models :" + std::to_string(modelCount);
-		//ImGui::Text(str.c_str());
-		//if (ImGui::Button("Close")) 
-		//	showProfiler = false;
-		//ImGui::End();
+		ImGui::Begin("Performance: ", &showWindow2);
+		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
+		std::string fpsStr = "Fps :" + std::to_string(fps);
+		ImGui::Text(fpsStr.c_str());
+		std::string str = "FrameTime : " + std::to_string(Frametime) + " miliseconds";
+		ImGui::Text(str.c_str());
+		str = "Vertices :" + std::to_string(verticeCount);
+		ImGui::Text(str.c_str());
+		str = "Indices :" + std::to_string(indiceCount);
+		ImGui::Text(str.c_str());
+		str = "models :" + std::to_string(modelCount);
+		ImGui::Text(str.c_str());
+		if (ImGui::Button("Close")) 
+			showProfiler = false;
+		ImGui::End();
 
 		ImGui::EndFrame();
 		ImGui::UpdatePlatformWindows();
@@ -240,7 +240,7 @@ namespace lte{
 		commandBuffer.endRendering();
 		pDevice->transition_image_layout(
 			fontImage,
-			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::ImageLayout::eShaderReadOnlyOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
 			{},                                                     // dstAccessMask
@@ -633,7 +633,7 @@ namespace lte{
 		init_info.Allocator = NULL;
 		init_info.PipelineInfoMain.RenderPass = NULL;
 		init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_8_BIT;
 		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
 		ImGui_ImplVulkan_Init(&init_info);
 		vk::CommandPoolCreateInfo poolInfo{};
