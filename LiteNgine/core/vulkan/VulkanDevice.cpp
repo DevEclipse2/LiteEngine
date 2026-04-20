@@ -32,7 +32,7 @@ namespace lte {
 		for (int i = 0; i < models.size(); i++) {
 			//multiple textures
 			prepareModels();
-			createTextureImage(i,textures[i]);
+			createTextureImage(i,textures[i] ,&imagesArr[i], &imageMem[i]);
 			createTextureImageView(&imagesArr[i]);
 			loadModel(i,models[i]);
 

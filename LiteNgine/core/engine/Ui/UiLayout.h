@@ -40,6 +40,7 @@ namespace lte {
 			std::string consoleData();
 			std::vector<std::string> TabNames = {};
 			std::vector<Page> TabPages = {};
+			void drawMenu();
 			//std::map<std::string, Page> tabs = { { "Viewport", { ImGuiWindowFlags_NoBackground ,nullptr,{0},{},std::vector<std::string>{"testing new UI layout system!"}}} };
 	};
 }

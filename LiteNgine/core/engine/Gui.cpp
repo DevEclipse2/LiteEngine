@@ -1,1 +1,0 @@
-		vertexBuffer = device.createBuffer(vertexInfo);

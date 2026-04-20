@@ -48,4 +48,5 @@ namespace lte {
 	}
 	vk::Image* VulkanDevice::getImage(uint32_t index) {return &swapChainImages[index];}
 	vk::raii::ImageView* VulkanDevice::getImageView(uint32_t index) { return &swapChainImageViews[index]; }
+
 }

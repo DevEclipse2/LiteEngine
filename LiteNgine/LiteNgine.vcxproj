@@ -201,6 +201,7 @@
     <ClCompile Include="dep\backends\imgui_widgets.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\engine\Ui\UiLayout.cpp" />
+    <ClCompile Include="core\engine\Ui\UiImageHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\engine\FileMgr.h" />
@@ -228,6 +229,7 @@
     <ClInclude Include="dep\backends\imstb_truetype.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\engine\Ui\UiLayout.h" />
+    <ClInclude Include="core\engine\Ui\UiImageHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\Particle.slang" />

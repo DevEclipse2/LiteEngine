@@ -2,12 +2,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 namespace lte {
-	void VulkanDevice::createTextureImage(uint32_t index,std::string path) {
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    void VulkanDevice::createTextureImage(uint32_t index, std::string path, vk::raii::Image* image, vk::raii::DeviceMemory* mem, int* width, int* height, int* channel)
+    {
+        stbi_uc* pixels = stbi_load(path.c_str(), width, height, channel, STBI_rgb_alpha);
         //stbi_uc *pixels = stbi_load("textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        vk::DeviceSize imageSize = texWidth * texHeight * 4;
-        mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+        vk::DeviceSize imageSize = *width * *height * 4;
+        mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(*width, *height)))) + 1;
         if (!pixels) {
             throw std::runtime_error("failed to load texture image!");
         }
@@ -21,17 +21,17 @@ namespace lte {
 
         stbi_image_free(pixels);
 
-        createImage(texWidth, texHeight, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, imagesArr[index], imageMem[index]);
+        createImage(*width, *height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, *image, *mem);
 
         /*transitionImageLayout(textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
         copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
         transitionImageLayout(textureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
         */
 
-        transitionImageLayout(imagesArr[index], vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
-        copyBufferToImage(stagingBuffer, imagesArr[index], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+        transitionImageLayout(*image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
+        copyBufferToImage(stagingBuffer,*image, static_cast<uint32_t>(*width), static_cast<uint32_t>(*height));
         //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
-        generateMipmaps(imagesArr[index], vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, mipLevels);
+        generateMipmaps(*image, vk::Format::eR8G8B8A8Srgb, *width, *height, mipLevels);
 
     }
     void VulkanDevice::createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory){
@@ -146,7 +146,7 @@ namespace lte {
         return vk::raii::ImageView(device, viewInfo);
     }
 
-    void VulkanDevice::createTextureSampler() {
+    void VulkanDevice::createTextureSampler(vk::raii::Sampler* sampler) {
         vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
         vk::SamplerCreateInfo samplerInfo{};
             samplerInfo.magFilter               = vk::Filter::eLinear, 
@@ -170,7 +170,7 @@ namespace lte {
             samplerInfo.mipLodBias              = 0.0f;
             samplerInfo.minLod                  = 0.0f;
             samplerInfo.maxLod                  = 0.0f;*/
-        textureSampler = vk::raii::Sampler(device, samplerInfo);
+        *sampler = vk::raii::Sampler(device, samplerInfo);
     }
 
     void VulkanDevice::generateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {

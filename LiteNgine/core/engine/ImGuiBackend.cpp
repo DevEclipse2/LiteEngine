@@ -88,18 +88,18 @@ namespace lte{
 			ImGui::SetNextWindowSize(viewport->WorkSize);*/
 		// Create your UI elements here
 		// For example:
-		//layoutMgr->beginDrawData();
+		layoutMgr->beginDrawData();
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+		/*ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
 		ImGui::Begin("scene viewport",NULL,window_flags);
 		ImGui::Text("Hello, Vulkan!");
 		if (ImGui::Button("Click me!")) {
 			// Handle button click
 			std::cout << "srjitndkf\n";
 		}
-		ImGui::End();
+		ImGui::End();*/
 
-		ImGui::Begin("Performance: ", &showWindow2);
+		/*ImGui::Begin("Performance: ", &showWindow2);
 		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
 		std::string fpsStr = "Fps :" + std::to_string(fps);
 		ImGui::Text(fpsStr.c_str());
@@ -113,7 +113,7 @@ namespace lte{
 		ImGui::Text(str.c_str());
 		if (ImGui::Button("Close")) 
 			showProfiler = false;
-		ImGui::End();
+		ImGui::End();*/
 
 		ImGui::EndFrame();
 		ImGui::UpdatePlatformWindows();

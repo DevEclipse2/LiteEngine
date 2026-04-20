@@ -149,6 +149,11 @@ namespace lte {
 		void getProfilingData(uint32_t* pFPS, float* pFrametime, uint64_t* vertices, uint64_t* indices, uint64_t* models);
 		void charCallback(GLFWwindow* window, unsigned int codepoint);
 		void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+		void createTextureImage(uint32_t index, std::string path, vk::raii::Image* image, vk::raii::DeviceMemory* mem , int* width, int* height ,int* channel);
+		vk::raii::ImageView createImageView(const vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
+		void createTextureSampler(vk::raii::Sampler* sampler);
+
 	private:
 		Gui* gui = nullptr;
 		std::vector<const char*> getRequiredInstanceExtensions();
@@ -223,7 +228,6 @@ namespace lte {
 		std::vector <std::vector<uint32_t>> indices{};
 		vk::raii::Buffer vertexBuffer				= nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory	= nullptr;
-		uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 		vk::raii::Buffer indexBuffer				= nullptr;
 		vk::raii::DeviceMemory indexBufferMemory	= nullptr;
 		void createUniformBuffers();
@@ -262,7 +266,7 @@ namespace lte {
 
 
 		//texture stuff
-		void createTextureImage(uint32_t index,std::string path);
+		//void createTextureImage(uint32_t index,std::string path);
 		uint32_t mipLevels;
 		//vk::raii::Image        textureImage = nullptr;
 		//std::unique_ptr<vk::raii::Image> textureImage;
@@ -275,8 +279,6 @@ namespace lte {
 
 
 		void createTextureImageView(vk::raii::Image* image);
-		vk::raii::ImageView createImageView(const vk::raii::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
-		void createTextureSampler();
 		//vk::raii::ImageView textureImageView	= nullptr;
 		vk::raii::Sampler textureSampler		= nullptr;
 		
