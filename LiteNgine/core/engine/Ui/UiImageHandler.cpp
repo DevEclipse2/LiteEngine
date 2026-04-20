@@ -36,7 +36,7 @@ namespace lte {
 		err = vkAllocateMemory(**pVulkanDevice->getDevice(), &alloc_info, NULL, &mem);
 		err = vkBindBufferMemory(**pVulkanDevice->getDevice(), uploadBuffer, mem, 0);
 		
-		GuiImage img = { descSet,static_cast<uint16_t>(width),height,channel,imageView, imageTemp,deviceMem,sampler,uploadBuffer,mem };
+		GuiImage img = { descSet,static_cast<uint16_t>(width),static_cast<uint16_t>(height),static_cast<uint16_t>(channel),**imageView, **imageTemp,**deviceMem,**sampler,uploadBuffer,mem };
 	}
 }
 
