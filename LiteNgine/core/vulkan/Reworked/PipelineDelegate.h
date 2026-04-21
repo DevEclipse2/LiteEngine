@@ -4,7 +4,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 namespace lte {
-	class PipelineDelegate
+	static class PipelineDelegate
 	{
 		struct LtPipeline {
 			//something that contains all of the necessary information about a particular pipeline
@@ -37,14 +37,14 @@ namespace lte {
 			}
 		};
 		public:
-			void createPipelineFast(LtPipeline* pipeline, std::string shaderFilepath, std::string vertShadername, std::string fragShadername, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat);
-			 vk::raii::ShaderModule createShaderModule(const std::vector<char>& code , vk::raii::Device* pDevice) const;
-			std::vector<char> readShaderInfo(std::vector<char>* output, std::string filepath);
-			void createShaderStage(vk::PipelineShaderStageCreateInfo* info , vk::ShaderStageFlagBits flags , vk::ShaderModule* pModule , std::string* pName);
+			static void createPipelineFast(LtPipeline* pipeline, std::string shaderFilepath, std::string vertShadername, std::string fragShadername, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat);
+			static vk::raii::ShaderModule createShaderModule(const std::vector<char>& code , vk::raii::Device* pDevice) const;
+			static std::vector<char> readShaderInfo(std::vector<char>* output, std::string filepath);
+			static void createShaderStage(vk::PipelineShaderStageCreateInfo* info , vk::ShaderStageFlagBits flags , vk::ShaderModule* pModule , std::string* pName);
 
-			void createVertexInputInfo(vk::PipelineVertexInputStateCreateInfo* pInfo, vk::PipelineShaderStageCreateInfo* Vertex, vk::PipelineShaderStageCreateInfo* Fragment, void* getBindingDescFunc, void* getAttributeDescFunce);
-			vk::Format findDepthFormat(vk::raii::PhysicalDevice* device);
-			vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features, vk::raii::PhysicalDevice* physicalDevice);
+			static void createVertexInputInfo(vk::PipelineVertexInputStateCreateInfo* pInfo, vk::PipelineShaderStageCreateInfo* Vertex, vk::PipelineShaderStageCreateInfo* Fragment, void* getBindingDescFunc, void* getAttributeDescFunce);
+			static vk::Format findDepthFormat(vk::raii::PhysicalDevice* device);
+			static vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features, vk::raii::PhysicalDevice* physicalDevice);
 		//private:
 	};
 }

@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 namespace lte
 {
-    class ImageDelegate
+    static class ImageDelegate
     {
 
         struct LtImage {
@@ -35,7 +35,6 @@ namespace lte
                 image.bindMemory(imageMemory, 0);
             }
         };
-
         public:
             static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice physicalDevice);
 
