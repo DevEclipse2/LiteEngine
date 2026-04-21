@@ -29,6 +29,7 @@ display of multiple models
 the ability to look bad WITHOUT DLSS 5
 
 currently working on : gui and file loading ( will finish once i get back from vietnam ) 
+still working on : gui and file loading (this shit is taking longer than i expected)
 
 stuff to do next :
 1. extinguish the fire consuming my pc
