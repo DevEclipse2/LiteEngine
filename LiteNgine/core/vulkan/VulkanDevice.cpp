@@ -223,7 +223,7 @@ namespace lte {
 		auto                                   bindingDescription		= Vertex::getBindingDescription();
 		auto                                   attributeDescriptions	= Vertex::getAttributeDescriptions();
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-		vertexInputInfo.vertexBindingDescriptionCount					= 1,
+			vertexInputInfo.vertexBindingDescriptionCount					= 1,
 			vertexInputInfo.pVertexBindingDescriptions					= &bindingDescription,
 			vertexInputInfo.vertexAttributeDescriptionCount				= static_cast<uint32_t>(attributeDescriptions.size()),
 			vertexInputInfo.pVertexAttributeDescriptions				= attributeDescriptions.data();
@@ -1046,9 +1046,7 @@ namespace lte {
 		depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 	}
 	vk::Format VulkanDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
-		
-		
-		auto formatIt = std::ranges::find_if(candidates, [&](auto const format) {
+			auto formatIt = std::ranges::find_if(candidates, [&](auto const format) {
 			vk::FormatProperties props = physicalDevice.getFormatProperties(format);
 			return (((tiling == vk::ImageTiling::eLinear) && ((props.linearTilingFeatures & features) == features)) ||
 				((tiling == vk::ImageTiling::eOptimal) && ((props.optimalTilingFeatures & features) == features)));

@@ -199,6 +199,7 @@
     <ClCompile Include="dep\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="dep\backends\imgui_tables.cpp" />
     <ClCompile Include="dep\backends\imgui_widgets.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\PipelineDelegate.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\engine\Ui\UiLayout.cpp" />
     <ClCompile Include="core\engine\Ui\UiImageHandler.cpp" />
@@ -227,6 +228,7 @@
     <ClInclude Include="dep\backends\imstb_rectpack.h" />
     <ClInclude Include="dep\backends\imstb_textedit.h" />
     <ClInclude Include="dep\backends\imstb_truetype.h" />
+    <ClInclude Include="core\vulkan\Reworked\PipelineDelegate.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\engine\Ui\UiLayout.h" />
     <ClInclude Include="core\engine\Ui\UiImageHandler.h" />
