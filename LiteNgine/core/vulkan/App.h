@@ -4,6 +4,11 @@
 #include "VulkanDevice.h"
 #include "../../core/engine/ImGuiBackend.h"
 #include "../../core/engine/Ui/UiLayout.h"
+
+
+#include "Reworked/LtBackend.h"
+
+
 namespace lte 
 {
 	class main {
@@ -14,6 +19,9 @@ namespace lte
 		//NAME = "LiteEngine: Agstrum";
 		void run();
 	private:
+
+		BackendInitInfo info{ 800,600,"LiteEngine : Agstrum",true,"LiteNgine editor" };
+		LtBackend backend{info};
 		Lt_Window ltWindow{ WIDTH, HEIGHT ,"LiteEngine : Agstrum" };
 		Lt_Window* ptr = &ltWindow;
 		VulkanDevice vkDevice	{ ptr };

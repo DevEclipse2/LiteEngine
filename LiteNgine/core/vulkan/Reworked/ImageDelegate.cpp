@@ -1,6 +1,5 @@
 #include "ImageDelegate.h"
 namespace lte {
-
     ImageDelegate::ImageDelegate()
     {
         std::vector<LtImage> pool = {};

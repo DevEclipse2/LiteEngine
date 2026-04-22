@@ -1036,7 +1036,6 @@ namespace lte {
 
 		instance = vk::raii::Instance(context, createInfo);
 		debugMessenger = nullptr;
-		setupDebugMessenger();
 	}
 
 	void VulkanDevice::createDepthResources() {

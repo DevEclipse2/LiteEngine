@@ -190,6 +190,7 @@
     <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\requestData.cpp" />
     <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\DebugMessenger.cpp" />
     <ClCompile Include="dep\backends\imgui.cpp" />
     <ClCompile Include="dep\backends\imgui_demo.cpp" />
     <ClCompile Include="dep\backends\imgui_draw.cpp" />
@@ -204,6 +205,7 @@
     <ClCompile Include="core\vulkan\Reworked\PipelineDelegate.cpp" />
     <ClCompile Include="core\vulkan\Reworked\ImageDelegate.cpp" />
     <ClCompile Include="core\vulkan\Reworked\DeviceHandler.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\LtBackend.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\engine\Ui\UiLayout.cpp" />
     <ClCompile Include="core\engine\Ui\UiImageHandler.cpp" />
@@ -221,6 +223,7 @@
     <ClInclude Include="core\vulkan\VertexHandler.h" />
     <ClInclude Include="core\vulkan\testNcoolShit\TestAnim.h" />
     <ClInclude Include="core\vulkan\vulkanMain\Swapchain.h" />
+    <ClInclude Include="core\vulkan\Reworked\DebugMessenger.h" />
     <ClInclude Include="dep\backends\imconfig.h" />
     <ClInclude Include="dep\backends\imgui.h" />
     <ClInclude Include="dep\backends\imgui_impl_glfw.h" />
@@ -237,6 +240,7 @@
     <ClInclude Include="core\vulkan\Reworked\PipelineDelegate.h" />
     <ClInclude Include="core\vulkan\Reworked\ImageDelegate.h" />
     <ClInclude Include="core\vulkan\Reworked\DeviceHandler.h" />
+    <ClInclude Include="core\vulkan\Reworked\LtBackend.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\engine\Ui\UiLayout.h" />
     <ClInclude Include="core\engine\Ui\UiImageHandler.h" />

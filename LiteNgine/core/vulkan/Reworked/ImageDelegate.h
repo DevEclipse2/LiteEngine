@@ -8,42 +8,43 @@
 #include "Buffers.h"
 namespace lte
 {
+    struct LtImage {
+        vk::raii::Image			image = nullptr;
+        vk::raii::DeviceMemory	imageMemory = nullptr;
+        vk::raii::Sampler		imageSampler = nullptr;
+        vk::raii::ImageView		imageView = nullptr;
+        uint32_t mipLevels = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t channel = 0;
+        const void createImage(uint32_t width, uint32_t height, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
+        {
+            vk::ImageCreateInfo imageInfo{};
+            imageInfo.imageType = vk::ImageType::e2D,
+                imageInfo.format = format,
+                imageInfo.extent = vk::Extent3D{ width, height, 1 },
+                imageInfo.arrayLayers = 1,
+                imageInfo.samples = vk::SampleCountFlagBits::e1,
+                imageInfo.tiling = tiling,
+                imageInfo.usage = usage,
+                imageInfo.mipLevels = mipLevels;
+            imageInfo.sharingMode = vk::SharingMode::eExclusive;
+            imageInfo.samples = numSamples;
+            image = vk::raii::Image(*device, imageInfo);
+
+            vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
+            vk::MemoryAllocateInfo allocInfo{};
+            allocInfo.allocationSize = memRequirements.size,
+                allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties, *physicalDevice);
+            imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
+            image.bindMemory(imageMemory, 0);
+        }
+    };
     static class ImageDelegate
     {
-
-        struct LtImage {
-            vk::raii::Image			image = nullptr;
-            vk::raii::DeviceMemory	imageMemory = nullptr;
-            vk::raii::Sampler		imageSampler = nullptr;
-            vk::raii::ImageView		imageView = nullptr;
-            uint32_t mipLevels = 0;
-            uint32_t width = 0;
-            uint32_t height = 0;
-            uint32_t channel = 0;
-            const void createImage(uint32_t width, uint32_t height, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice) 
-            {
-                vk::ImageCreateInfo imageInfo{};
-                imageInfo.imageType = vk::ImageType::e2D,
-                    imageInfo.format = format,
-                    imageInfo.extent = vk::Extent3D{ width, height, 1 },
-                    imageInfo.arrayLayers = 1,
-                    imageInfo.samples = vk::SampleCountFlagBits::e1,
-                    imageInfo.tiling = tiling,
-                    imageInfo.usage = usage,
-                    imageInfo.mipLevels = mipLevels;
-                imageInfo.sharingMode = vk::SharingMode::eExclusive;
-                imageInfo.samples = numSamples;
-                image = vk::raii::Image(*device, imageInfo);
-
-                vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
-                vk::MemoryAllocateInfo allocInfo{};
-                allocInfo.allocationSize = memRequirements.size,
-                    allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties , *physicalDevice);
-                imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
-                image.bindMemory(imageMemory, 0);
-            }
-        };
         public:
+        
+       
             ImageDelegate();
             ~ImageDelegate();
             static LtImage* requestImageCreation();

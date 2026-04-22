@@ -4,37 +4,38 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 namespace lte {
+	struct LtPipeline {
+		//something that contains all of the necessary information about a particular pipeline
+		vk::raii::Pipeline				pipeline;
+		const void createPipeline(uint32_t stageCount, vk::PipelineShaderStageCreateInfo* shaderStages, vk::PipelineVertexInputStateCreateInfo* vertexInputInfo, vk::PipelineInputAssemblyStateCreateInfo* inputAssembly,
+			vk::PipelineViewportStateCreateInfo* viewportState, vk::PipelineRasterizationStateCreateInfo* rasterizer, vk::PipelineMultisampleStateCreateInfo* multisampling, vk::PipelineColorBlendStateCreateInfo* colorBlending,
+			vk::PipelineDynamicStateCreateInfo* dynamicState, vk::PipelineDepthStencilStateCreateInfo* depthStencil, vk::raii::PipelineLayout* pipelineLayout, uint32_t colorAttachmentCount, vk::Format* colorAttachmentFormats, vk::Format depthAttachmentFormat, vk::raii::Device* device) {
+			vk::GraphicsPipelineCreateInfo graphicsInfo{};
+			graphicsInfo.stageCount = stageCount,
+				graphicsInfo.pStages = shaderStages,
+				graphicsInfo.pVertexInputState = vertexInputInfo,
+				graphicsInfo.pInputAssemblyState = inputAssembly,
+				graphicsInfo.pViewportState = viewportState,
+				graphicsInfo.pRasterizationState = rasterizer,
+				graphicsInfo.pMultisampleState = multisampling,
+				graphicsInfo.pColorBlendState = colorBlending,
+				graphicsInfo.pDynamicState = dynamicState,
+				graphicsInfo.pDepthStencilState = depthStencil,
+				graphicsInfo.layout = *pipelineLayout,
+				graphicsInfo.renderPass = nullptr;
+
+			vk::PipelineRenderingCreateInfo renderingInfo{};
+			renderingInfo.colorAttachmentCount = colorAttachmentCount,
+				renderingInfo.pColorAttachmentFormats = colorAttachmentFormats,
+				renderingInfo.depthAttachmentFormat = depthAttachmentFormat;
+
+			vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain{ graphicsInfo , renderingInfo };
+			pipeline = vk::raii::Pipeline(*device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
+		}
+	};
 	static class PipelineDelegate
 	{
-		struct LtPipeline {
-			//something that contains all of the necessary information about a particular pipeline
-			vk::raii::Pipeline				pipeline;
-			const void createPipeline(uint32_t stageCount,vk::PipelineShaderStageCreateInfo* shaderStages,vk::PipelineVertexInputStateCreateInfo* vertexInputInfo , vk::PipelineInputAssemblyStateCreateInfo* inputAssembly,
-				vk::PipelineViewportStateCreateInfo* viewportState, vk::PipelineRasterizationStateCreateInfo* rasterizer, vk::PipelineMultisampleStateCreateInfo* multisampling, vk::PipelineColorBlendStateCreateInfo* colorBlending,
-				vk::PipelineDynamicStateCreateInfo* dynamicState,vk::PipelineDepthStencilStateCreateInfo* depthStencil,vk::raii::PipelineLayout* pipelineLayout,uint32_t colorAttachmentCount,vk::Format* colorAttachmentFormats,vk::Format depthAttachmentFormat , vk::raii::Device* device) {
-				vk::GraphicsPipelineCreateInfo graphicsInfo{};
-					graphicsInfo.stageCount = stageCount,
-					graphicsInfo.pStages = shaderStages,
-					graphicsInfo.pVertexInputState = vertexInputInfo,
-					graphicsInfo.pInputAssemblyState = inputAssembly,
-					graphicsInfo.pViewportState = viewportState,
-					graphicsInfo.pRasterizationState = rasterizer,
-					graphicsInfo.pMultisampleState = multisampling,
-					graphicsInfo.pColorBlendState = colorBlending,
-					graphicsInfo.pDynamicState = dynamicState,
-					graphicsInfo.pDepthStencilState = depthStencil,
-					graphicsInfo.layout = *pipelineLayout,
-					graphicsInfo.renderPass = nullptr;
-
-				vk::PipelineRenderingCreateInfo renderingInfo{};
-					renderingInfo.colorAttachmentCount = colorAttachmentCount,
-					renderingInfo.pColorAttachmentFormats = colorAttachmentFormats,
-					renderingInfo.depthAttachmentFormat = depthAttachmentFormat;
-
-				vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain{ graphicsInfo , renderingInfo };
-				pipeline = vk::raii::Pipeline(*device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
-			}
-		};
+		
 		public:
 			static void createPipelineFast(LtPipeline* pipeline, std::string shaderFilepath, std::string vertShadername, std::string fragShadername, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat, vk::DescriptorSetLayout layout);
 
