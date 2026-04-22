@@ -1,7 +1,7 @@
 #include "PipelineDelegate.h"
 namespace lte {
 
-	void PipelineDelegate::createPipelineFast (LtPipeline* pipeline , std::string shaderFilepath, std::string vertShadername , std::string fragShadername , vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat) 
+	void PipelineDelegate::createPipelineFast (LtPipeline* pipeline , std::string shaderFilepath, std::string vertShadername , std::string fragShadername , vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat,vk::DescriptorSetLayout layout) 
 	{
 		//this creates the very basic pipeline for general use
 		vk::PipelineShaderStageCreateInfo vertShaderInfo{};
@@ -59,7 +59,7 @@ namespace lte {
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.setLayoutCount = 1,
-			pipelineLayoutInfo.pSetLayouts = &*pipeline->descriptorSetLayout,
+			pipelineLayoutInfo.pSetLayouts = &layout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 		vk::raii::PipelineLayout pipelineLayout = vk::raii::PipelineLayout(*device, pipelineLayoutInfo);
@@ -95,7 +95,7 @@ namespace lte {
 	{
 
 	}
-	[[nodiscard]] vk::raii::ShaderModule PipelineDelegate::createShaderModule(const std::vector<char>& code , vk::raii::Device* pDevice) const
+	[[nodiscard]] vk::raii::ShaderModule PipelineDelegate::createShaderModule(const std::vector<char>& code , vk::raii::Device* pDevice)
 	{
 
 		vk::ShaderModuleCreateInfo createInfo{};
