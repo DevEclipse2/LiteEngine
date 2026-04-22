@@ -3,6 +3,8 @@ namespace lte {
 	LtBackend::LtBackend(BackendInitInfo info) : width{info.width} , height{info.height} , name{info.WindowName}
 	{
 		InitializeVulkan(info);
+		//load models (or they are already loaded, i won't judge)
+		deviceHandler.createTextureSampler(&sampler, &PhysicalDevice, &primary.device);
 	}
 	void LtBackend::createSurface()
 	{
@@ -99,10 +101,10 @@ namespace lte {
 			if (shiftC & 0x08) goto exit;
 			if (draw & 0b1) {
 				//draw this
-				prepareModels();
+				/*prepareModels();
 				createTextureImage(i, textures[i], &imagesArr[i], &imageMem[i]);
 				createTextureImageView(&imagesArr[i]);
-				loadModel(i, models[i]);
+				loadModel(i, models[i]);*/
 			}
 			draw >> 1;
 			shiftC++;

@@ -70,10 +70,13 @@ namespace lte {
 			uint64_t objects = 0;
 			void updateDrawCount();
 			
+			vk::raii::Sampler sampler = nullptr;
+
 
 			//indices and vertices will be in c style array
 			Vertex		vertexes[1] = {{}};
 			uint32_t	indices[];
+
 			
 	};
 
