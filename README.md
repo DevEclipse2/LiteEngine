@@ -3,6 +3,31 @@ the engine is a lie
 
 israel's strongest engien
 
+changes since last time i submitted:
+added ui
+added performance metrics
+now renders in wireframe for some inexplicable reason????? (happened some time ago idk when)
+broke the ui
+doesn't work on my main pc anymore
+tried to fix the ui
+fixed the ui
+broke it again (strobing)
+still doesn't work on my main pc
+added button to summon jeffery epstein (it's relevant to the plot trust) ( it uses the ui image rendering so it's genuinely relevant) 
+attempted suicide (me, not the engine)
+left a bad review on those sleeping pills (it was actually good for it's designated purpose but i need to be angry)
+realised that the codebase looks like this xkcd comic : https://xkcd.com/2347/
+begin complete rewrite of backend     
+new ltImage struct to contain all of your worries and woes into one memory-unsafe package
+realised that the codebase is a house of cards not up to intergalactic house-of-cards-building-rules-and-regulations
+created like 4 new classes (all static because i can't move on from my ex(i find them relatable) 
+WHERE ARE THOSE DAMN MEMORY LEAKS COMING FROM <- you are here
+--time skip of ~3 days--
+oh right i'm an engineering student i wasn't built for this
+become femboy ( ultimate evolution form for maximum programming ) 
+
+
+
 demo ( outdated but im in another country) 
 https://youtu.be/GXbOLOo_GtU
 
@@ -30,7 +55,7 @@ the ability to look bad WITHOUT DLSS 5
 
 currently working on : gui and file loading ( will finish once i get back from vietnam ) 
 still working on : gui and file loading (this shit is taking longer than i expected)
-
+finished working on : gui ( in a sense)
 stuff to do next :
 1. extinguish the fire consuming my pc
 2. refactor codebase ( we somehow have 20 years of legacy code despite being made 2 weeks ago)
