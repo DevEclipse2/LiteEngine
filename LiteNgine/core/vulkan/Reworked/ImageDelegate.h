@@ -44,9 +44,16 @@ namespace lte
             }
         };
         public:
-            void loadTextureFromDisk(std::string path, LtImage* ltImage, vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice, vk::CommandPool* pool, vk::raii::Queue* queue);
-            void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels);
-            void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels, vk::raii::Device* device, vk::CommandPool* pool, vk::raii::Queue* queue);
+            ImageDelegate();
+            ~ImageDelegate();
+            static LtImage* requestImageCreation();
+            static void requestImageDestruction(LtImage*);
+            static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
+            static void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels, singleTimeCommandInfo info);
+            static void generateMipmaps(LtImage* ltImage, vk::Format imageFormat, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo info);
+        private:
+            static std::vector<LtImage> ImagePool;
+
 
     };
 }

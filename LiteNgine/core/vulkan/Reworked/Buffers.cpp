@@ -15,8 +15,8 @@ namespace lte {
 		bufferMemory = vk::raii::DeviceMemory(*device, allocInfo);
 		buffer.bindMemory(*bufferMemory, 0);
 	}
-	void Buffers::copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height , vk::raii::Device* device, vk::CommandPool* pool , vk::raii::Queue* queue) {
-		std::unique_ptr<vk::raii::CommandBuffer> commandBuffer = CommandBuffers::beginSingleTimeCommands(device,pool);
+	void Buffers::copyBufferToImage(const vk::raii::Buffer& buffer, vk::raii::Image& image, uint32_t width, uint32_t height , singleTimeCommandInfo info) {
+		std::unique_ptr<vk::raii::CommandBuffer> commandBuffer = CommandBuffers::beginSingleTimeCommands(info.device,info.CommandPool);
 		vk::BufferImageCopy                      region{};
 		region.bufferOffset = 0,
 			region.bufferRowLength = 0,
@@ -25,6 +25,6 @@ namespace lte {
 			region.imageOffset = vk::Offset3D{ 0, 0, 0 },
 			region.imageExtent = vk::Extent3D{ width, height, 1 };
 		commandBuffer->copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, { region });
-		CommandBuffers::endSingleTimeCommands(*commandBuffer,queue);
+		CommandBuffers::endSingleTimeCommands(*commandBuffer,info.queue);
 	}
 }

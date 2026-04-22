@@ -171,6 +171,8 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\vulkan\Reworked\CommandBuffers.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\Buffers.cpp" />
     <ClCompile Include="core\engine\FileMgr.cpp" />
     <ClCompile Include="core\engine\ImGuiBackend.cpp" />
     <ClCompile Include="core\vulkan\ConsoleLog.cpp" />
@@ -200,11 +202,15 @@
     <ClCompile Include="dep\backends\imgui_tables.cpp" />
     <ClCompile Include="dep\backends\imgui_widgets.cpp" />
     <ClCompile Include="core\vulkan\Reworked\PipelineDelegate.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\ImageDelegate.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\DeviceHandler.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\engine\Ui\UiLayout.cpp" />
     <ClCompile Include="core\engine\Ui\UiImageHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\vulkan\Reworked\CommandBuffers.h" />
+    <ClInclude Include="core\vulkan\Reworked\Buffers.h" />
     <ClInclude Include="core\engine\FileMgr.h" />
     <ClInclude Include="core\engine\ImGuiBackend.h" />
     <ClInclude Include="core\vulkan\ConsoleLog.h" />
@@ -229,6 +235,8 @@
     <ClInclude Include="dep\backends\imstb_textedit.h" />
     <ClInclude Include="dep\backends\imstb_truetype.h" />
     <ClInclude Include="core\vulkan\Reworked\PipelineDelegate.h" />
+    <ClInclude Include="core\vulkan\Reworked\ImageDelegate.h" />
+    <ClInclude Include="core\vulkan\Reworked\DeviceHandler.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\engine\Ui\UiLayout.h" />
     <ClInclude Include="core\engine\Ui\UiImageHandler.h" />

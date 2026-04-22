@@ -1,8 +1,17 @@
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
 namespace lte {
+	struct singleTimeCommandInfo {
+		vk::raii::Device* device = nullptr;
+		vk::CommandPool* CommandPool = nullptr;
+		vk::raii::Queue* queue = nullptr;
+		singleTimeCommandInfo(vk::raii::Device* Idevice, vk::CommandPool* IcommandPool, vk::raii::Queue* Iqueue) : device{ Idevice }, CommandPool{ IcommandPool }, queue{ Iqueue } {
+
+		}
+	};
 	class CommandBuffers
 	{
+		
 	public:
 		static std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands(vk::raii::Device* device, vk::CommandPool* commandPool);
 		static void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer, vk::raii::Queue* queue);
