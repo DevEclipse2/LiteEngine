@@ -6,7 +6,7 @@ israel's strongest engien
 wakatime is acting up so i think i either have a lot more hours or a lot less
 
 please throw a d-20 to decide whether the additional hours count
-if you roll a 20 i automatically get to go to the event
+(if you roll a 20 i automatically get to go to the event)
 
 
 changes since last time i submitted:
