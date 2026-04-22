@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include "DeviceHandler.h"
 #include "CommandBuffers.h"
+#include "SwapchainHandler.h"
+#include "PipelineDelegate.h"
 #include <stb_image.h>
 #include "Buffers.h"
 namespace lte
@@ -39,6 +41,7 @@ namespace lte
             imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
             image.bindMemory(imageMemory, 0);
         }
+
     };
     static class ImageDelegate
     {
@@ -52,6 +55,10 @@ namespace lte
             static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
             static void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels, singleTimeCommandInfo info);
             static void generateMipmaps(LtImage* ltImage, vk::Format imageFormat, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo info);
+            static void createSwapchainImageViews(LtSwapChain* swap, vk::raii::Device* device);
+            static void createColorResources(LtSwapChain* swapChain, LtImage* ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples);
+            [[nodiscard]] static void createImageView(LtImage* ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels, vk::raii::Device* device);
+            static void createDepthResources(LtSwapChain* swapChain, LtImage* DepthRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SampleCountFlagBits msaaSamples);
         private:
             static std::vector<LtImage> ImagePool;
 

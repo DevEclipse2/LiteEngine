@@ -6,7 +6,8 @@
 namespace lte {
 	struct LtPipeline {
 		//something that contains all of the necessary information about a particular pipeline
-		vk::raii::Pipeline				pipeline;
+		vk::raii::Pipeline				pipeline = nullptr;
+		vk::DescriptorSetLayout			descSetLayout;
 		const void createPipeline(uint32_t stageCount, vk::PipelineShaderStageCreateInfo* shaderStages, vk::PipelineVertexInputStateCreateInfo* vertexInputInfo, vk::PipelineInputAssemblyStateCreateInfo* inputAssembly,
 			vk::PipelineViewportStateCreateInfo* viewportState, vk::PipelineRasterizationStateCreateInfo* rasterizer, vk::PipelineMultisampleStateCreateInfo* multisampling, vk::PipelineColorBlendStateCreateInfo* colorBlending,
 			vk::PipelineDynamicStateCreateInfo* dynamicState, vk::PipelineDepthStencilStateCreateInfo* depthStencil, vk::raii::PipelineLayout* pipelineLayout, uint32_t colorAttachmentCount, vk::Format* colorAttachmentFormats, vk::Format depthAttachmentFormat, vk::raii::Device* device) {
@@ -38,13 +39,13 @@ namespace lte {
 		
 		public:
 			static void createPipelineFast(LtPipeline* pipeline, std::string shaderFilepath, std::string vertShadername, std::string fragShadername, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat, vk::DescriptorSetLayout layout);
-
 			static vk::raii::ShaderModule createShaderModule(const std::vector<char>& code , vk::raii::Device* pDevice);
 			static std::vector<char> readShaderInfo(std::vector<char>* output, std::string filepath);
 			static void createShaderStage(vk::PipelineShaderStageCreateInfo* info , vk::ShaderStageFlagBits flags , vk::ShaderModule* pModule , std::string* pName);
 			static void createVertexInputInfo(vk::PipelineVertexInputStateCreateInfo* pInfo, vk::PipelineShaderStageCreateInfo* Vertex, vk::PipelineShaderStageCreateInfo* Fragment, void* getBindingDescFunc, void* getAttributeDescFunce);
 			static vk::Format findDepthFormat(vk::raii::PhysicalDevice* device);
 			static vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features, vk::raii::PhysicalDevice* physicalDevice);
+			static void createDescriptorSetLayout(vk::DescriptorSetLayout* descriptorSetLayout, vk::raii::Device* device);
 		//private:
 	};
 }

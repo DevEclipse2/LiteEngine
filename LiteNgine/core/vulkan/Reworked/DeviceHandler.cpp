@@ -126,5 +126,5 @@ namespace lte {
 		logicalDevice->queue = vk::raii::Queue(logicalDevice->device, logicalDevice->queueIndex, 0);
 		//computeQueue = vk::raii::Queue(device,computeQueueIndex,0);
 	}
-
+	
 }

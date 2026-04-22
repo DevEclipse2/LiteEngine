@@ -32,6 +32,49 @@ namespace lte {
         ImagePool.emplace_back();
         return &ImagePool[ImagePool.size() - 1];
     }
+
+    void ImageDelegate::createSwapchainImageViews( LtSwapChain* swap, vk::raii::Device* device)
+    {
+        assert(swap->imageViews.empty());
+
+        vk::ImageViewCreateInfo imageViewCreateInfo{};
+            imageViewCreateInfo.viewType = vk::ImageViewType::e2D,
+            imageViewCreateInfo.format = swap->swapChainSurfaceFormat.format,
+            imageViewCreateInfo.subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 };
+
+        for (auto& image : swap->swapChainImages)
+        {
+            imageViewCreateInfo.image = image;
+            swap->imageViews.emplace_back(*device, imageViewCreateInfo);
+        }
+    }
+
+    void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage* DepthRes,vk::raii::Device* device ,vk::raii::PhysicalDevice* physicalDevice,vk::SampleCountFlagBits msaaSamples) {
+        vk::Format depthFormat = PipelineDelegate::findDepthFormat(physicalDevice);
+        DepthRes->createImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
+        //createImage(swapChainExtent.width, swapChainExtent.height, 1, vk::SampleCountFlagBits::e1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+        createImageView(DepthRes, depthFormat, vk::ImageAspectFlagBits::eDepth, 1,device);
+    }
+    
+
+    void ImageDelegate::createColorResources(LtSwapChain* swapChain, LtImage* ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples) 
+    {
+        vk::Format colorFormat = swapChain->swapChainSurfaceFormat.format;
+       
+        ColorRes->createImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height, msaaSamples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physDev);
+        createImageView(ColorRes, colorFormat, vk::ImageAspectFlagBits::eColor, 1, device);
+    }
+
+    [[nodiscard]] void ImageDelegate::createImageView(LtImage* ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels,vk::raii::Device* device) {
+        vk::ImageViewCreateInfo viewInfo{};
+        viewInfo.image = ltImage->image,
+            viewInfo.viewType = vk::ImageViewType::e2D,
+            viewInfo.format = format,
+            viewInfo.subresourceRange = { aspectFlags, 0, 1, 0, 1 };
+        viewInfo.subresourceRange.levelCount = mipLevels;
+        ltImage->imageView = vk::raii::ImageView(*device, viewInfo);
+    }
+
     void ImageDelegate::loadTextureFromDisk(std::string path, LtImage* ltImage , singleTimeCommandInfo info , vk::raii::PhysicalDevice* physDevice)
     {
 

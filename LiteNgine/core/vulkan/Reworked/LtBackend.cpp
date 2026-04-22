@@ -2,14 +2,7 @@
 namespace lte {
 	LtBackend::LtBackend(BackendInitInfo info) : width{info.width} , height{info.height} , name{info.WindowName}
 	{
-		createInstance(info);
-		if (info.useValidationLayers) {
-			messenger.setupMessenger(&instance);
-		}
-		createSurface();
-		deviceHandler.pickPhysicalDevice(&instance, &PhysicalDevice, &msaaSamples);
-		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, &requiredDeviceExtensions);
-		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
+		InitializeVulkan(info);
 	}
 	void LtBackend::createSurface()
 	{
@@ -19,6 +12,25 @@ namespace lte {
 			throw std::runtime_error("failed to create window surface!");
 		}
 		surface = vk::raii::SurfaceKHR(instance, _surface);
+	}
+	void LtBackend::InitializeVulkan(BackendInitInfo info) 
+	{
+		createInstance(info);
+		if (info.useValidationLayers) {
+			messenger.setupMessenger(&instance);
+		}
+		createSurface();
+		deviceHandler.pickPhysicalDevice(&instance, &PhysicalDevice, &msaaSamples);
+		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
+		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
+		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
+		colorImage = ImageDelegate::requestImageCreation();
+		depthImage = ImageDelegate::requestImageCreation();
+		ImageDelegate::createColorResources(&swapchain, colorImage, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depthImage, &primary.device, &PhysicalDevice, msaaSamples);
+		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, &primary.device);
+		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", &primary.device, &PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
+		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
 	}
 	void LtBackend::createInstance(BackendInitInfo info) {
 
@@ -65,6 +77,40 @@ namespace lte {
 
 		instance = vk::raii::Instance(context, createInfo);
 	}
+	void LtBackend::RegisterGameObjects()
+	{
+		//here you load data and add them to draw
+		//a bool is 8 bits large
+		//a char holds 8 bits, but can store 8 on/offs
+		// the 8 bits are 1 , 2 , 4, 8 , 16 , 32 , 64 , and 128
+		
+		int n = 1;
+		bool LittleEndian = (*(char*)&n == 1);
+		// little endian if true
+		 
+
+		for (uint32_t i = 0; i < sizeof(drawList) / sizeof(drawList[0]); i++) {
+
+
+			//for each byte
+			char draw = drawList[i];
+			byte shiftC = 0;
+			loadNextBit:
+			if (shiftC & 0x08) goto exit;
+			if (draw & 0b1) {
+				//draw this
+				prepareModels();
+				createTextureImage(i, textures[i], &imagesArr[i], &imageMem[i]);
+				createTextureImageView(&imagesArr[i]);
+				loadModel(i, models[i]);
+			}
+			draw >> 1;
+			shiftC++;
+			goto loadNextBit;
+			exit:
+			//multiple textures
+		}
+	}
 	std::vector<const char*> LtBackend::getRequiredInstanceExtensions(bool enableValidationLayers)
 	{
 
@@ -79,5 +125,14 @@ namespace lte {
 		}
 
 		return extensions;
+	}
+	void LtBackend::updateDrawCount()
+	{
+		//this gets how many bits are set using the literally most memory efficient method
+		objects = 0;
+		for (uint32_t i = 0; i < DrawList.size(); i++) {
+			unsigned long long int draw = DrawList[i];
+			objects += __builtin_popcountll(draw);
+		}
 	}
 }

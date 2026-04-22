@@ -13,6 +13,7 @@ namespace lte {
 	{
 		
 	public:
+		static	void createCommandPool(vk::raii::CommandPool* commandPool, vk::raii::Device* device, uint32_t queueIndex);
 		static std::unique_ptr<vk::raii::CommandBuffer> beginSingleTimeCommands(vk::raii::Device* device, vk::CommandPool* commandPool);
 		static void endSingleTimeCommands(vk::raii::CommandBuffer& commandBuffer, vk::raii::Queue* queue);
 

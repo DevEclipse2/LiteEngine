@@ -1,6 +1,7 @@
 //this replaces vulkandevice as the new way to do, well anything
 
 #pragma once
+#include "LtMesh.h"
 #include "vulkan/vulkan_raii.hpp"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -9,6 +10,9 @@
 #include "DeviceHandler.h"
 #include "PipelineDelegate.h"
 #include "SwapchainHandler.h"
+#include "ImageDelegate.h"
+#include "CommandBuffers.h"
+
 namespace lte {
 	class DebugMessenger;
 	class Lt_Window;
@@ -25,6 +29,11 @@ namespace lte {
 		public:
 			LtBackend(BackendInitInfo info);
 			~LtBackend();
+			void InitializeVulkan(BackendInitInfo info);
+
+			//might be unsafe
+			void AssignDrawPtr(LtMeshInfo* ptr);
+			
 		private:
 			int width;
 			int height;
@@ -32,7 +41,7 @@ namespace lte {
 			Lt_Window window{width, height,name};
 			void createSurface();
 			void createInstance(BackendInitInfo info);
-			void createPhysicalDevice();
+			void RegisterGameObjects();
 			const std::vector<char const*> validationLayers = {
 			"VK_LAYER_KHRONOS_validation"
 			};
@@ -48,7 +57,24 @@ namespace lte {
 			LogicalDevice primary{};
 			LtSwapChain swapchain{nullptr,nullptr,nullptr,nullptr,nullptr};
 			//LtPipeline mainPipeline{};
+			LtImage* colorImage = nullptr;
+			LtImage* depthImage = nullptr;
+			LtPipeline pipeline{};
 			uint32_t minImageCount = 0;
+			vk::raii::CommandPool commandPool = nullptr;
+
+			//this is for drawing
+			//dont @me on this
+			LtMeshInfo* drawPtr = nullptr;
+			char drawList[6] = {255,255,255 , 255, 255 ,255};
+			uint64_t objects = 0;
+			void updateDrawCount();
+			
+
+			//indices and vertices will be in c style array
+			Vertex		vertexes[1] = {{}};
+			uint32_t	indices[];
+			
 	};
 
 }
