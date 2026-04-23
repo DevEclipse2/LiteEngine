@@ -12,11 +12,11 @@ namespace lte {
 	
 	
 
-	struct UniformBufferObject {
+	/*struct UniformBufferObject {
 		alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
-	};
+	};*/
 	class VertexHandler
 	{
 	public:
@@ -54,7 +54,7 @@ namespace lte {
 	};
 }
 
-
+/*
 namespace std {
 	template<> struct hash<lte::Vertex> {
 		size_t operator()(lte::Vertex const& vertex) const {
@@ -64,3 +64,4 @@ namespace std {
 		}
 	};
 }
+*/

@@ -11,43 +11,9 @@
 #include <stdlib.h>
 namespace lte
 {
-    struct LtImage {
-        vk::raii::Image			image = nullptr;
-        vk::raii::DeviceMemory	imageMemory = nullptr;
-        vk::raii::Sampler		imageSampler = nullptr;
-        vk::raii::ImageView		imageView = nullptr;
-        uint32_t mipLevels = 0;
-        uint32_t width = 0;
-        uint32_t height = 0;
-        uint32_t channel = 0;
-        const void createImage(uint32_t Width, uint32_t Height, uint32_t MipLevels,vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
-        {
-            width = Width;
-            height = Height;
-            mipLevels = MipLevels;
-            vk::ImageCreateInfo imageInfo{};
-            imageInfo.imageType = vk::ImageType::e2D,
-                imageInfo.format = format,
-                imageInfo.extent = vk::Extent3D{ width, height, 1 },
-                imageInfo.arrayLayers = 1,
-                imageInfo.samples = vk::SampleCountFlagBits::e1,
-                imageInfo.tiling = tiling,
-                imageInfo.usage = usage,
-                imageInfo.mipLevels = mipLevels;
-            imageInfo.sharingMode = vk::SharingMode::eExclusive;
-            imageInfo.samples = numSamples;
-            image = vk::raii::Image(*device, imageInfo);
-
-            vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
-            vk::MemoryAllocateInfo allocInfo{};
-            allocInfo.allocationSize = memRequirements.size,
-                allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties, *physicalDevice);
-            imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
-            image.bindMemory(imageMemory, 0);
-        }
-
-    };
-    static class ImageDelegate
+    struct LtImage;
+    class DeviceHandler;
+    class ImageDelegate
     {
         public:
         
@@ -56,7 +22,7 @@ namespace lte
             ~ImageDelegate();
             static uint32_t requestImageCreation();
             static void requestImageDestruction(uint32_t index);
-            static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
+            //static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
             static void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels, singleTimeCommandInfo info);
             static void generateMipmaps(LtImage* ltImage, vk::Format imageFormat, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo info);
             static void createSwapchainImageViews(LtSwapChain* swap, vk::raii::Device* device);
@@ -65,7 +31,17 @@ namespace lte
             static void createColorResources(LtSwapChain* swapChain, LtImage* ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples);
             [[nodiscard]] static void createImageView(LtImage* ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels, vk::raii::Device* device);
             static void createDepthResources(LtSwapChain* swapChain, LtImage* DepthRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SampleCountFlagBits msaaSamples);
-
+            static void transition_image_layout(
+                vk::Image       image,
+                vk::ImageLayout oldLayout,
+                vk::ImageLayout newLayout,
+                vk::AccessFlags2 srcAccessMask,
+                vk::AccessFlags2 dstAccessMask,
+                vk::PipelineStageFlags2 srcStageMask,
+                vk::PipelineStageFlags2 dstStageMask,
+                vk::ImageAspectFlags    image_aspect_flags,
+                vk::raii::CommandBuffer* commandBuffer
+            );
             //static void AllocatePointer
 
         private:
@@ -73,5 +49,7 @@ namespace lte
             static std::vector<uint32_t> AvailableIndexes;
 
     };
+
+    
 }
 

@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <vulkan/vulkan_raii.hpp>
-#include "VulkanDevice.h"
+/*#include "VulkanDevice.h"*/
 namespace lte {
 	class VulkanDevice;
 	class Lt_Window
@@ -17,10 +17,11 @@ namespace lte {
 		bool shouldClose() { return glfwWindowShouldClose(window); }
 		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 		GLFWwindow* getGLFWWindow();
-		void setVkDevice(VulkanDevice* device);
+		static bool Resized;
+		//void setVkDevice(VulkanDevice* device);
 	private:
 
-		static VulkanDevice* vkdevice;
+		//static VulkanDevice* vkdevice;
 		GLFWwindow* window;
 		void initWindow();
 		const int width;

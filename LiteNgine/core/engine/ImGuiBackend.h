@@ -1,3 +1,4 @@
+/*
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
 #define GLFW_INCLUDE_VULKAN
@@ -108,7 +109,8 @@ namespace lte {
 		uint64_t indiceCount = 0;
 		uint64_t modelCount = 0;
 		UiLayout* layoutMgr;
+		UiLayout* layoutMgr;
 	};
 }
-
+*/
 

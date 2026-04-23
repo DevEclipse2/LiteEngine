@@ -13,9 +13,9 @@ namespace lte {
 			void End();
 			void Cleanup();
 			void Loop();
-		private:
-			Lt_Window ltWindow{ 800, 600 ,"LiteEngine : Agstrum"};
 			LtBackend backend{};
+		private:
+			//Lt_Window ltWindow{ 800, 600 ,"LiteEngine : Agstrum"};
 			FileLoader fileLoader{};
 	};
 }

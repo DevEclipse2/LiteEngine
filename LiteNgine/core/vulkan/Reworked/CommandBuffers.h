@@ -3,9 +3,9 @@
 namespace lte {
 	struct singleTimeCommandInfo {
 		vk::raii::Device* device = nullptr;
-		const vk::CommandPool* CommandPool = nullptr;
+		vk::CommandPool* CommandPool = nullptr;
 		vk::raii::Queue* queue = nullptr;
-		singleTimeCommandInfo(vk::raii::Device* Idevice, const vk::CommandPool* IcommandPool, vk::raii::Queue* Iqueue) : device{ Idevice }, CommandPool{ IcommandPool }, queue{ Iqueue } {
+		singleTimeCommandInfo(vk::raii::Device* Idevice, vk::CommandPool* IcommandPool, vk::raii::Queue* Iqueue) : device{ Idevice }, CommandPool{ IcommandPool }, queue{ Iqueue } {
 
 		}
 	};

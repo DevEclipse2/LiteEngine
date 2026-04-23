@@ -19,6 +19,7 @@ namespace lte {
 	}
 	void DebugMessenger::setupMessenger(vk::raii::Instance* instance)
 	{
+
 		//sets it up for both warnings AND errors using container
 		vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);

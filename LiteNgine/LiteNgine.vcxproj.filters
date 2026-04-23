@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core\vulkan\VulkanDevice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\basic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,43 +24,10 @@
     <ClCompile Include="core\vulkan\Lt_Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\vulkan\ConsoleLog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\ShaderLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\VertexHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\testNcoolShit\TestAnim.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\Swapchain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\extras.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\devices.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\buffers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\modelLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\engine\FileMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ThreadMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\vulkan\vulkanMain\requestData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dep\backends\imgui_impl_vulkan.cpp">
@@ -99,15 +63,6 @@
     <ClCompile Include="dep\backends\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\engine\ImGuiBackend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\engine\Ui\UiLayout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\engine\Ui\UiImageHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\Reworked\PipelineDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -138,30 +93,21 @@
     <ClCompile Include="core\vulkan\Reworked\FileLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\InterfaceLayers\Lt_ILayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Reworked\LtSync.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Reworked\TemporaryDraw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="core\vulkan\VulkanDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\vulkan\App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\Lt_Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\vulkan\ConsoleLog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\vulkan\ShaderLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\vulkan\VertexHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\vulkan\testNcoolShit\TestAnim.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\vulkan\vulkanMain\Swapchain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\engine\FileMgr.h">
@@ -209,15 +155,6 @@
     <ClInclude Include="dep\backends\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\engine\ImGuiBackend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\engine\Ui\UiLayout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\engine\Ui\UiImageHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\vulkan\Reworked\PipelineDelegate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -246,6 +183,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\Reworked\FileLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\InterfaceLayers\Lt_ILayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Reworked\LtSync.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Reworked\TemporaryDraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

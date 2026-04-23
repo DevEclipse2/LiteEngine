@@ -64,8 +64,6 @@ namespace lte {
 			0.1f, 20.0f);
 
 		ubo.proj[1][1] *= -1;
-
-
 		// Update uniform buffers for each object
 		for (auto& gameObject : meshes) {
 			// Apply continuous rotation to the object

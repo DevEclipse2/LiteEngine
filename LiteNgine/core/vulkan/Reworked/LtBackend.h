@@ -14,6 +14,7 @@
 #include "CommandBuffers.h"
 #include "FileLoader.h"
 #include "LtSync.h"
+#include "TemporaryDraw.h"
 namespace lte {
 	class DebugMessenger;
 	class Lt_Window;
@@ -45,11 +46,15 @@ namespace lte {
 			void Update();
 
 			void Exit();
+
+			void Draw();
+
+			int width = 800;
+			int height = 600;
+			std::string name = "window";
+
+			Lt_Window window{ width, height,name };
 		private:
-			int width;
-			int height;
-			std::string name;
-			Lt_Window window{width, height,name};
 			void createSurface();
 			void createInstance(BackendInitInfo info);
 			void RegisterGameObjects();
@@ -74,7 +79,7 @@ namespace lte {
 			//this is for drawing
 			//dont @me on this
 			LtMeshInfo* drawPtr = nullptr;
-			char drawList[6] = {255,255,255 , 255, 255 ,255};
+			char drawList[6] = { 'c','c','c', 'c', 'c' ,'c'};
 			uint64_t objects = 0;
 			void updateDrawCount();
 			uint8_t framesInFlight = 3;
@@ -94,6 +99,13 @@ namespace lte {
 
 			vk::raii::DescriptorPool pool = nullptr;
 			std::vector<vk::raii::CommandBuffer> commandBuffers = {};
+
+			bool framebufferResized = false;
+			uint32_t availableIndex = 0;
+			uint32_t frameNumber = 0;
+			uint8_t frameIndex = 0;
+			void recreateSwapChain();
+
 	};
 
 }

@@ -1,5 +1,5 @@
 #include "../VulkanDevice.h"
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 namespace lte {
     void VulkanDevice::createTextureImage(uint32_t index, std::string path, vk::raii::Image* image, vk::raii::DeviceMemory* mem, int* width, int* height, int* channel)

@@ -35,7 +35,7 @@ namespace lte {
 
         commandBuffers->clear();
         vk::CommandBufferAllocateInfo allocInfo{};
-        allocInfo.commandPool = commandPool,
+        allocInfo.commandPool = **commandPool,
             allocInfo.level = vk::CommandBufferLevel::ePrimary,
             allocInfo.commandBufferCount = maxFIF;
         *commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);

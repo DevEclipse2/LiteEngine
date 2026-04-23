@@ -70,7 +70,7 @@ namespace lte {
 
 		info.queue->waitIdle();
 	}
-	void Buffers::createUniformBuffers(std::vector<LtMeshInfo>* meshes, uint8_t maxFIF)
+	void Buffers::createUniformBuffers(std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device* device)
 	{
 
 		for (auto& gameObject : *meshes) {
@@ -85,7 +85,7 @@ namespace lte {
 				vk::raii::DeviceMemory bufferMem = nullptr;
 				createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
 					vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-					buffer, bufferMem);
+					buffer, bufferMem, device);
 				gameObject.uniformBuffers.emplace_back(std::move(buffer));
 				gameObject.uniformBuffersMemory.emplace_back(std::move(bufferMem));
 				gameObject.uniformBuffersMapped.emplace_back(gameObject.uniformBuffersMemory[i].mapMemory(0, bufferSize));

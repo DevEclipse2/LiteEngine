@@ -1,6 +1,6 @@
-#include "../VulkanDevice.h"
+#include "../VulkanDevice.h"/*
 #define TINYOBJLOADER_IMPLEMENTATION
-#define TINYOBJLOADER_DISABLE_FAST_FLOAT
+#define TINYOBJLOADER_DISABLE_FAST_FLOAT*/
 #include <tiny_obj_loader.h>
 
 namespace lte {

@@ -41,40 +41,12 @@ namespace lte {
 			std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
 		};
 	}
-	vk::PresentModeKHR SwapchainHandler::chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes)
-	{
-		assert(std::ranges::any_of(availablePresentModes, [](auto presentMode) { return presentMode == vk::PresentModeKHR::eFifo; }));
-		return std::ranges::any_of(availablePresentModes,
-			[](const vk::PresentModeKHR value) { return vk::PresentModeKHR::eMailbox == value; }) ?
-			vk::PresentModeKHR::eMailbox :
-			vk::PresentModeKHR::eFifo;
-	}
-
+	
 	void SwapchainHandler::cleanupSwapChain(LtSwapChain* swap)
 	{
 		swap->imageViews.clear();
 		swap->swapChain = nullptr;
 	}
-	void VulkanDevice::recreateSwapChain(Lt_Window* window, vk::raii::Device* device) {
-
-
-		WIDTH = 0;
-		HEIGHT = 0;
-
-		while (WIDTH == 0 || HEIGHT == 0)
-		{
-			glfwGetFramebufferSize(window->getGLFWWindow(), &WIDTH, &HEIGHT);
-			glfwWaitEvents();
-		}
-		device->waitIdle();
-
-		cleanupSwapChain();
-
-
-		createSwapChain();
-		createImageViews();
-		createColorResources();
-		createDepthResources();
-	}
+	
 
 }

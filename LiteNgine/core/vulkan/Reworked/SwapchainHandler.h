@@ -3,6 +3,18 @@
 #include "../Lt_Window.h"
 namespace lte
 {
+	struct LtSwapChain;
+	class SwapchainHandler
+	{
+	public:
+		static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const& availableFormats);
+		static vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
+		static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities, uint32_t* minImageCount);
+		static void cleanupSwapChain(LtSwapChain* swap);
+		static vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities, Lt_Window* window);
+
+	};
+
 	struct LtSwapChain {
 		vk::Extent2D swapChainExtent;
 		vk::SurfaceFormatKHR swapChainSurfaceFormat;
@@ -32,25 +44,13 @@ namespace lte
 				swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive,
 				swapChainCreateInfo.preTransform = surfaceCapabilities.currentTransform,
 				swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-				swapChainCreateInfo.presentMode = chooseSwapPresentMode(availablePresentModes),
+				swapChainCreateInfo.presentMode = SwapchainHandler::chooseSwapPresentMode(availablePresentModes),
 				swapChainCreateInfo.clipped = true;
 			swapChainCreateInfo.oldSwapchain = nullptr;
 			swapChain = vk::raii::SwapchainKHR(*device, swapChainCreateInfo);
 			swapChainImages = swapChain.getImages();
 
 		}
-	};
-
-	class SwapchainHandler
-	{
-	public:
-		static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const& availableFormats);
-		static vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
-		static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities, uint32_t* minImageCount);
-		static void cleanupSwapChain(LtSwapChain* swap);
-		static vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities, Lt_Window* window);
-		static vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
-
 	};
 }
 

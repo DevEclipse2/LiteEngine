@@ -69,11 +69,108 @@ namespace lte {
 
 	void LtBackend::Update()
 	{
+		
+		TemporaryDraw::updateUniformBuffer(frameIndex,&swapchain,&MeshInfo);
 
+		auto fenceResult = primary.device.waitForFences(*synchronizationSet.inFlightFences[frameIndex], vk::True, UINT64_MAX);
+		if (fenceResult != vk::Result::eSuccess)
+		{
+			throw std::runtime_error("failed to wait for fence!");
+		}
+		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, *synchronizationSet.presentCompleteSemaphores[frameIndex], nullptr);
+		availableIndex = imageIndex;
+		if (result == vk::Result::eErrorOutOfDateKHR)
+		{
+			recreateSwapChain();
+			return;
+		}
+		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+		{
+			assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
+			throw std::runtime_error("failed to acquire swap chain image!");
+		}
+
+		primary.device.resetFences(*synchronizationSet.inFlightFences[frameIndex]);
+		commandBuffers[frameIndex].reset();
+		TemporaryDraw::recordCommandBuffer(imageIndex,frameIndex,&commandBuffers[frameIndex],&swapchain,ImageDelegate::GetImagePtr(colorImageIndex),ImageDelegate::GetImagePtr(depthImageIndex),&pipeline,&vertexBuffer,&indexBuffer,&vertexBufferMem,&indexBufferMem,&MeshInfo,&renderSets);
+
+		/*if (gui->drawFrame()) {
+			gui->updateBuffers();
+		}
+		gui->drawFrame();*/
+
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex] /*pUiCommandBuffer->at(frameIndex)*/ };
+
+		const vk::SubmitInfo submitInfo{
+										1,
+										&* synchronizationSet.presentCompleteSemaphores[frameIndex],
+										&waitDestinationStageMask,
+										static_cast<uint32_t>(std::size(PackedBuffer)),
+										&*PackedBuffer,
+										1,
+										&*synchronizationSet.renderFinishedSemaphores[imageIndex] };
+		primary.queue.submit(submitInfo, *synchronizationSet.inFlightFences[frameIndex]);
 	}
+	void LtBackend::Draw() {
 
+		const vk::PresentInfoKHR presentInfoKHR{ 1, &*synchronizationSet.renderFinishedSemaphores[availableIndex],1, &*swapchain.swapChain,&availableIndex };
+
+		if (window.Resized)
+		{
+			window.Resized = false;
+			/*gui->firstFrame = true;
+			gui->updateFrameBuffer();*/
+			recreateSwapChain();
+			std::cout << "resize" << "\n";
+			return;
+		}
+
+
+		vk::Result result = primary.queue.presentKHR(presentInfoKHR); //error here 
+
+		switch (result)
+		{
+		case vk::Result::eSuccess:
+			break;
+		case vk::Result::eSuboptimalKHR:
+			window.Resized = false;
+			recreateSwapChain();
+			std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n";
+			break;
+		default:
+			window.Resized = false;
+			recreateSwapChain();
+			std::cerr << "what the fuck" << "\n";
+			break;        // an unexpected result is returned!
+		}
+		frameNumber++;
+		frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
 	void LtBackend::Exit() {
 		SwapchainHandler::cleanupSwapChain(&swapchain);
+	}
+
+	void LtBackend::recreateSwapChain() 
+	{
+
+
+		width = 0;
+		height = 0;
+
+		while (width == 0 || height == 0)
+		{
+			glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
+			glfwWaitEvents();
+		}
+		primary.device.waitIdle();
+		SwapchainHandler::cleanupSwapChain(&swapchain);
+		deviceHandler.pickPhysicalDevice(&instance, &PhysicalDevice, &msaaSamples);
+		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
+		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
+		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
+		ImageDelegate::createColorResources(&swapchain, ImageDelegate::GetImagePtr(colorImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, ImageDelegate::GetImagePtr(depthImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
 	}
 
 	void LtBackend::createInstance(BackendInitInfo info) {

@@ -120,8 +120,8 @@ namespace lte {
 		deviceCreateInfo.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
 			deviceCreateInfo.queueCreateInfoCount = 1,
 			deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo,
-			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions->size()),
-			deviceCreateInfo.ppEnabledExtensionNames = requiredExtensions->data();
+			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size()),
+			deviceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 		logicalDevice->device = vk::raii::Device(*physicalDevice, deviceCreateInfo);
 		logicalDevice->queue = vk::raii::Queue(logicalDevice->device, logicalDevice->queueIndex, 0);
 		//computeQueue = vk::raii::Queue(device,computeQueueIndex,0);

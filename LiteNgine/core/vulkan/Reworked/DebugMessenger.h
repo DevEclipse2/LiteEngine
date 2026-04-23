@@ -1,6 +1,8 @@
 #pragma once
 #include "vulkan/vulkan_raii.hpp"
 #include <iostream>
+#include <algorithm>
+#include <cstdlib>
 namespace lte {
 	class DebugMessenger
 	{

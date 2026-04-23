@@ -224,7 +224,7 @@ namespace lte {
 		//void updateVertexBuffer();
 		void createIndexBuffer();
 		void copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size);
-		std::vector<std::vector<Vertex>> vertices{};
+		std::vector<std::vector<Vertex>> vertices{ {} };
 		std::vector <std::vector<uint32_t>> indices{};
 		vk::raii::Buffer vertexBuffer				= nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory	= nullptr;

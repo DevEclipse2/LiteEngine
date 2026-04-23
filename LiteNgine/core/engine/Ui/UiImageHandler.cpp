@@ -1,3 +1,4 @@
+/*
 #include "UiImageHandler.h"
 namespace lte {
 	UiImageHandler::UiImageHandler()
@@ -44,4 +45,5 @@ namespace lte {
 	//	//GuiImage img = { descSet,static_cast<uint16_t>(width),static_cast<uint16_t>(height),static_cast<uint16_t>(channel),**imageView, **imageTemp,**deviceMem,**sampler,uploadBuffer,mem };
 	//}
 }
+*/
 

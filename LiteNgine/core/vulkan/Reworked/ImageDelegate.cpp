@@ -1,5 +1,78 @@
 #include "ImageDelegate.h"
 namespace lte {
+
+    struct LtImage {
+        vk::raii::Image			image = nullptr;
+        vk::raii::DeviceMemory	imageMemory = nullptr;
+        vk::raii::Sampler		imageSampler = nullptr;
+        vk::raii::ImageView		imageView = nullptr;
+        uint32_t mipLevels = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t channel = 0;
+        const void createImage(uint32_t Width, uint32_t Height, uint32_t MipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
+        {
+            width = Width;
+            height = Height;
+            mipLevels = MipLevels;
+            vk::ImageCreateInfo imageInfo{};
+            imageInfo.imageType = vk::ImageType::e2D,
+                imageInfo.format = format,
+                imageInfo.extent = vk::Extent3D{ width, height, 1 },
+                imageInfo.arrayLayers = 1,
+                imageInfo.samples = vk::SampleCountFlagBits::e1,
+                imageInfo.tiling = tiling,
+                imageInfo.usage = usage,
+                imageInfo.mipLevels = mipLevels;
+            imageInfo.sharingMode = vk::SharingMode::eExclusive;
+            imageInfo.samples = numSamples;
+            image = vk::raii::Image(*device, imageInfo);
+
+            vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
+            vk::MemoryAllocateInfo allocInfo{};
+            allocInfo.allocationSize = memRequirements.size,
+                allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties, *physicalDevice);
+            imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
+            image.bindMemory(imageMemory, 0);
+        }
+
+    }; struct LtImage {
+        vk::raii::Image			image = nullptr;
+        vk::raii::DeviceMemory	imageMemory = nullptr;
+        vk::raii::Sampler		imageSampler = nullptr;
+        vk::raii::ImageView		imageView = nullptr;
+        uint32_t mipLevels = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t channel = 0;
+        const void createImage(uint32_t Width, uint32_t Height, uint32_t MipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
+        {
+            width = Width;
+            height = Height;
+            mipLevels = MipLevels;
+            vk::ImageCreateInfo imageInfo{};
+            imageInfo.imageType = vk::ImageType::e2D,
+                imageInfo.format = format,
+                imageInfo.extent = vk::Extent3D{ width, height, 1 },
+                imageInfo.arrayLayers = 1,
+                imageInfo.samples = vk::SampleCountFlagBits::e1,
+                imageInfo.tiling = tiling,
+                imageInfo.usage = usage,
+                imageInfo.mipLevels = mipLevels;
+            imageInfo.sharingMode = vk::SharingMode::eExclusive;
+            imageInfo.samples = numSamples;
+            image = vk::raii::Image(*device, imageInfo);
+
+            vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
+            vk::MemoryAllocateInfo allocInfo{};
+            allocInfo.allocationSize = memRequirements.size,
+                allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties, *physicalDevice);
+            imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
+            image.bindMemory(imageMemory, 0);
+        }
+
+    };
+
     ImageDelegate::ImageDelegate()
     {
         std::vector<LtImage> pool = {};
@@ -71,6 +144,50 @@ namespace lte {
             //weird
 
         }
+    }
+
+    void ImageDelegate::transition_image_layout(
+        vk::Image       image,
+        vk::ImageLayout oldLayout,
+        vk::ImageLayout newLayout,
+        vk::AccessFlags2 srcAccessMask,
+        vk::AccessFlags2 dstAccessMask,
+        vk::PipelineStageFlags2 srcStageMask,
+        vk::PipelineStageFlags2 dstStageMask,
+        vk::ImageAspectFlags    image_aspect_flags,
+        vk::raii::CommandBuffer* commandBuffer
+    )
+    {
+        if (image == nullptr) {
+            std::cerr << "image provided is nullptr\n";
+        }
+
+        vk::ImageSubresourceRange range{};
+        range.aspectMask = image_aspect_flags,
+            range.baseMipLevel = 0,
+            range.levelCount = 1,
+            range.baseArrayLayer = 0,
+            range.layerCount = 1;
+
+        vk::ImageMemoryBarrier2 barrier = {};
+        barrier.srcStageMask = srcStageMask,
+            barrier.srcAccessMask = srcAccessMask,
+            barrier.dstStageMask = dstStageMask,
+            barrier.dstAccessMask = dstAccessMask,
+            barrier.oldLayout = oldLayout,
+            barrier.newLayout = newLayout,
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            barrier.image = image;
+        barrier.subresourceRange = range;
+
+
+        vk::DependencyInfo dependencyInfo = {};
+        dependencyInfo.dependencyFlags = {},
+            dependencyInfo.imageMemoryBarrierCount = 1,
+            dependencyInfo.pImageMemoryBarriers = &barrier;
+
+        commandBuffer->pipelineBarrier2(dependencyInfo);
     }
 
     void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage* DepthRes,vk::raii::Device* device ,vk::raii::PhysicalDevice* physicalDevice,vk::SampleCountFlagBits msaaSamples) {

@@ -1,3 +1,4 @@
+/*
 #include "UiLayout.h"
 #include <iostream>
 namespace lte {
@@ -109,3 +110,4 @@ namespace lte {
 
 
 }
+*/

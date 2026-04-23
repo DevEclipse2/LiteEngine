@@ -2,14 +2,18 @@
 namespace lte {
 	void main::run() {
 
+		InterfaceLayer.Begin();
+		/*
 		ltWindow.setVkDevice(&vkDevice);
 		vkDevice.setGuiRef(&uiProc);
 		vkDevice.setGuiCommandBuffers(uiProc.getpCommandBuffers());
-		uiProc.setLayoutManager(&uiLayout);
-		while (!ltWindow.shouldClose()) {
+		uiProc.setLayoutManager(&uiLayout);*/
+		pWindow = &InterfaceLayer.backend.window;
+		while (!pWindow->shouldClose()) {
 			glfwPollEvents();
-			vkDevice.drawFrame();
+			InterfaceLayer.Loop();
 		}
-		vkDevice.Exit();
+		InterfaceLayer.End();
+		//vkDevice.Exit();
 	}
 }

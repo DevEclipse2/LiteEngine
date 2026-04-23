@@ -7,11 +7,13 @@ namespace lte {
 	struct LtPipeline {
 		//something that contains all of the necessary information about a particular pipeline
 		vk::raii::Pipeline				pipeline = nullptr;
+		vk::raii::PipelineLayout		PipelineLayout = nullptr;
 		vk::DescriptorSetLayout			descSetLayout;
 		const void createPipeline(uint32_t stageCount, vk::PipelineShaderStageCreateInfo* shaderStages, vk::PipelineVertexInputStateCreateInfo* vertexInputInfo, vk::PipelineInputAssemblyStateCreateInfo* inputAssembly,
 			vk::PipelineViewportStateCreateInfo* viewportState, vk::PipelineRasterizationStateCreateInfo* rasterizer, vk::PipelineMultisampleStateCreateInfo* multisampling, vk::PipelineColorBlendStateCreateInfo* colorBlending,
 			vk::PipelineDynamicStateCreateInfo* dynamicState, vk::PipelineDepthStencilStateCreateInfo* depthStencil, vk::raii::PipelineLayout* pipelineLayout, uint32_t colorAttachmentCount, vk::Format* colorAttachmentFormats, vk::Format depthAttachmentFormat, vk::raii::Device* device) {
 			vk::GraphicsPipelineCreateInfo graphicsInfo{};
+			PipelineLayout = std::move(*pipelineLayout);
 			graphicsInfo.stageCount = stageCount,
 				graphicsInfo.pStages = shaderStages,
 				graphicsInfo.pVertexInputState = vertexInputInfo,
@@ -34,7 +36,7 @@ namespace lte {
 			pipeline = vk::raii::Pipeline(*device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 		}
 	};
-	static class PipelineDelegate
+	class PipelineDelegate
 	{
 		
 		public:
