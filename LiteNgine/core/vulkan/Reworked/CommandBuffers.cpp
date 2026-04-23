@@ -23,4 +23,11 @@ namespace lte {
         queue->submit(submitInfo, nullptr);
         queue->waitIdle();
     }
+    void CommandBuffers::createCommandPool(vk::raii::CommandPool* commandPool, vk::raii::Device* device , uint32_t queueIndex)
+    {
+        vk::CommandPoolCreateInfo poolInfo{};
+        poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+            poolInfo.queueFamilyIndex = queueIndex;
+        *commandPool = vk::raii::CommandPool(*device, poolInfo);
+    }
 }

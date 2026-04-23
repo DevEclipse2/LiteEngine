@@ -22,7 +22,8 @@ namespace lte {
 	//	size_t image_size = width * height * channel;
 	//	pVulkanDevice->createTextureImage(0,path,&imageTemp,&deviceMem,&width,&height,&channel);
 	//	imageView = pVulkanDevice->createImageView(imageTemp, vk::Format::eR8G8B8Unorm, vk::ImageAspectFlagBits::eColor, 1);
-	//	pVulkanDevice->createTextureSampler(&sampler);
+	//	pVulkanDevice->
+	// (&sampler);
 	//	vk::DescriptorSet descSet = ImGui_ImplVulkan_AddTexture(*sampler, *imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	//	VkResult err;
 	//	VkBufferCreateInfo buffer_info = {};

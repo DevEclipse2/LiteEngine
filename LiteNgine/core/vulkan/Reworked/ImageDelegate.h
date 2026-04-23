@@ -8,6 +8,7 @@
 #include "PipelineDelegate.h"
 #include <stb_image.h>
 #include "Buffers.h"
+#include <stdlib.h>
 namespace lte
 {
     struct LtImage {
@@ -19,8 +20,11 @@ namespace lte
         uint32_t width = 0;
         uint32_t height = 0;
         uint32_t channel = 0;
-        const void createImage(uint32_t width, uint32_t height, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
+        const void createImage(uint32_t Width, uint32_t Height, uint32_t MipLevels,vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
         {
+            width = Width;
+            height = Height;
+            mipLevels = MipLevels;
             vk::ImageCreateInfo imageInfo{};
             imageInfo.imageType = vk::ImageType::e2D,
                 imageInfo.format = format,
@@ -59,8 +63,11 @@ namespace lte
             static void createColorResources(LtSwapChain* swapChain, LtImage* ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples);
             [[nodiscard]] static void createImageView(LtImage* ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels, vk::raii::Device* device);
             static void createDepthResources(LtSwapChain* swapChain, LtImage* DepthRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SampleCountFlagBits msaaSamples);
+
+            static void AllocatePointer
+
         private:
-            static std::vector<LtImage> ImagePool;
+            static std::vector<LtImage> ImagePool; // this is not the correct method
 
 
     };

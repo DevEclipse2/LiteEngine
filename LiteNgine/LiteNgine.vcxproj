@@ -207,6 +207,8 @@
     <ClCompile Include="core\vulkan\Reworked\DeviceHandler.cpp" />
     <ClCompile Include="core\vulkan\Reworked\LtBackend.cpp" />
     <ClCompile Include="core\vulkan\Reworked\SwapchainHandler.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\LtMesh.cpp" />
+    <ClCompile Include="core\vulkan\Reworked\FileLoader.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\engine\Ui\UiLayout.cpp" />
     <ClCompile Include="core\engine\Ui\UiImageHandler.cpp" />
@@ -243,6 +245,8 @@
     <ClInclude Include="core\vulkan\Reworked\DeviceHandler.h" />
     <ClInclude Include="core\vulkan\Reworked\LtBackend.h" />
     <ClInclude Include="core\vulkan\Reworked\SwapchainHandler.h" />
+    <ClInclude Include="core\vulkan\Reworked\LtMesh.h" />
+    <ClInclude Include="core\vulkan\Reworked\FileLoader.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\engine\Ui\UiLayout.h" />
     <ClInclude Include="core\engine\Ui\UiImageHandler.h" />

@@ -22,12 +22,13 @@ namespace lte {
 		std::string WindowName = "";
 		bool useValidationLayers;
 		std::string name = "";
+		Lt_Window* window = nullptr;
 	};
 	class LtBackend
 	{
 		
 		public:
-			LtBackend(BackendInitInfo info);
+			LtBackend();
 			~LtBackend();
 			void InitializeVulkan(BackendInitInfo info);
 

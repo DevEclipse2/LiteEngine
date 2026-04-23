@@ -1,9 +1,10 @@
 #include "LtBackend.h"
 namespace lte {
-	LtBackend::LtBackend(BackendInitInfo info) : width{info.width} , height{info.height} , name{info.WindowName}
+	LtBackend::LtBackend()
 	{
-		InitializeVulkan(info);
+		
 		//load models (or they are already loaded, i won't judge)
+
 		deviceHandler.createTextureSampler(&sampler, &PhysicalDevice, &primary.device);
 	}
 	void LtBackend::createSurface()

@@ -4,10 +4,7 @@
 #include "VulkanDevice.h"
 #include "../../core/engine/ImGuiBackend.h"
 #include "../../core/engine/Ui/UiLayout.h"
-
-
-#include "Reworked/LtBackend.h"
-
+#include "InterfaceLayers/Lt_ILayer.h"
 
 namespace lte 
 {
@@ -20,10 +17,7 @@ namespace lte
 		void run();
 	private:
 
-		BackendInitInfo info{ 800,600,"LiteEngine : Agstrum",true,"LiteNgine editor" };
-		LtBackend backend{info};
-		Lt_Window ltWindow{ WIDTH, HEIGHT ,"LiteEngine : Agstrum" };
-		Lt_Window* ptr = &ltWindow;
+		Lt_ILayer InterfaceLayer{};
 		VulkanDevice vkDevice	{ ptr };
 		Gui uiProc {&vkDevice};
 		UiLayout uiLayout{};

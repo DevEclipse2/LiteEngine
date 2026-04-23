@@ -51,7 +51,7 @@ namespace lte {
 
     void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage* DepthRes,vk::raii::Device* device ,vk::raii::PhysicalDevice* physicalDevice,vk::SampleCountFlagBits msaaSamples) {
         vk::Format depthFormat = PipelineDelegate::findDepthFormat(physicalDevice);
-        DepthRes->createImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
+        DepthRes->createImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,0, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
         //createImage(swapChainExtent.width, swapChainExtent.height, 1, vk::SampleCountFlagBits::e1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
         createImageView(DepthRes, depthFormat, vk::ImageAspectFlagBits::eDepth, 1,device);
     }
@@ -61,7 +61,7 @@ namespace lte {
     {
         vk::Format colorFormat = swapChain->swapChainSurfaceFormat.format;
        
-        ColorRes->createImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height, msaaSamples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physDev);
+        ColorRes->createImage(swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,0, msaaSamples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physDev);
         createImageView(ColorRes, colorFormat, vk::ImageAspectFlagBits::eColor, 1, device);
     }
 
@@ -75,40 +75,7 @@ namespace lte {
         ltImage->imageView = vk::raii::ImageView(*device, viewInfo);
     }
 
-    void ImageDelegate::loadTextureFromDisk(std::string path, LtImage* ltImage , singleTimeCommandInfo info , vk::raii::PhysicalDevice* physDevice)
-    {
-
-        int width;
-        int height;
-        int channel;
-        stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
-        //stbi_uc *pixels = stbi_load("textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        vk::DeviceSize imageSize = width * height * 4;
-        ltImage->mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
-        if (!pixels) {
-            throw std::runtime_error("failed to load texture image!");
-        }
-        vk::raii::Buffer stagingBuffer = nullptr;
-        vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-        Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, info.device);
-
-        void* data = stagingBufferMemory.mapMemory(0, imageSize);
-        memcpy(data, pixels, imageSize);
-        stagingBufferMemory.unmapMemory();
-
-        stbi_image_free(pixels);
-
-        ltImage->createImage(width, height, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physDevice);
-        ltImage->width = width;
-        ltImage->height = height;
-        ltImage->channel = channel;
-        
-        transitionImageLayout(ltImage->image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, ltImage->mipLevels ,info);
-        Buffers::copyBufferToImage(stagingBuffer, ltImage->image,ltImage->width, ltImage->height,info);
-        //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
-        generateMipmaps(*image, vk::Format::eR8G8B8A8Srgb,physDevice,info);
-
-	}
+    
 
     void ImageDelegate::transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels ,singleTimeCommandInfo info) 
     {
