@@ -49,4 +49,32 @@ namespace lte {
 			vk::PresentModeKHR::eMailbox :
 			vk::PresentModeKHR::eFifo;
 	}
+
+	void SwapchainHandler::cleanupSwapChain(LtSwapChain* swap)
+	{
+		swap->imageViews.clear();
+		swap->swapChain = nullptr;
+	}
+	void VulkanDevice::recreateSwapChain(Lt_Window* window, vk::raii::Device* device) {
+
+
+		WIDTH = 0;
+		HEIGHT = 0;
+
+		while (WIDTH == 0 || HEIGHT == 0)
+		{
+			glfwGetFramebufferSize(window->getGLFWWindow(), &WIDTH, &HEIGHT);
+			glfwWaitEvents();
+		}
+		device->waitIdle();
+
+		cleanupSwapChain();
+
+
+		createSwapChain();
+		createImageViews();
+		createColorResources();
+		createDepthResources();
+	}
+
 }

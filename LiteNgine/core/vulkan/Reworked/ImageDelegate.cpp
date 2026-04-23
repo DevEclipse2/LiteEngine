@@ -12,25 +12,36 @@ namespace lte {
         ImagePool.clear();
     }
     
-    void ImageDelegate::requestImageDestruction(LtImage* Imageptr)
+    void ImageDelegate::requestImageDestruction(uint32_t Imageptr)
     {
-        if (ImagePool.size() > 0) {
-            if (Imageptr >= ImagePool.data() && Imageptr < (ImagePool.data() + ImagePool.size())) {
-                Imageptr->image = nullptr;
-                Imageptr->imageMemory = nullptr;
-                Imageptr->imageSampler = nullptr;
-                Imageptr->imageView = nullptr;
-            }
-            else {
-                //not part of the imagepool
-            }
+        if (ImagePool.size() >= Imageptr + 1) {
+
+            ImagePool[Imageptr].image = nullptr;
+            ImagePool[Imageptr].imageMemory = nullptr;
+            ImagePool[Imageptr].imageSampler = nullptr;
+            ImagePool[Imageptr].imageView = nullptr;
+            AvailableIndexes.emplace_back(Imageptr);
+           
+        }
+        else 
+        {
+            //weird
+
         }
         
     }
-    LtImage* ImageDelegate::requestImageCreation()
+    uint32_t ImageDelegate::requestImageCreation()
     {   
-        ImagePool.emplace_back();
-        return &ImagePool[ImagePool.size() - 1];
+        if (AvailableIndexes.size() == 0) {
+            ImagePool.emplace_back();
+            return ImagePool.size() - 1;
+        }
+        else
+        {
+            uint32_t index = AvailableIndexes[0];
+            AvailableIndexes.erase(AvailableIndexes.begin());
+            return index;
+        }
     }
 
     void ImageDelegate::createSwapchainImageViews( LtSwapChain* swap, vk::raii::Device* device)
@@ -46,6 +57,19 @@ namespace lte {
         {
             imageViewCreateInfo.image = image;
             swap->imageViews.emplace_back(*device, imageViewCreateInfo);
+        }
+    }
+
+    LtImage* ImageDelegate::GetImagePtr(uint32_t index) 
+    {
+        if (ImagePool.size() >= index + 1) 
+        {
+            return &ImagePool[index];
+        }
+        else
+        {
+            //weird
+
         }
     }
 

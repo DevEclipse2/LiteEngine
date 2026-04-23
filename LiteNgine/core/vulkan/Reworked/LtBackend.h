@@ -12,7 +12,8 @@
 #include "SwapchainHandler.h"
 #include "ImageDelegate.h"
 #include "CommandBuffers.h"
-
+#include "FileLoader.h"
+#include "LtSync.h"
 namespace lte {
 	class DebugMessenger;
 	class Lt_Window;
@@ -35,6 +36,15 @@ namespace lte {
 			//might be unsafe
 			void AssignDrawPtr(LtMeshInfo* ptr);
 			
+			//temporary measure 
+			LogicalDevice primary{};
+			vk::raii::PhysicalDevice PhysicalDevice = nullptr;
+			vk::raii::CommandPool commandPool = nullptr;
+			void second();
+
+			void Update();
+
+			void Exit();
 		private:
 			int width;
 			int height;
@@ -52,17 +62,14 @@ namespace lte {
 			DeviceHandler deviceHandler{};
 			vk::raii::Context context;
 			vk::raii::Instance instance = nullptr;
-			vk::raii::PhysicalDevice PhysicalDevice = nullptr;
 			vk::raii::SurfaceKHR surface = nullptr;
 			vk::SampleCountFlagBits msaaSamples;
-			LogicalDevice primary{};
 			LtSwapChain swapchain{nullptr,nullptr,nullptr,nullptr,nullptr};
 			//LtPipeline mainPipeline{};
-			LtImage* colorImage = nullptr;
-			LtImage* depthImage = nullptr;
+			uint32_t colorImageIndex = 0;
+			uint32_t depthImageIndex = 0;
 			LtPipeline pipeline{};
 			uint32_t minImageCount = 0;
-			vk::raii::CommandPool commandPool = nullptr;
 
 			//this is for drawing
 			//dont @me on this
@@ -70,15 +77,23 @@ namespace lte {
 			char drawList[6] = {255,255,255 , 255, 255 ,255};
 			uint64_t objects = 0;
 			void updateDrawCount();
-			
+			uint8_t framesInFlight = 3;
+			uint32_t maxObjects = 2048;
 			vk::raii::Sampler sampler = nullptr;
 
 
-			//indices and vertices will be in c style array
-			Vertex		vertexes[1] = {{}};
-			uint32_t	indices[];
+			vk::raii::Buffer vertexBuffer = nullptr;
+			vk::raii::DeviceMemory vertexBufferMem = nullptr;
 
+			vk::raii::Buffer indexBuffer = nullptr;
+			vk::raii::DeviceMemory indexBufferMem = nullptr;
+			std::vector<RenderSet> renderSets = {};
+			std::vector<LtMeshInfo> MeshInfo = {};
 			
+			LtSyncSet synchronizationSet{};
+
+			vk::raii::DescriptorPool pool = nullptr;
+			std::vector<vk::raii::CommandBuffer> commandBuffers = {};
 	};
 
 }

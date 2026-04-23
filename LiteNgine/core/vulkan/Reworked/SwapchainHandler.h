@@ -47,7 +47,7 @@ namespace lte
 		static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const& availableFormats);
 		static vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
 		static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities, uint32_t* minImageCount);
-
+		static void cleanupSwapChain(LtSwapChain* swap);
 		static vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities, Lt_Window* window);
 		static vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
 

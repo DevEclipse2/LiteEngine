@@ -4,7 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vulkan/vulkan_raii.hpp>
 namespace lte {
-
+	
+	struct UniformBufferObject {
+		alignas(16) glm::mat4 model;
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+	};
 	struct LtMeshInfo {
 		
 		// Transform properties
@@ -54,14 +59,14 @@ namespace lte {
 	};
 	struct RenderSet {
 		//a render set contains all relevant data
-		Vertex* firstVertex;
-		uint32_t vertexArrayLength = 0;
 
-		uint32_t* firstIndice;
-		uint32_t indiceArrayLength = 0;
-
-		LtImage* pimageData = nullptr;
-
+		uint32_t vertexArrayStartIndex	= 0;
+		uint32_t vertexArraySize		= 0;
+		uint32_t IndiceArrayStartIndex	= 0;
+		uint32_t IndiceArraySize		= 0;
+		uint32_t imageIndex = 0;//might need more but its fine for now
+		RenderSet(uint32_t vSI,uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI) : vertexArrayStartIndex{vSI} , vertexArraySize{vAS} , IndiceArrayStartIndex{iSI}, IndiceArraySize{iAS}, imageIndex{iI}
+		{}
 	};
 	class LtMesh
 	{

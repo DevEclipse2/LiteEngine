@@ -3,9 +3,7 @@ namespace lte {
 	LtBackend::LtBackend()
 	{
 		
-		//load models (or they are already loaded, i won't judge)
-
-		deviceHandler.createTextureSampler(&sampler, &PhysicalDevice, &primary.device);
+		
 	}
 	void LtBackend::createSurface()
 	{
@@ -27,14 +25,57 @@ namespace lte {
 		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
 		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
-		colorImage = ImageDelegate::requestImageCreation();
-		depthImage = ImageDelegate::requestImageCreation();
-		ImageDelegate::createColorResources(&swapchain, colorImage, &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depthImage, &primary.device, &PhysicalDevice, msaaSamples);
+		colorImageIndex = ImageDelegate::requestImageCreation();
+		depthImageIndex = ImageDelegate::requestImageCreation();
+		ImageDelegate::createColorResources(&swapchain, ImageDelegate::GetImagePtr(colorImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, ImageDelegate::GetImagePtr(depthImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
 		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, &primary.device);
 		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", &primary.device, &PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
 		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
 	}
+
+	void LtBackend::second() {
+		//load models (or they are already loaded, i won't judge)
+		deviceHandler.createTextureSampler(&sampler, &PhysicalDevice, &primary.device);
+		singleTimeCommandInfo cmdinfo{ &primary.device ,&(*commandPool) , &primary.queue};
+
+		Buffers::createVertexBuffer(FileLoader::VertexesSize,FileLoader::VertexArray, &vertexBuffer, &vertexBufferMem, cmdinfo);
+		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMem, cmdinfo);
+
+		renderSets = FileLoader::renderSets;
+
+		MeshInfo.push_back(LtMeshInfo{});
+		MeshInfo.push_back(LtMeshInfo{});
+		MeshInfo.push_back(LtMeshInfo{});
+		MeshInfo[0].position = { 0.0f, 0.0f, -1.0f };
+		MeshInfo[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
+		MeshInfo[0].scale = { 1.1f, 1.1f,1.1f };
+
+		MeshInfo[1].position = { -2.0f, 0.0f, -1.0f };
+		MeshInfo[1].rotation = { 0.0f, 0.0f, 0.0f };
+		MeshInfo[1].scale = { 1.45f, 1.45f, 1.45f };
+
+		MeshInfo[2].position = { 2.0f, 0.0f, -1.0f };
+		MeshInfo[2].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
+		MeshInfo[2].scale = { 0.85f, 0.85f, 0.85f };
+		MeshInfo.resize(renderSets.size());
+
+		Buffers::createUniformBuffers(&MeshInfo, framesInFlight);
+		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
+		deviceHandler.createDescriptorSets(&pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
+		CommandBuffers::createCommandBuffer(&commandBuffers, &commandPool, &primary.device, framesInFlight);
+		LtSync::createSyncObjects(&synchronizationSet, &swapchain, &primary.device);
+	}
+
+	void LtBackend::Update()
+	{
+
+	}
+
+	void LtBackend::Exit() {
+		SwapchainHandler::cleanupSwapChain(&swapchain);
+	}
+
 	void LtBackend::createInstance(BackendInitInfo info) {
 
 		vk::ApplicationInfo appInfo{ info.name.c_str(),VK_MAKE_VERSION(1, 0, 0),"LiteEngine",VK_MAKE_VERSION(1, 0, 0),vk::ApiVersion14};
@@ -75,7 +116,7 @@ namespace lte {
 		createInfo.pApplicationInfo = &appInfo;
 		createInfo.enabledLayerCount = static_cast<uint32_t>(requiredLayers.size());
 		createInfo.ppEnabledLayerNames = requiredLayers.data(),
-			createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
 		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
 		instance = vk::raii::Instance(context, createInfo);
@@ -132,10 +173,10 @@ namespace lte {
 	void LtBackend::updateDrawCount()
 	{
 		//this gets how many bits are set using the literally most memory efficient method
-		objects = 0;
+		/*objects = 0;
 		for (uint32_t i = 0; i < DrawList.size(); i++) {
 			unsigned long long int draw = DrawList[i];
 			objects += __builtin_popcountll(draw);
-		}
+		}*/
 	}
 }

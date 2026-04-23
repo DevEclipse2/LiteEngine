@@ -54,21 +54,23 @@ namespace lte
        
             ImageDelegate();
             ~ImageDelegate();
-            static LtImage* requestImageCreation();
-            static void requestImageDestruction(LtImage*);
+            static uint32_t requestImageCreation();
+            static void requestImageDestruction(uint32_t index);
             static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
             static void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels, singleTimeCommandInfo info);
             static void generateMipmaps(LtImage* ltImage, vk::Format imageFormat, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo info);
             static void createSwapchainImageViews(LtSwapChain* swap, vk::raii::Device* device);
+            static LtImage* GetImagePtr(uint32_t index);
+
             static void createColorResources(LtSwapChain* swapChain, LtImage* ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples);
             [[nodiscard]] static void createImageView(LtImage* ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels, vk::raii::Device* device);
             static void createDepthResources(LtSwapChain* swapChain, LtImage* DepthRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, vk::SampleCountFlagBits msaaSamples);
 
-            static void AllocatePointer
+            //static void AllocatePointer
 
         private:
             static std::vector<LtImage> ImagePool; // this is not the correct method
-
+            static std::vector<uint32_t> AvailableIndexes;
 
     };
 }

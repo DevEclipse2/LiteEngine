@@ -35,7 +35,8 @@ namespace lte {
 
     }
 
-    void FileLoader::TemporaryFileLoad() {
+    void FileLoader::TemporaryFileLoad(vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice, singleTimeCommandInfo info) 
+    {
         objectCount = 0;
         //this temporarily loads files until i can find a better way to do it
         std::vector<std::string> models{ "models/viking_room.obj" , "models/Arrow.obj" };
@@ -43,8 +44,14 @@ namespace lte {
 
         for (int i = 0; i < models.size(); i++) {
             objectCount++;
-            LtImage* Iptr = ImageDelegate::requestImageCreation();
-            createTextureImage(textures[i],)
+            vertexBuf.emplace_back();
+            indexBuf.emplace_back();
+            uint32_t imgIndex = ImageDelegate::requestImageCreation();
+            createTextureImage(textures[i], ImageDelegate::GetImagePtr(imgIndex), device, physDevice, info);
+            ImageDelegate::createImageView(ImageDelegate::GetImagePtr(imgIndex), vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, ImageDelegate::GetImagePtr(imgIndex)->mipLevels, device);
+            imageIndexes.emplace_back(imgIndex);
+            
+            loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
             ////multiple textures
             //prepareModels();
             //createTextureImage(i, textures[i], &imagesArr[i], &imageMem[i]);
@@ -52,6 +59,87 @@ namespace lte {
             //loadModel(i, models[i]);
 
         }
+        
+        VertexesSize = 0;
+        IndicesSize = 0;
+        VertexSizes.clear();
+        IndiceSizes.clear();
+        for (const auto& models : vertexBuf) {
+            VertexesSize += models.size();
+            VertexSizes.emplace_back(models.size());
+        }
+        for (const auto& indice : indexBuf) {
+            IndicesSize += indice.size();
+            IndiceSizes.emplace_back(indice.size());
+        }
+        Vertex* newVertexes = new Vertex[VertexesSize];
+        delete[] VertexArray;
+        VertexArray = newVertexes;
+        uint32_t* newIndices = new uint32_t[IndicesSize];
+        delete[] IndicesArray;
+        IndicesArray = newIndices;
 
+        uint32_t Vindexes =0;
+        uint32_t Iindexes =0;
+        for (uint32_t i = 0; i < vertexBuf.size(); i++)
+        {
+            RenderSet rs{Vindexes,vertexBuf[i].size(),Iindexes,indexBuf[i].size(),imageIndexes[i]};
+            renderSets.emplace_back(rs);
+            Vindexes += vertexBuf[i].size();
+            Iindexes += indexBuf[i].size();
+
+        }
+
+        imageIndexes.clear();
+        vertexBuf.clear();
+        indexBuf.clear();
+    }
+
+    void FileLoader::loadModel(std::vector<Vertex>* pVertices,std::vector<uint32_t>* pIndices,std::string path)
+    {
+
+        tinyobj::attrib_t                attrib;
+        std::vector<tinyobj::shape_t>    shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string                      warn, err;
+        /*bool LoadObj(attrib_t * attrib, std::vector<shape_t> *shapes, std::vector<material_t> *materials, std::string * err, const char* filename, const char* mtl_basedir = NULL,bool triangulate = true);*/
+
+        std::cout << "loading!" << path.c_str() << "\n";
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str()))
+        {
+            std::cout << (warn + err) << "\n";
+        }
+        std::cout << "loading complete! \n";
+
+
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+        for (const auto& shape : shapes)
+        {
+            for (const auto& index : shape.mesh.indices)
+            {
+                Vertex vertex{};
+
+                vertex.pos = {
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2] };
+
+                vertex.texCoord = {
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1] }; // throws index out of range exception
+
+                vertex.color = { 1.0f, 1.0f, 1.0f };
+
+                if (!uniqueVertices.contains(vertex))
+                {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(pVertices->size());
+                    pVertices->push_back(vertex);
+                }
+
+                pIndices->push_back(uniqueVertices[vertex]);
+            }
+        }
+        std::cout << "indexing complete! \n";
     }
 }

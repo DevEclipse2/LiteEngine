@@ -5,6 +5,12 @@ namespace lte {
 	{
 		BackendInitInfo info{ 800,600,"LiteEngine : Agstrum",true,"LiteNgine editor" ,&ltWindow };
 		backend.InitializeVulkan(info);
-		
+		singleTimeCommandInfo cmdinfo{ &backend.primary.device ,&(*backend.commandPool) , &backend.primary.queue };
+		fileLoader.TemporaryFileLoad(&backend.primary.device,&backend.PhysicalDevice, cmdinfo);
+		backend.second();
+	}
+	void Lt_ILayer::Loop()
+	{
+		backend.Update();
 	}
 }

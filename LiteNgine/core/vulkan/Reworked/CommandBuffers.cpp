@@ -30,4 +30,20 @@ namespace lte {
             poolInfo.queueFamilyIndex = queueIndex;
         *commandPool = vk::raii::CommandPool(*device, poolInfo);
     }
+    void CommandBuffers::createCommandBuffer(std::vector<vk::raii::CommandBuffer>* commandBuffers, vk::raii::CommandPool* commandPool, vk::raii::Device* device, uint8_t maxFIF) 
+    {
+
+        commandBuffers->clear();
+        vk::CommandBufferAllocateInfo allocInfo{};
+        allocInfo.commandPool = commandPool,
+            allocInfo.level = vk::CommandBufferLevel::ePrimary,
+            allocInfo.commandBufferCount = maxFIF;
+        *commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);
+
+        /*vk::CommandBufferAllocateInfo allocInfo{};
+            allocInfo.commandPool = commandPool,
+            allocInfo.level = vk::CommandBufferLevel::ePrimary,
+            allocInfo.commandBufferCount = 1 ;
+        commandBuffer = std::move(vk::raii::CommandBuffers(device, allocInfo).front());*/
+    }
 }
