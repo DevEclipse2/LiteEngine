@@ -1,6 +1,5 @@
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "ImageDelegate.h"
 #include "Buffers.h"
@@ -15,7 +14,8 @@ namespace lte
 	{
 
 		public:
-			static void createTextureImage(std::string path, LtImage* Image, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo cmdInfo);
+			static void createTextureImage(std::string path, uint32_t ImageIndex, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo cmdInfo);
+
 			static void TemporaryFileLoad(vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice, singleTimeCommandInfo info);
 
 			static uint32_t objectCount;
@@ -34,5 +34,7 @@ namespace lte
 			static std::vector<std::vector<Vertex>> vertexBuf;
 			static std::vector<std::vector<uint32_t>> indexBuf;
 	};
+
+	
 
 }

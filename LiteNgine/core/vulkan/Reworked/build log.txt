@@ -1,0 +1,221 @@
+1. (a) Explain two non-price determinants that could decrease the market demand for a good.
+       the demand of a good is the amount of goods consumers are willing and able to 	
+
+compiling source file 'core/vulkan/Reworked/ImageDelegate.cpp')
+00:10:11:951	1>    C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\ImageDelegate.h(33,5):
+00:10:11:951	1>    compiler has generated 'lte::LtImage::operator =' here
+00:10:11:951	1>    C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\ImageDelegate.h(33,5):
+00:10:11:951	1>    'lte::LtImage &lte::LtImage::operator =(const lte::LtImage &)': function was implicitly deleted because a data member invokes a deleted or inaccessible function 'vk::raii::Image &vk::raii::Image::operator =(const vk::raii::Image &)'
+00:10:11:951	1>    C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(10821,15):
+00:10:11:951	1>    'vk::raii::Image &vk::raii::Image::operator =(const vk::raii::Image &)': function was explicitly deleted
+00:10:11:951	1>    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(1461,27):
+00:10:11:951	1>    the template instantiation context (the oldest one first) is
+00:10:11:951	1>        C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\ImageDelegate.cpp(31,30):
+00:10:11:951	1>        see reference to class template instantiation 'std::vector<lte::LtImage,std::allocator<lte::LtImage>>' being compiled
+00:10:11:951	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(1523,26):
+00:10:11:951	1>        while compiling class template member function 'std::vector<lte::LtImage,std::allocator<lte::LtImage>> &std::vector<lte::LtImage,std::allocator<lte::LtImage>>::operator =(const std::vector<lte::LtImage,std::allocator<lte::LtImage>> &)'
+00:10:11:951	1>            C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\ImageDelegate.cpp(32,19):
+00:10:11:951	1>            see the first reference to 'std::vector<lte::LtImage,std::allocator<lte::LtImage>>::operator =' in 'lte::ImageDelegate::ImageDelegate'
+00:10:11:951	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(1539,9):
+00:10:11:951	1>        see reference to function template instantiation 'void std::vector<lte::LtImage,std::allocator<lte::LtImage>>::_Assign_counted_range<lte::LtImage*>(_Iter,const unsigned __int64)' being compiled
+00:10:11:951	1>        with
+00:10:11:951	1>        [
+00:10:11:951	1>            _Iter=lte::LtImage *
+00:10:11:951	1>        ]
+
+
+ C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xhash(118,62): error C2064: term does not evaluate to a function taking 1 arguments
+00:11:00:060	1>(compiling source file 'core/vulkan/Reworked/FileLoader.cpp')
+00:11:00:060	1>    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xhash(118,62):
+00:11:00:060	1>    the template instantiation context (the oldest one first) is
+00:11:00:060	1>        C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\FileLoader.cpp(115,46):
+00:11:00:060	1>        see reference to class template instantiation 'std::unordered_map<lte::Vertex,uint32_t,std::hash<lte::Vertex>,std::equal_to<lte::Vertex>,std::allocator<std::pair<const lte::Vertex,uint32_t>>>' being compiled
+00:11:00:060	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\unordered_map(61,30):
+00:11:00:060	1>        see reference to class template instantiation 'std::_Hash<std::_Umap_traits<_Kty,_Ty,std::_Uhash_compare<_Kty,_Hasher,_Keyeq>,_Alloc,false>>' being compiled
+00:11:00:060	1>        with
+00:11:00:060	1>        [
+00:11:00:060	1>            _Kty=lte::Vertex,
+00:11:00:060	1>            _Ty=uint32_t,
+00:11:00:060	1>            _Hasher=std::hash<lte::Vertex>,
+00:11:00:060	1>            _Keyeq=std::equal_to<lte::Vertex>,
+00:11:00:060	1>            _Alloc=std::allocator<std::pair<const lte::Vertex,uint32_t>>
+00:11:00:060	1>        ]
+00:11:00:060	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xhash(1254,21):
+00:11:00:060	1>        while compiling class template member function 'bool std::_Hash<std::_Umap_traits<_Kty,_Ty,std::_Uhash_compare<_Kty,_Hasher,_Keyeq>,_Alloc,false>>::contains(const lte::Vertex &) const'
+00:11:00:060	1>        with
+00:11:00:060	1>        [
+00:11:00:060	1>            _Kty=lte::Vertex,
+00:11:00:060	1>            _Ty=uint32_t,
+00:11:00:060	1>            _Hasher=std::hash<lte::Vertex>,
+00:11:00:060	1>            _Keyeq=std::equal_to<lte::Vertex>,
+00:11:00:060	1>            _Alloc=std::allocator<std::pair<const lte::Vertex,uint32_t>>
+00:11:00:060	1>        ]
+00:11:00:060	1>            C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\FileLoader.cpp(134,17):
+00:11:00:060	1>            see the first reference to 'std::_Hash<std::_Umap_traits<_Kty,_Ty,std::_Uhash_compare<_Kty,_Hasher,_Keyeq>,_Alloc,false>>::contains' in 'lte::FileLoader::loadModel'
+00:11:00:060	1>        with
+00:11:00:060	1>        [
+00:11:00:060	1>            _Kty=lte::Vertex,
+00:11:00:060	1>            _Ty=uint32_t,
+00:11:00:060	1>            _Hasher=std::hash<lte::Vertex>,
+00:11:00:060	1>            _Keyeq=std::equal_to<lte::Vertex>,
+00:11:00:060	1>            _Alloc=std::allocator<std::pair<const lte::Vertex,uint32_t>>
+00:11:00:060	1>        ]
+00:11:00:060	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xhash(1255,54):
+00:11:00:060	1>        while compiling class template member function 'size_t std::_Uhash_compare<_Kty,_Hasher,_Keyeq>::operator ()<lte::Vertex>(const _Keyty &) noexcept(<expr>) const'
+00:11:00:060	1>        with
+00:11:00:060	1>        [
+00:11:00:060	1>            _Kty=lte::Vertex,
+00:11:00:060	1>            _Hasher=std::hash<lte::Vertex>,
+00:11:00:060	1>            _Keyeq=std::equal_to<lte::Vertex>,
+00:11:00:060	1>            _Keyty=lte::Vertex
+00:11:00:060	1>        ]
+00:11:00:060	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xhash(141,72):
+00:11:00:060	1>        see reference to variable template 'const bool _Nothrow_hash<std::hash<lte::Vertex>,lte::Vertex>' being compiled
+00:11:00:060	1>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xhash(118,5): error C2056: illegal expression
+00:11:00:060	1>(compiling source file 'core/vulkan/Reworked/FileLoader.cpp')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(730,14): error C2672: 'std::construct_at': no matching overloaded function found
+00:11:18:081	1>(compiling source file 'core/vulkan/Reworked/LtSync.cpp')
+00:11:18:081	1>    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(461,16):
+00:11:18:081	1>    could be '_Ty *std::construct_at(_Ty *const ,_Types ...) noexcept(<expr>)'
+00:11:18:081	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(730,14):
+00:11:18:081	1>        the associated constraints are not satisfied
+00:11:18:081	1>            C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,50):
+00:11:18:081	1>            'vk::raii::Fence::Fence': no overloaded function could convert all the argument types
+00:11:18:081	1>                C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(10538,7):
+00:11:18:081	1>                could be 'vk::raii::Fence::Fence(const vk::raii::Device &,VkFence,vk::Optional<const vk::AllocationCallbacks>)'
+00:11:18:081	1>                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,50):
+00:11:18:081	1>                    'vk::raii::Fence::Fence(const vk::raii::Device &,VkFence,vk::Optional<const vk::AllocationCallbacks>)': cannot convert argument 1 from 'vk::raii::Device *' to 'const vk::raii::Device &'
+00:11:18:081	1>                        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                        Reason: cannot convert from 'vk::raii::Device *' to 'const vk::raii::Device'
+00:11:18:081	1>                        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                        'vk::raii::Device::Device': no overloaded function could convert all the argument types
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4275,7):
+00:11:18:081	1>                            could be 'vk::raii::Device::Device(vk::raii::Device &&) noexcept'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(vk::raii::Device &&) noexcept': cannot convert argument 1 from 'vk::raii::Device *' to 'vk::raii::Device &&'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Reason: cannot convert from 'vk::raii::Device *' to 'vk::raii::Device'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Conversion requires a second user-defined-conversion operator or constructor
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4273,7):
+00:11:18:081	1>                            or       'vk::raii::Device::Device(const vk::raii::Device &)'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(const vk::raii::Device &)': cannot convert argument 1 from 'vk::raii::Device *' to 'const vk::raii::Device &'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Reason: cannot convert from 'vk::raii::Device *' to 'const vk::raii::Device'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Conversion requires a second user-defined-conversion operator or constructor
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4265,7):
+00:11:18:081	1>                            or       'vk::raii::Device::Device(std::nullptr_t)'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(std::nullptr_t)': cannot convert argument 1 from 'vk::raii::Device *' to 'std::nullptr_t'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    nullptr can only be converted to pointer or handle types
+00:11:18:081	1>                            C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                            while trying to match the argument list '(vk::raii::Device *)'
+00:11:18:081	1>                C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(10522,7):
+00:11:18:081	1>                or       'vk::raii::Fence::Fence(const vk::raii::Device &,const vk::DeviceEventInfoEXT &,vk::Optional<const vk::AllocationCallbacks>)'
+00:11:18:081	1>                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,50):
+00:11:18:081	1>                    'vk::raii::Fence::Fence(const vk::raii::Device &,const vk::DeviceEventInfoEXT &,vk::Optional<const vk::AllocationCallbacks>)': cannot convert argument 1 from 'vk::raii::Device *' to 'const vk::raii::Device &'
+00:11:18:081	1>                        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                        Reason: cannot convert from 'vk::raii::Device *' to 'const vk::raii::Device'
+00:11:18:081	1>                        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                        'vk::raii::Device::Device': no overloaded function could convert all the argument types
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4275,7):
+00:11:18:081	1>                            could be 'vk::raii::Device::Device(vk::raii::Device &&) noexcept'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(vk::raii::Device &&) noexcept': cannot convert argument 1 from 'vk::raii::Device *' to 'vk::raii::Device &&'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Reason: cannot convert from 'vk::raii::Device *' to 'vk::raii::Device'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Conversion requires a second user-defined-conversion operator or constructor
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4273,7):
+00:11:18:081	1>                            or       'vk::raii::Device::Device(const vk::raii::Device &)'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(const vk::raii::Device &)': cannot convert argument 1 from 'vk::raii::Device *' to 'const vk::raii::Device &'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Reason: cannot convert from 'vk::raii::Device *' to 'const vk::raii::Device'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Conversion requires a second user-defined-conversion operator or constructor
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4265,7):
+00:11:18:081	1>                            or       'vk::raii::Device::Device(std::nullptr_t)'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(std::nullptr_t)': cannot convert argument 1 from 'vk::raii::Device *' to 'std::nullptr_t'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    nullptr can only be converted to pointer or handle types
+00:11:18:081	1>                            C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                            while trying to match the argument list '(vk::raii::Device *)'
+00:11:18:081	1>                C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(10515,7):
+00:11:18:081	1>                or       'vk::raii::Fence::Fence(const vk::raii::Device &,const vk::FenceCreateInfo &,vk::Optional<const vk::AllocationCallbacks>)'
+00:11:18:081	1>                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,50):
+00:11:18:081	1>                    'vk::raii::Fence::Fence(const vk::raii::Device &,const vk::FenceCreateInfo &,vk::Optional<const vk::AllocationCallbacks>)': cannot convert argument 1 from 'vk::raii::Device *' to 'const vk::raii::Device &'
+00:11:18:081	1>                        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                        Reason: cannot convert from 'vk::raii::Device *' to 'const vk::raii::Device'
+00:11:18:081	1>                        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                        'vk::raii::Device::Device': no overloaded function could convert all the argument types
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4275,7):
+00:11:18:081	1>                            could be 'vk::raii::Device::Device(vk::raii::Device &&) noexcept'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(vk::raii::Device &&) noexcept': cannot convert argument 1 from 'vk::raii::Device *' to 'vk::raii::Device &&'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Reason: cannot convert from 'vk::raii::Device *' to 'vk::raii::Device'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Conversion requires a second user-defined-conversion operator or constructor
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4273,7):
+00:11:18:081	1>                            or       'vk::raii::Device::Device(const vk::raii::Device &)'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(const vk::raii::Device &)': cannot convert argument 1 from 'vk::raii::Device *' to 'const vk::raii::Device &'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Reason: cannot convert from 'vk::raii::Device *' to 'const vk::raii::Device'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    Conversion requires a second user-defined-conversion operator or constructor
+00:11:18:081	1>                            C:\VulkanSDK\1.4.341.1\Include\vulkan\vulkan_raii.hpp(4265,7):
+00:11:18:081	1>                            or       'vk::raii::Device::Device(std::nullptr_t)'
+00:11:18:081	1>                                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                'vk::raii::Device::Device(std::nullptr_t)': cannot convert argument 1 from 'vk::raii::Device *' to 'std::nullptr_t'
+00:11:18:081	1>                                    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                                    nullptr can only be converted to pointer or handle types
+00:11:18:081	1>                            C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,71):
+00:11:18:081	1>                            while trying to match the argument list '(vk::raii::Device *)'
+00:11:18:081	1>                C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xutility(459,50):
+00:11:18:081	1>                while trying to match the argument list '(vk::raii::Device *, vk::FenceCreateInfo)'
+00:11:18:081	1>    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(730,14):
+00:11:18:081	1>    the template instantiation context (the oldest one first) is
+00:11:18:081	1>        C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\LtSync.cpp(22,24):
+00:11:18:081	1>        see reference to function template instantiation 'vk::raii::Fence &std::vector<vk::raii::Fence,std::allocator<vk::raii::Fence>>::emplace_back<vk::raii::Device*&,vk::FenceCreateInfo&>(vk::raii::Device *&,vk::FenceCreateInfo &)' being compiled
+00:11:18:081	1>            C:\git\LiteEngine\LiteNgine\core\vulkan\Reworked\LtSync.cpp(22,36):
+00:11:18:081	1>            see the first reference to 'std::vector<vk::raii::Fence,std::allocator<vk::raii::Fence>>::emplace_back' in 'lte::LtSync::createSyncObjects'
+00:11:18:081	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(924,24):
+00:11:18:081	1>        see reference to function template instantiation '_Ty &std::vector<_Ty,std::allocator<_Ty>>::_Emplace_one_at_back<vk::raii::Device*&,vk::FenceCreateInfo&>(vk::raii::Device *&,vk::FenceCreateInfo &)' being compiled
+00:11:18:081	1>        with
+00:11:18:081	1>        [
+00:11:18:081	1>            _Ty=vk::raii::Fence
+00:11:18:081	1>        ]
+00:11:18:081	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(845,20):
+00:11:18:081	1>        see reference to function template instantiation '_Ty &std::vector<_Ty,std::allocator<_Ty>>::_Emplace_back_with_unused_capacity<vk::raii::Device*&,vk::FenceCreateInfo&>(vk::raii::Device *&,vk::FenceCreateInfo &)' being compiled
+00:11:18:081	1>        with
+00:11:18:081	1>        [
+00:11:18:081	1>            _Ty=vk::raii::Fence
+00:11:18:081	1>        ]
+00:11:18:081	1>        C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(863,27):
+00:11:18:081	1>        see reference to function template instantiation 'void std::_Default_allocator_traits<_Alloc>::construct<_Ty,vk::raii::Device*&,vk::FenceCreateInfo&>(_Alloc &,_Objty *const ,vk::raii::Device *&,vk::FenceCreateInfo &)' being compiled
+00:11:18:081	1>        with
+00:11:18:081	1>        [
+00:11:18:081	1>            _Alloc=std::allocator<vk::raii::Fence>,
+00:11:18:081	1>            _Ty=vk::raii::Fence,
+00:11:18:081	1>            _Objty=vk::raii::Fence
+00:11:18:081	1>        ]

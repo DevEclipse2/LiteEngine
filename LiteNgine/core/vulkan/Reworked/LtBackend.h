@@ -20,7 +20,7 @@ namespace lte {
 	class Lt_Window;
 	class DeviceHandler;
 	struct BackendInitInfo {
-		int width, height;
+		int width, height = 0;
 		std::string WindowName = "";
 		bool useValidationLayers;
 		std::string name = "";

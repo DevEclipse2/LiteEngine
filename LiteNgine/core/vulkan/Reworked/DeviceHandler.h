@@ -21,7 +21,9 @@ namespace lte {
 	class DeviceHandler
 	{
 		public:
-			static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice physicalDevice);
+
+			static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice* physicalDevice);
+
 			void pickPhysicalDevice(vk::raii::Instance* instance, vk::raii::PhysicalDevice* physicalDevice, vk::SampleCountFlagBits* sampling);
 			vk::SampleCountFlagBits getMaxUsableSampleCount(vk::raii::PhysicalDevice* physicalDevice);
 			void createLogicalDevice(vk::raii::PhysicalDevice* physicalDevice, vk::raii::SurfaceKHR* surface, LogicalDevice* logicalDevice, std::vector<const char*> requiredExtensions);

@@ -27,8 +27,8 @@ namespace lte {
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
 		colorImageIndex = ImageDelegate::requestImageCreation();
 		depthImageIndex = ImageDelegate::requestImageCreation();
-		ImageDelegate::createColorResources(&swapchain, ImageDelegate::GetImagePtr(colorImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, ImageDelegate::GetImagePtr(depthImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colorImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depthImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
 		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, &primary.device);
 		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", &primary.device, &PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
 		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
@@ -37,10 +37,10 @@ namespace lte {
 	void LtBackend::second() {
 		//load models (or they are already loaded, i won't judge)
 		deviceHandler.createTextureSampler(&sampler, &PhysicalDevice, &primary.device);
-		singleTimeCommandInfo cmdinfo{ &primary.device ,&(*commandPool) , &primary.queue};
+		singleTimeCommandInfo cmdinfo{ &primary.device ,&commandPool , &primary.queue};
 
-		Buffers::createVertexBuffer(FileLoader::VertexesSize,FileLoader::VertexArray, &vertexBuffer, &vertexBufferMem, cmdinfo);
-		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMem, cmdinfo);
+		Buffers::createVertexBuffer(FileLoader::VertexesSize,FileLoader::VertexArray, &vertexBuffer, &vertexBufferMem, cmdinfo, &PhysicalDevice);
+		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMem, cmdinfo , &PhysicalDevice);
 
 		renderSets = FileLoader::renderSets;
 
@@ -60,11 +60,11 @@ namespace lte {
 		MeshInfo[2].scale = { 0.85f, 0.85f, 0.85f };
 		MeshInfo.resize(renderSets.size());
 
-		Buffers::createUniformBuffers(&MeshInfo, framesInFlight);
+		Buffers::createUniformBuffers(&MeshInfo, framesInFlight , &primary.device, &PhysicalDevice);
 		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(&pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
 		CommandBuffers::createCommandBuffer(&commandBuffers, &commandPool, &primary.device, framesInFlight);
-		LtSync::createSyncObjects(&synchronizationSet, &swapchain, &primary.device);
+		LtSync::createSyncObjects(&synchronizationSet, &swapchain, &primary.device , framesInFlight);
 	}
 
 	void LtBackend::Update()
@@ -77,7 +77,11 @@ namespace lte {
 		{
 			throw std::runtime_error("failed to wait for fence!");
 		}
-		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, *synchronizationSet.presentCompleteSemaphores[frameIndex], nullptr);
+
+		//here
+		auto& presentCompleteSemaphore = *synchronizationSet.presentCompleteSemaphores[frameIndex];
+		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, presentCompleteSemaphore, nullptr);
+		
 		availableIndex = imageIndex;
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
@@ -102,15 +106,19 @@ namespace lte {
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex] /*pUiCommandBuffer->at(frameIndex)*/ };
 
+		auto& presentCompleteSemaphores = *synchronizationSet.presentCompleteSemaphores[frameIndex];
+		auto& renderFinishedSemaphores	= *synchronizationSet.renderFinishedSemaphores[frameIndex];
+		auto& inFlightFence				= *synchronizationSet.inFlightFences[frameIndex];
 		const vk::SubmitInfo submitInfo{
 										1,
-										&* synchronizationSet.presentCompleteSemaphores[frameIndex],
+										//here
+										&presentCompleteSemaphores,
 										&waitDestinationStageMask,
 										static_cast<uint32_t>(std::size(PackedBuffer)),
 										&*PackedBuffer,
 										1,
-										&*synchronizationSet.renderFinishedSemaphores[imageIndex] };
-		primary.queue.submit(submitInfo, *synchronizationSet.inFlightFences[frameIndex]);
+										&renderFinishedSemaphores};
+		primary.queue.submit(submitInfo, inFlightFence);
 	}
 	void LtBackend::Draw() {
 
@@ -145,7 +153,7 @@ namespace lte {
 			break;        // an unexpected result is returned!
 		}
 		frameNumber++;
-		frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+		frameIndex = (frameIndex + 1) % framesInFlight;
 	}
 	void LtBackend::Exit() {
 		SwapchainHandler::cleanupSwapChain(&swapchain);
@@ -169,8 +177,8 @@ namespace lte {
 		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
 		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
-		ImageDelegate::createColorResources(&swapchain, ImageDelegate::GetImagePtr(colorImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, ImageDelegate::GetImagePtr(depthImageIndex), &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colorImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depthImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
 	}
 
 	void LtBackend::createInstance(BackendInitInfo info) {
@@ -229,13 +237,13 @@ namespace lte {
 		bool LittleEndian = (*(char*)&n == 1);
 		// little endian if true
 		 
-
+		/*
 		for (uint32_t i = 0; i < sizeof(drawList) / sizeof(drawList[0]); i++) {
 
 
 			//for each byte
 			char draw = drawList[i];
-			byte shiftC = 0;
+			char shiftC = 0;
 			loadNextBit:
 			if (shiftC & 0x08) goto exit;
 			if (draw & 0b1) {
@@ -243,14 +251,14 @@ namespace lte {
 				/*prepareModels();
 				createTextureImage(i, textures[i], &imagesArr[i], &imageMem[i]);
 				createTextureImageView(&imagesArr[i]);
-				loadModel(i, models[i]);*/
+				loadModel(i, models[i]);
 			}
 			draw >> 1;
 			shiftC++;
 			goto loadNextBit;
 			exit:
 			//multiple textures
-		}
+		}*/
 	}
 	std::vector<const char*> LtBackend::getRequiredInstanceExtensions(bool enableValidationLayers)
 	{

@@ -8,7 +8,7 @@ namespace lte {
 
 	}
 	//validation layer stuff
-	VKAPI_ATTR vk::Bool32 VKAPI_CALL DebugMessenger::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT       severity,
+	VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT       severity,
 		vk::DebugUtilsMessageTypeFlagsEXT              type,
 		const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData)
@@ -17,6 +17,7 @@ namespace lte {
 
 		return vk::False;
 	}
+
 	void DebugMessenger::setupMessenger(vk::raii::Instance* instance)
 	{
 

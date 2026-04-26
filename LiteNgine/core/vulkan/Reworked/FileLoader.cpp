@@ -1,7 +1,7 @@
 #include "FileLoader.h"
 namespace lte {
 
-    void FileLoader::createTextureImage(std::string path, LtImage* Image, vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo cmdInfo)
+    void FileLoader::createTextureImage(std::string path, uint32_t ImageIndex, vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo cmdInfo)
     {
 
         int width, height, channel = 0;
@@ -15,23 +15,23 @@ namespace lte {
         }
         vk::raii::Buffer stagingBuffer = nullptr;
         vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-        Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory,device);
+        Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory,device,physicalDevice);
 
         void* data = stagingBufferMemory.mapMemory(0, imageSize);
         memcpy(data, pixels, imageSize);
         stagingBufferMemory.unmapMemory();
 
         stbi_image_free(pixels);
-        Image->createImage(width, height,mipLevels,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physicalDevice);
+        ImageDelegate::createImage(ImageIndex,width, height,mipLevels,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physicalDevice);
 
         /*transitionImageLayout(textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
         copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
         transitionImageLayout(textureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
         */
-        ImageDelegate::transitionImageLayout(Image->image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, Image->mipLevels,cmdInfo);
-        Buffers::copyBufferToImage(stagingBuffer, Image->image, Image->width, Image->height,cmdInfo);
+        ImageDelegate::transitionImageLayout(ImageDelegate::ImagePool[ImageIndex].image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, ImageDelegate::ImagePool[ImageIndex].mipLevels,cmdInfo);
+        Buffers::copyBufferToImage(stagingBuffer, ImageDelegate::ImagePool[ImageIndex].image, ImageDelegate::ImagePool[ImageIndex].width, ImageDelegate::ImagePool[ImageIndex].height,cmdInfo);
         //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
-        ImageDelegate::generateMipmaps(Image, vk::Format::eR8G8B8A8Srgb,physicalDevice,cmdInfo);
+        ImageDelegate::generateMipmaps(ImageIndex, vk::Format::eR8G8B8A8Srgb,physicalDevice,cmdInfo);
 
     }
 
@@ -47,8 +47,8 @@ namespace lte {
             vertexBuf.emplace_back();
             indexBuf.emplace_back();
             uint32_t imgIndex = ImageDelegate::requestImageCreation();
-            createTextureImage(textures[i], ImageDelegate::GetImagePtr(imgIndex), device, physDevice, info);
-            ImageDelegate::createImageView(ImageDelegate::GetImagePtr(imgIndex), vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, ImageDelegate::GetImagePtr(imgIndex)->mipLevels, device);
+            createTextureImage(textures[i], imgIndex, device, physDevice, info);
+            ImageDelegate::createImageView(imgIndex, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, ImageDelegate::GetImagePtr(imgIndex)->mipLevels, device);
             imageIndexes.emplace_back(imgIndex);
             
             loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
@@ -83,7 +83,7 @@ namespace lte {
         uint32_t Iindexes =0;
         for (uint32_t i = 0; i < vertexBuf.size(); i++)
         {
-            RenderSet rs{Vindexes,vertexBuf[i].size(),Iindexes,indexBuf[i].size(),imageIndexes[i]};
+            RenderSet rs{Vindexes,static_cast<uint32_t>(vertexBuf[i].size()),Iindexes,static_cast<uint32_t>(indexBuf[i].size()),imageIndexes[i]};
             renderSets.emplace_back(rs);
             Vindexes += vertexBuf[i].size();
             Iindexes += indexBuf[i].size();
@@ -112,7 +112,7 @@ namespace lte {
         std::cout << "loading complete! \n";
 
 
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
         for (const auto& shape : shapes)
         {

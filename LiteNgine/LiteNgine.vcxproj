@@ -208,6 +208,7 @@
     <ClInclude Include="core\vulkan\App.h" />
     <ClInclude Include="core\vulkan\Lt_Window.h" />
     <ClInclude Include="core\vulkan\Reworked\DebugMessenger.h" />
+    <ClInclude Include="core\vulkan\Reworked\stbImagePacifier.h" />
     <ClInclude Include="dep\backends\imconfig.h" />
     <ClInclude Include="dep\backends\imgui.h" />
     <ClInclude Include="dep\backends\imgui_impl_glfw.h" />

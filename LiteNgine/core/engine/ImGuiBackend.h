@@ -101,7 +101,8 @@ namespace lte {
 		VkDescriptorPool descriptorPoolHandle;
 		vk::raii::CommandPool commandPool = nullptr;
 		void doDynamicRendering(vk::raii::CommandBuffer& commandBuffer , ImDrawData* data);
-		void createImages();
+		void 
+		s();
 
 		uint32_t fps = 0;
 		float Frametime = 0;

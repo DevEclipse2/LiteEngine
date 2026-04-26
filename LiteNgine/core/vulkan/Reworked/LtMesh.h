@@ -1,7 +1,11 @@
 #pragma once
+#define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
+
 #include <vulkan/vulkan_raii.hpp>
 namespace lte {
 	
@@ -68,8 +72,19 @@ namespace lte {
 		RenderSet(uint32_t vSI,uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI) : vertexArrayStartIndex{vSI} , vertexArraySize{vAS} , IndiceArrayStartIndex{iSI}, IndiceArraySize{iAS}, imageIndex{iI}
 		{}
 	};
+	
 	class LtMesh
 	{
 
+	};
+}
+namespace std {
+	template <>
+	struct std::hash<lte::Vertex>
+	{
+		size_t operator()(lte::Vertex const& vertex) const noexcept
+		{
+			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+		}
 	};
 }

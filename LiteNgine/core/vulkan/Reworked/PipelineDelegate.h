@@ -1,8 +1,10 @@
 #pragma once
-#include "../VulkanDevice.h"
+//#include "../VulkanDevice.h"
 #include <vulkan/vulkan_raii.hpp>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <fstream>
+#include "LtMesh.h"
 namespace lte {
 	struct LtPipeline {
 		//something that contains all of the necessary information about a particular pipeline

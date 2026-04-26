@@ -1,6 +1,8 @@
 #include "CommandBuffers.h"
 namespace lte {
-    std::unique_ptr<vk::raii::CommandBuffer> CommandBuffers::beginSingleTimeCommands(vk::raii::Device* device, vk::CommandPool* commandPool)
+   
+
+    std::unique_ptr<vk::raii::CommandBuffer> CommandBuffers::beginSingleTimeCommands(vk::raii::Device* device, vk::raii::CommandPool* commandPool)
     {
         vk::CommandBufferAllocateInfo            allocInfo{};
         allocInfo.commandPool = *commandPool,

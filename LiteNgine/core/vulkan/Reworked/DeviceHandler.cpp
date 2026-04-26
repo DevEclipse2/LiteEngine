@@ -1,8 +1,8 @@
 #include "DeviceHandler.h"
 namespace lte {
-	uint32_t DeviceHandler::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice physicalDevice)
+	uint32_t DeviceHandler::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice* physicalDevice)
 	{
-		vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice.getMemoryProperties();
+		vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice->getMemoryProperties();
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 				return i;
@@ -43,7 +43,9 @@ namespace lte {
 				continue;
 			}
 			candidates.insert(std::make_pair(score, pd));
-			ListFeatures(&deviceProperties, &deviceFeatures, &memprops);
+
+
+			//ListFeatures(&deviceProperties, &deviceFeatures, &memprops);
 
 
 		}

@@ -194,6 +194,9 @@
     <ClInclude Include="core\vulkan\Reworked\TemporaryDraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="core\vulkan\Reworked\stbImagePacifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />

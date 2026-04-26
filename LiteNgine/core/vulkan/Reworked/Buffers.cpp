@@ -1,7 +1,7 @@
 #include "Buffers.h"
 namespace lte {
 
-	void Buffers::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory, vk::raii::Device* device)
+	void Buffers::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory, vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice)
 	{
 		vk::BufferCreateInfo bufferInfo{};
 		bufferInfo.size = size,
@@ -11,11 +11,11 @@ namespace lte {
 		vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
 		vk::MemoryAllocateInfo allocInfo{};
 		allocInfo.allocationSize = memRequirements.size,
-			allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+			allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,physDevice);
 		bufferMemory = vk::raii::DeviceMemory(*device, allocInfo);
 		buffer.bindMemory(*bufferMemory, 0);
 	}
-	void Buffers::createVertexBuffer(uint32_t size , Vertex* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory ,singleTimeCommandInfo info)
+	void Buffers::createVertexBuffer(uint32_t size , Vertex* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory ,singleTimeCommandInfo info , vk::raii::PhysicalDevice* device)
 	{
 		//assert(vertexBuffer == nullptr);
 
@@ -26,27 +26,27 @@ namespace lte {
 		vk::raii::Buffer stagingBuffer(*info.device, stagingInfo);
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
 
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory , info.device);
+		createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory , info.device, device);
 		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
 		void* dataStaging = stagingBufferMemory.mapMemory(0, size);
 
 		memcpy(dataStaging, vertex, size);
 		stagingBufferMemory.unmapMemory();
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,info.device);
+		createBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,info.device,device);
 		copyBuffer(stagingBuffer, *buffer, size, info);
 	}
 
-	void Buffers::createIndexBuffer(uint32_t size, uint32_t* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory, singleTimeCommandInfo info)
+	void Buffers::createIndexBuffer(uint32_t size, uint32_t* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory, singleTimeCommandInfo info, vk::raii::PhysicalDevice* device)
 	{
 
 		vk::raii::Buffer stagingBuffer = nullptr;
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, info.device);
+		createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, info.device,device);
 		void* data = stagingBufferMemory.mapMemory(0, size);
 		memcpy(data, vertex, size);
 		//memcpy(data, indices.data(), (size_t)bufferSize);
 		stagingBufferMemory.unmapMemory();
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory);
+		createBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,info.device,device);
 		copyBuffer(stagingBuffer, *buffer, size, info);
 
 	}
@@ -70,7 +70,7 @@ namespace lte {
 
 		info.queue->waitIdle();
 	}
-	void Buffers::createUniformBuffers(std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device* device)
+	void Buffers::createUniformBuffers(std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice)
 	{
 
 		for (auto& gameObject : *meshes) {
@@ -85,7 +85,7 @@ namespace lte {
 				vk::raii::DeviceMemory bufferMem = nullptr;
 				createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
 					vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-					buffer, bufferMem, device);
+					buffer, bufferMem, device,physDevice);
 				gameObject.uniformBuffers.emplace_back(std::move(buffer));
 				gameObject.uniformBuffersMemory.emplace_back(std::move(bufferMem));
 				gameObject.uniformBuffersMapped.emplace_back(gameObject.uniformBuffersMemory[i].mapMemory(0, bufferSize));
