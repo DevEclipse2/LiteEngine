@@ -1,34 +1,35 @@
 #include "ImageDelegate.h"
 namespace lte {
 
-    void ImageDelegate::createImage(uint32_t image,uint32_t Width, uint32_t Height, uint32_t MipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
+    void ImageDelegate::createImage(LtImage& image,uint32_t Width, uint32_t Height, uint32_t MipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice)
     {
-        ImagePool[image].width = Width;
-        ImagePool[image].height = Height;
-        ImagePool[image].mipLevels = MipLevels;
+        image.width = Width;
+        image.height = Height;
+        image.mipLevels = MipLevels;
         vk::ImageCreateInfo imageInfo{};
-        imageInfo.imageType = vk::ImageType::e2D,
+            imageInfo.imageType = vk::ImageType::e2D,
             imageInfo.format = format,
-            imageInfo.extent = vk::Extent3D{ ImagePool[image].width, ImagePool[image].height, 1 },
+            imageInfo.extent = vk::Extent3D{ image.width, image.height, 1 },
             imageInfo.arrayLayers = 1,
             imageInfo.samples = vk::SampleCountFlagBits::e1,
             imageInfo.tiling = tiling,
             imageInfo.usage = usage,
-            imageInfo.mipLevels = ImagePool[image].mipLevels;
-        imageInfo.sharingMode = vk::SharingMode::eExclusive;
-        imageInfo.samples = numSamples;
-        ImagePool[image].image = vk::raii::Image(*device, imageInfo);
+            imageInfo.mipLevels = image.mipLevels;
+            imageInfo.sharingMode = vk::SharingMode::eExclusive;
+            imageInfo.samples = numSamples;
+        image.image = vk::raii::Image(*device, imageInfo);
 
-        vk::MemoryRequirements memRequirements = ImagePool[image].image.getMemoryRequirements();
+        vk::MemoryRequirements memRequirements = image.image.getMemoryRequirements();
         vk::MemoryAllocateInfo allocInfo{};
             allocInfo.allocationSize = memRequirements.size,
             allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
-        ImagePool[image].imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
-        ImagePool[image].image.bindMemory(ImagePool[image].imageMemory, 0);
+        image.imageMemory = vk::raii::DeviceMemory(*device, allocInfo);
+        image.image.bindMemory(image.imageMemory, 0);
     }
+
     ImageDelegate::ImageDelegate()
     {
-        ImagePool = {};
+       
         /*std::vector<LtImage> pool = {};
         ImagePool = pool;*/
     }
@@ -39,36 +40,17 @@ namespace lte {
         ImagePool.clear();
     }
     
-    void ImageDelegate::requestImageDestruction(uint32_t Imageptr)
+    void ImageDelegate::requestImageDestruction(uint32_t imageIndex)
     {
-        if (ImagePool.size() >= Imageptr + 1) {
-
-            ImagePool[Imageptr].image = nullptr;
-            ImagePool[Imageptr].imageMemory = nullptr;
-            ImagePool[Imageptr].imageSampler = nullptr;
-            ImagePool[Imageptr].imageView = nullptr;
-            AvailableIndexes.emplace_back(Imageptr);
-           
+        if (imageIndex < ImagePool.size()) {
+            ImagePool.erase(ImagePool.begin() + imageIndex);
         }
-        else 
-        {
-            //weird
-
-        }
-        
     }
-    uint32_t ImageDelegate::requestImageCreation()
+    uint32_t ImageDelegate::requestImageCreation(LtImage& image)
     {   
-        if (AvailableIndexes.size() == 0) {
-            ImagePool.emplace_back();
-            return ImagePool.size() - 1;
-        }
-        else
-        {
-            uint32_t index = AvailableIndexes[0];
-            AvailableIndexes.erase(AvailableIndexes.begin());
-            return index;
-        }
+        ImagePool.emplace_back(std::move(image));
+        return ImagePool.size() - 1;
+        
     }
 
     void ImageDelegate::createSwapchainImageViews( LtSwapChain* swap, vk::raii::Device* device)
@@ -87,18 +69,7 @@ namespace lte {
         }
     }
 
-    LtImage* ImageDelegate::GetImagePtr(uint32_t index) 
-    {
-        if (ImagePool.size() >= index + 1) 
-        {
-            return &ImagePool[index];
-        }
-        else
-        {
-            //weird
-
-        }
-    }
+    
 
     void ImageDelegate::transition_image_layout(
         vk::Image       image,
@@ -144,7 +115,7 @@ namespace lte {
         commandBuffer->pipelineBarrier2(dependencyInfo);
     }
 
-    void ImageDelegate::createDepthResources(LtSwapChain* swapChain,uint32_t DepthRes,vk::raii::Device* device ,vk::raii::PhysicalDevice* physicalDevice,vk::SampleCountFlagBits msaaSamples) 
+    void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage& DepthRes,vk::raii::Device* device ,vk::raii::PhysicalDevice* physicalDevice,vk::SampleCountFlagBits msaaSamples) 
     {
         vk::Format depthFormat = PipelineDelegate::findDepthFormat(physicalDevice);
         createImage(DepthRes,swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,0, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
@@ -153,7 +124,7 @@ namespace lte {
     }
     
 
-    void ImageDelegate::createColorResources(LtSwapChain* swapChain, uint32_t ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples) 
+    void ImageDelegate::createColorResources(LtSwapChain* swapChain, LtImage& ColorRes, vk::raii::Device* device, vk::raii::PhysicalDevice* physDev, vk::SampleCountFlagBits msaaSamples) 
     {
         vk::Format colorFormat = swapChain->swapChainSurfaceFormat.format;
        
@@ -161,14 +132,14 @@ namespace lte {
         createImageView(ColorRes, colorFormat, vk::ImageAspectFlagBits::eColor, 1, device);
     }
 
-    [[nodiscard]] void ImageDelegate::createImageView(uint32_t ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels,vk::raii::Device* device) {
+    [[nodiscard]] void ImageDelegate::createImageView(LtImage& ltImage, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels,vk::raii::Device* device) {
         vk::ImageViewCreateInfo viewInfo{};
-        viewInfo.image = *(ImagePool[ltImage].image),
+        viewInfo.image = *(ltImage.image),
             viewInfo.viewType = vk::ImageViewType::e2D,
             viewInfo.format = format,
             viewInfo.subresourceRange = { aspectFlags, 0, 1, 0, 1 };
         viewInfo.subresourceRange.levelCount = mipLevels;
-        ImagePool[ltImage].imageView = vk::raii::ImageView(*device, viewInfo);
+        ltImage.imageView = vk::raii::ImageView(*device, viewInfo);
     }
 
     
@@ -210,7 +181,7 @@ namespace lte {
         CommandBuffers::endSingleTimeCommands(*commandBuffer,info.queue);
     }
 
-    void ImageDelegate::generateMipmaps(uint32_t ltImage,vk::Format imageFormat, vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo info) 
+    void ImageDelegate::generateMipmaps(LtImage& ltImage,vk::Format imageFormat, vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo info) 
     {
 
         vk::FormatProperties formatProperties = physicalDevice->getFormatProperties(imageFormat);
@@ -230,16 +201,16 @@ namespace lte {
             barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal,
             barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored,
             barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored,
-            barrier.image = ImagePool[ltImage].image;
+            barrier.image = ltImage.image;
         barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         barrier.subresourceRange.levelCount = 1;
 
-        int32_t mipWidth = ImagePool[ltImage].width;
-        int32_t mipHeight = ImagePool[ltImage].height;
+        int32_t mipWidth = ltImage.width;
+        int32_t mipHeight = ltImage.height;
 
-        for (uint32_t i = 1; i < ImagePool[ltImage].mipLevels; i++) {
+        for (uint32_t i = 1; i < ltImage.mipLevels; i++) {
             barrier.subresourceRange.baseMipLevel = i - 1;
             barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
             barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
@@ -259,7 +230,7 @@ namespace lte {
                 blit.dstOffsets = dstOffsets;
             blit.srcSubresource = vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, i - 1, 0, 1);
             blit.dstSubresource = vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, i, 0, 1);
-            commandBuffer->blitImage(ImagePool[ltImage].image, vk::ImageLayout::eTransferSrcOptimal, ImagePool[ltImage].image, vk::ImageLayout::eTransferDstOptimal, { blit }, vk::Filter::eLinear);
+            commandBuffer->blitImage(ltImage.image, vk::ImageLayout::eTransferSrcOptimal,ltImage.image, vk::ImageLayout::eTransferDstOptimal, { blit }, vk::Filter::eLinear);
             if (mipWidth > 1) mipWidth /= 2;
             if (mipHeight > 1) mipHeight /= 2;
         }

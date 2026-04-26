@@ -14,7 +14,7 @@ namespace lte
 	{
 
 		public:
-			static void createTextureImage(std::string path, uint32_t ImageIndex, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo cmdInfo);
+			static void createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo cmdInfo);
 
 			static void TemporaryFileLoad(vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice, singleTimeCommandInfo info);
 

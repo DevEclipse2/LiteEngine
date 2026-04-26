@@ -193,7 +193,7 @@ namespace lte {
 
 				vk::DescriptorImageInfo imageInfo{};
 				imageInfo.sampler = **sampler,
-					imageInfo.imageView = *ImageDelegate::GetImagePtr(rs->at(meshNo).imageIndex)->imageView,
+					imageInfo.imageView = (ImageDelegate::ImagePool[rs->at(meshNo).imageIndex])->imageView,
 					imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
 

@@ -25,10 +25,15 @@ namespace lte {
 		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
 		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
-		colorImageIndex = ImageDelegate::requestImageCreation();
-		depthImageIndex = ImageDelegate::requestImageCreation();
-		ImageDelegate::createColorResources(&swapchain, colorImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depthImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
+		LtImage colImg{};
+		LtImage depImg{};
+		ImageDelegate::createColorResources(&swapchain, colImg, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, &primary.device, &PhysicalDevice, msaaSamples);
+
+		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
+		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
+
+		
 		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, &primary.device);
 		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", &primary.device, &PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
 		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
@@ -64,7 +69,7 @@ namespace lte {
 		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(&pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
 		CommandBuffers::createCommandBuffer(&commandBuffers, &commandPool, &primary.device, framesInFlight);
-		LtSync::createSyncObjects(&synchronizationSet, &swapchain, &primary.device , framesInFlight);
+		LtSync::createSyncObjects(synchronizationSet,swapchain, &primary.device , framesInFlight);
 	}
 
 	void LtBackend::Update()
@@ -79,8 +84,7 @@ namespace lte {
 		}
 
 		//here
-		auto& presentCompleteSemaphore = *synchronizationSet.presentCompleteSemaphores[frameIndex];
-		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, presentCompleteSemaphore, nullptr);
+		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, *synchronizationSet.presentCompleteSemaphores[frameIndex], nullptr);
 		
 		availableIndex = imageIndex;
 		if (result == vk::Result::eErrorOutOfDateKHR)
@@ -96,7 +100,7 @@ namespace lte {
 
 		primary.device.resetFences(*synchronizationSet.inFlightFences[frameIndex]);
 		commandBuffers[frameIndex].reset();
-		TemporaryDraw::recordCommandBuffer(imageIndex,frameIndex,&commandBuffers[frameIndex],&swapchain,ImageDelegate::GetImagePtr(colorImageIndex),ImageDelegate::GetImagePtr(depthImageIndex),&pipeline,&vertexBuffer,&indexBuffer,&vertexBufferMem,&indexBufferMem,&MeshInfo,&renderSets);
+		TemporaryDraw::recordCommandBuffer(imageIndex,frameIndex,&commandBuffers[frameIndex],&swapchain,*ImageDelegate::ImagePool[colorImageIndex], *ImageDelegate::ImagePool[depthImageIndex], &pipeline, &vertexBuffer, &indexBuffer, &vertexBufferMem, &indexBufferMem, &MeshInfo, &renderSets);
 
 		/*if (gui->drawFrame()) {
 			gui->updateBuffers();
@@ -106,19 +110,16 @@ namespace lte {
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex] /*pUiCommandBuffer->at(frameIndex)*/ };
 
-		auto& presentCompleteSemaphores = *synchronizationSet.presentCompleteSemaphores[frameIndex];
-		auto& renderFinishedSemaphores	= *synchronizationSet.renderFinishedSemaphores[frameIndex];
-		auto& inFlightFence				= *synchronizationSet.inFlightFences[frameIndex];
 		const vk::SubmitInfo submitInfo{
 										1,
 										//here
-										&presentCompleteSemaphores,
+										&* synchronizationSet.presentCompleteSemaphores[frameIndex],
 										&waitDestinationStageMask,
 										static_cast<uint32_t>(std::size(PackedBuffer)),
 										&*PackedBuffer,
 										1,
-										&renderFinishedSemaphores};
-		primary.queue.submit(submitInfo, inFlightFence);
+										&*synchronizationSet.renderFinishedSemaphores[imageIndex] };
+		primary.queue.submit(submitInfo, *synchronizationSet.inFlightFences[frameIndex]);
 	}
 	void LtBackend::Draw() {
 
@@ -177,8 +178,14 @@ namespace lte {
 		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
 		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
-		ImageDelegate::createColorResources(&swapchain, colorImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depthImageIndex, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::requestImageDestruction(colorImageIndex);
+		ImageDelegate::requestImageDestruction(depthImageIndex);
+		LtImage colImg{};
+		LtImage depImg{};
+		ImageDelegate::createColorResources(&swapchain, colImg, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, &primary.device, &PhysicalDevice, msaaSamples);
+		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
+		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
 	}
 
 	void LtBackend::createInstance(BackendInitInfo info) {

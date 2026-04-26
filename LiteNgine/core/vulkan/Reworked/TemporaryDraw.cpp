@@ -40,7 +40,7 @@ namespace lte {
 		prevtime = time;
 	}
 	void TemporaryDraw::recordCommandBuffer(uint32_t imageIndex, uint32_t frameIndex,vk::raii::CommandBuffer* commandBuffer,LtSwapChain* swapChainImage,
-		LtImage* colorImage, LtImage* depthImage, LtPipeline* pipeline,vk::raii::Buffer* vertexBuf,vk::raii::Buffer* indexBuf,
+		LtImage& colorImage, LtImage& depthImage, LtPipeline* pipeline,vk::raii::Buffer* vertexBuf,vk::raii::Buffer* indexBuf,
 		vk::raii::DeviceMemory* vertexMem,vk::raii::DeviceMemory* indiceMem, std::vector<LtMeshInfo>* meshes, std::vector<RenderSet>* rendersets)
 	{
 
@@ -57,7 +57,7 @@ namespace lte {
 			vk::ImageAspectFlagBits::eColor, commandBuffer);
 		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
 		ImageDelegate::transition_image_layout(
-			*colorImage->image,
+			*colorImage.image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::AccessFlagBits2::eColorAttachmentWrite,
@@ -67,7 +67,7 @@ namespace lte {
 			vk::ImageAspectFlagBits::eColor, commandBuffer);
 		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
 		ImageDelegate::transition_image_layout(
-			*depthImage->image,
+			*depthImage.image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eDepthAttachmentOptimal,
 			vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
@@ -80,7 +80,7 @@ namespace lte {
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = colorImage->imageView,
+			attachmentInfo.imageView = colorImage.imageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
 			attachmentInfo.resolveImageView = swapChainImage->imageViews[imageIndex],
@@ -91,7 +91,7 @@ namespace lte {
 
 
 		vk::RenderingAttachmentInfo depthAttachmentInfo{};
-		depthAttachmentInfo.imageView = depthImage->imageView,
+		depthAttachmentInfo.imageView = depthImage.imageView,
 			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
 			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,

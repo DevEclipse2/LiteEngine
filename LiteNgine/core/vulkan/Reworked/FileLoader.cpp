@@ -1,7 +1,7 @@
 #include "FileLoader.h"
 namespace lte {
 
-    void FileLoader::createTextureImage(std::string path, uint32_t ImageIndex, vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo cmdInfo)
+    void FileLoader::createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo cmdInfo)
     {
 
         int width, height, channel = 0;
@@ -28,8 +28,8 @@ namespace lte {
         copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
         transitionImageLayout(textureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
         */
-        ImageDelegate::transitionImageLayout(ImageDelegate::ImagePool[ImageIndex].image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, ImageDelegate::ImagePool[ImageIndex].mipLevels,cmdInfo);
-        Buffers::copyBufferToImage(stagingBuffer, ImageDelegate::ImagePool[ImageIndex].image, ImageDelegate::ImagePool[ImageIndex].width, ImageDelegate::ImagePool[ImageIndex].height,cmdInfo);
+        ImageDelegate::transitionImageLayout(ImageIndex.image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, ImageIndex.mipLevels,cmdInfo);
+        Buffers::copyBufferToImage(stagingBuffer, ImageIndex.image, ImageIndex.width, ImageIndex.height, cmdInfo);
         //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
         ImageDelegate::generateMipmaps(ImageIndex, vk::Format::eR8G8B8A8Srgb,physicalDevice,cmdInfo);
 
@@ -46,9 +46,11 @@ namespace lte {
             objectCount++;
             vertexBuf.emplace_back();
             indexBuf.emplace_back();
-            uint32_t imgIndex = ImageDelegate::requestImageCreation();
-            createTextureImage(textures[i], imgIndex, device, physDevice, info);
-            ImageDelegate::createImageView(imgIndex, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, ImageDelegate::GetImagePtr(imgIndex)->mipLevels, device);
+            LtImage tmpImg{};
+            createTextureImage(textures[i], tmpImg, device, physDevice, info);
+            ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, tmpImg.mipLevels, device);
+            uint32_t imgIndex = ImageDelegate::requestImageCreation(tmpImg);
+
             imageIndexes.emplace_back(imgIndex);
             
             loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
