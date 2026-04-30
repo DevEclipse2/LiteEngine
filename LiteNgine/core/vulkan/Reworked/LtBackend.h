@@ -34,13 +34,18 @@ namespace lte {
 			~LtBackend();
 			void InitializeVulkan(BackendInitInfo info);
 
+
+
 			//might be unsafe
-			void AssignDrawPtr(LtMeshInfo* ptr);
+			//void AssignDrawPtr(LtMeshInfo* ptr);
 			
 			//temporary measure 
 			LogicalDevice primary{};
 			vk::raii::PhysicalDevice PhysicalDevice = nullptr;
 			vk::raii::CommandPool commandPool = nullptr;
+
+			FileLoader fLoader{};
+
 			void second();
 
 			void Update();

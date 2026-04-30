@@ -5,6 +5,9 @@ namespace lte {
 		
 		
 	}
+	LtBackend::~LtBackend()
+	{
+	}
 	void LtBackend::createSurface()
 	{
 		//connects the vulkan object with the window created by GLFW

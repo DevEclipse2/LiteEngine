@@ -1,6 +1,12 @@
 #include "FileLoader.h"
 namespace lte {
-
+    Vertex* FileLoader::VertexArray = nullptr;
+    uint32_t VertexesSize = 0;
+    uint32_t* IndicesArray = nullptr;
+    uint32_t IndicesSize = 0;
+    FileLoader::FileLoader()
+    {
+    }
     void FileLoader::createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo cmdInfo)
     {
 
@@ -53,6 +59,7 @@ namespace lte {
 
             imageIndexes.emplace_back(imgIndex);
             
+            loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
             loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
             ////multiple textures
             //prepareModels();
@@ -136,10 +143,10 @@ namespace lte {
                 if (!uniqueVertices.contains(vertex))
                 {
                     uniqueVertices[vertex] = static_cast<uint32_t>(pVertices->size());
-                    pVertices->push_back(vertex);
+                    pVertices->emplace_back(vertex);
                 }
 
-                pIndices->push_back(uniqueVertices[vertex]);
+                pIndices->emplace_back(uniqueVertices[vertex]);
             }
         }
         std::cout << "indexing complete! \n";

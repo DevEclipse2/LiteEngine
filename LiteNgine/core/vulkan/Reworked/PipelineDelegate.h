@@ -26,7 +26,7 @@ namespace lte {
 				graphicsInfo.pColorBlendState = colorBlending,
 				graphicsInfo.pDynamicState = dynamicState,
 				graphicsInfo.pDepthStencilState = depthStencil,
-				graphicsInfo.layout = *pipelineLayout,
+				graphicsInfo.layout = *PipelineLayout,
 				graphicsInfo.renderPass = nullptr;
 
 			vk::PipelineRenderingCreateInfo renderingInfo{};

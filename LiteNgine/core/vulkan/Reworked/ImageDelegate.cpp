@@ -30,6 +30,7 @@ namespace lte {
     ImageDelegate::ImageDelegate()
     {
        
+        ImagePool.reserve(12);
         /*std::vector<LtImage> pool = {};
         ImagePool = pool;*/
     }
@@ -48,7 +49,8 @@ namespace lte {
     }
     uint32_t ImageDelegate::requestImageCreation(LtImage& image)
     {   
-        ImagePool.emplace_back(std::move(image));
+
+        //ImagePool.emplace_back(std::move(image)); // no matching overloaded function founded
         return ImagePool.size() - 1;
         
     }
@@ -65,7 +67,7 @@ namespace lte {
         for (auto& image : swap->swapChainImages)
         {
             imageViewCreateInfo.image = image;
-            swap->imageViews.emplace_back(*device, imageViewCreateInfo);
+            swap->imageViews.emplace_back(std::move(vk::raii::ImageView{ *device, imageViewCreateInfo }));
         }
     }
 
