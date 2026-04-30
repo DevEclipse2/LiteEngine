@@ -4,8 +4,15 @@ the engine is a lie
 israel's strongest engien
 
 ok so on the surface it looks like nothign is happening
+
 that's because nothing is happening
+
 the gcc compilation toolchain is a box with the code inside and a radioactive isotope. a detector is calibrated to detect if the isotope decays, triggering a single bit flip, leading to a linker error. 
+
+currently operating under the assumption that things will have progressed from when the project is re submitted. this means that anything i say here is forecasting the progess i would have made 6-(8-1) days in advance. regarding the accuracy of my forecasts, please use the local weather station accuracy as a baseline.
+
+the one compiler error i have is actually a guardian angel protecting me from meeting the rest of the errors
+
 
 all the swapchains
 code builds, lib links
