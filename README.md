@@ -13,6 +13,8 @@ currently operating under the assumption that things will have progressed from w
 
 the one compiler error i have is actually a guardian angel protecting me from meeting the rest of the errors
 
+i would be concerned for any companies that actually use wakatime because this is not it
+
 
 all the swapchains
 code builds, lib links
