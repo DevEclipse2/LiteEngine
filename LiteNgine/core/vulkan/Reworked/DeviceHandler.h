@@ -22,12 +22,12 @@ namespace lte {
 	{
 		public:
 
-			static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice* physicalDevice);
+			static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice& physicalDevice);
 
 			void pickPhysicalDevice(vk::raii::Instance* instance, vk::raii::PhysicalDevice* physicalDevice, vk::SampleCountFlagBits* sampling);
 			vk::SampleCountFlagBits getMaxUsableSampleCount(vk::raii::PhysicalDevice* physicalDevice);
 			void createLogicalDevice(vk::raii::PhysicalDevice* physicalDevice, vk::raii::SurfaceKHR* surface, LogicalDevice* logicalDevice, std::vector<const char*> requiredExtensions);
-			void createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice* physicalDevice, vk::raii::Device* device);
+			void createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device);
 			void createDescriptorPool(vk::raii::DescriptorPool* descriptorPool, vk::raii::Device* device, uint32_t maxObjects, uint8_t maxFIF);
 			void createDescriptorSets(vk::DescriptorSetLayout* descriptorSetLayout, vk::raii::DescriptorPool* descriptorPool, vk::raii::Sampler* sampler, std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device* device, std::vector<RenderSet>* rs);
 

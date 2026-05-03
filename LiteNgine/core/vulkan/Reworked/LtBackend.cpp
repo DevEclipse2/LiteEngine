@@ -30,25 +30,25 @@ namespace lte {
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
 		LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depImg, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colImg, primary.device, PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, primary.device, PhysicalDevice, msaaSamples);
 
 		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
 		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
 
 		
-		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, &primary.device);
-		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", &primary.device, &PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
+		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, primary.device);
+		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", primary.device, PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
 		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
 	}
 
 	void LtBackend::second() {
 		//load models (or they are already loaded, i won't judge)
-		deviceHandler.createTextureSampler(&sampler, &PhysicalDevice, &primary.device);
+		deviceHandler.createTextureSampler(&sampler, PhysicalDevice, primary.device);
 		singleTimeCommandInfo cmdinfo{ &primary.device ,&commandPool , &primary.queue};
 
-		Buffers::createVertexBuffer(FileLoader::VertexesSize,FileLoader::VertexArray, &vertexBuffer, &vertexBufferMem, cmdinfo, &PhysicalDevice);
-		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMem, cmdinfo , &PhysicalDevice);
+		Buffers::createVertexBuffer(FileLoader::VertexesSize,FileLoader::VertexArray , &vertexBuffer, &vertexBufferMem, cmdinfo,PhysicalDevice);
+		Buffers::createIndexBuffer (FileLoader::IndicesSize	,FileLoader::IndicesArray, &indexBuffer , &indexBufferMem , cmdinfo,PhysicalDevice);
 
 		renderSets = FileLoader::renderSets;
 
@@ -68,7 +68,7 @@ namespace lte {
 		MeshInfo[2].scale = { 0.85f, 0.85f, 0.85f };
 		MeshInfo.resize(renderSets.size());
 
-		Buffers::createUniformBuffers(&MeshInfo, framesInFlight , &primary.device, &PhysicalDevice);
+		Buffers::createUniformBuffers(&MeshInfo, framesInFlight , primary.device, PhysicalDevice);
 		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(&pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
 		CommandBuffers::createCommandBuffer(&commandBuffers, &commandPool, &primary.device, framesInFlight);
@@ -185,8 +185,8 @@ namespace lte {
 		ImageDelegate::requestImageDestruction(depthImageIndex);
 		LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, &primary.device, &PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depImg, &primary.device, &PhysicalDevice, msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colImg, primary.device, PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, primary.device, PhysicalDevice, msaaSamples);
 		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
 		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
 	}

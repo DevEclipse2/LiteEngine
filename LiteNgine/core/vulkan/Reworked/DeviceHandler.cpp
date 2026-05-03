@@ -1,8 +1,8 @@
 #include "DeviceHandler.h"
 namespace lte {
-	uint32_t DeviceHandler::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice* physicalDevice)
+	uint32_t DeviceHandler::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice& physicalDevice)
 	{
-		vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice->getMemoryProperties();
+		vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice.getMemoryProperties();
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 				return i;
@@ -128,9 +128,9 @@ namespace lte {
 		logicalDevice->queue = vk::raii::Queue(logicalDevice->device, logicalDevice->queueIndex, 0);
 		//computeQueue = vk::raii::Queue(device,computeQueueIndex,0);
 	}
-	void DeviceHandler::createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice* physicalDevice, vk::raii::Device* device)
+	void DeviceHandler::createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device)
 	{
-		vk::PhysicalDeviceProperties properties = physicalDevice->getProperties();
+		vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
 		vk::SamplerCreateInfo samplerInfo{};
 		samplerInfo.magFilter = vk::Filter::eLinear,
 			samplerInfo.minFilter = vk::Filter::eLinear,
@@ -153,7 +153,7 @@ namespace lte {
 			samplerInfo.mipLodBias              = 0.0f;
 			samplerInfo.minLod                  = 0.0f;
 			samplerInfo.maxLod                  = 0.0f;*/
-			*sampler = vk::raii::Sampler(*device, samplerInfo);
+			*sampler = vk::raii::Sampler(device, samplerInfo);
 	}
 	void DeviceHandler::createDescriptorPool(vk::raii::DescriptorPool* descriptorPool, vk::raii::Device* device, uint32_t maxObjects, uint8_t maxFIF)
 	{

@@ -1,13 +1,26 @@
 #include "FileLoader.h"
+#define TINYOBJLOADER_IMPLEMENTATION
+#define TINYOBJLOADER_DISABLE_FAST_FLOAT
+#include <tiny_obj_loader.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 namespace lte {
     Vertex* FileLoader::VertexArray = nullptr;
-    uint32_t VertexesSize = 0;
-    uint32_t* IndicesArray = nullptr;
-    uint32_t IndicesSize = 0;
+    uint32_t FileLoader::VertexesSize = 0;
+    uint32_t* FileLoader::IndicesArray = nullptr;
+    uint32_t FileLoader::IndicesSize = 0;
+    uint32_t FileLoader::objectCount = 2;
+    std::vector<uint32_t> FileLoader::VertexSizes = {};
+    std::vector<uint32_t> FileLoader::IndiceSizes = {};
+    std::vector<RenderSet> FileLoader::renderSets = {};
+    std::vector<std::vector<Vertex>> FileLoader::vertexBuf = {{}};
+    std::vector<std::vector<uint32_t>> FileLoader::indexBuf = {{}};
+    std::vector<uint32_t> FileLoader::imageIndexes = {};
+
     FileLoader::FileLoader()
     {
     }
-    void FileLoader::createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice,singleTimeCommandInfo cmdInfo)
+    void FileLoader::createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device& device , vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo cmdInfo)
     {
 
         int width, height, channel = 0;
@@ -41,7 +54,7 @@ namespace lte {
 
     }
 
-    void FileLoader::TemporaryFileLoad(vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice, singleTimeCommandInfo info) 
+    void FileLoader::TemporaryFileLoad(vk::raii::Device& device, vk::raii::PhysicalDevice& physDevice, singleTimeCommandInfo info) 
     {
         objectCount = 0;
         //this temporarily loads files until i can find a better way to do it

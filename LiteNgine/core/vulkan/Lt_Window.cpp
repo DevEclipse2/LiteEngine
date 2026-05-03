@@ -4,6 +4,7 @@
 namespace lte {
 
 	//VulkanDevice* Lt_Window::vkdevice = nullptr;
+	bool Lt_Window::Resized = false;
 
 	Lt_Window::Lt_Window(int w, int h, std::string name) : width{ w }, height{ h }, windowName{ name } {
 		initWindow();

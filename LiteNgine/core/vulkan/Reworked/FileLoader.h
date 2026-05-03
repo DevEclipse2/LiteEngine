@@ -3,7 +3,6 @@
 #include <stb_image.h>
 #include "ImageDelegate.h"
 #include "Buffers.h"
-#include <tiny_obj_loader.h>
 #include "LtMesh.h"
 //#include <string>
 namespace lte 
@@ -13,9 +12,9 @@ namespace lte
 
 		public:
 			FileLoader();
-			static void createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device* device, vk::raii::PhysicalDevice* physicalDevice, singleTimeCommandInfo cmdInfo);
+			static void createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, singleTimeCommandInfo cmdInfo);
 
-			static void TemporaryFileLoad(vk::raii::Device* device, vk::raii::PhysicalDevice* physDevice, singleTimeCommandInfo info);
+			static void TemporaryFileLoad(vk::raii::Device& device, vk::raii::PhysicalDevice& physDevice, singleTimeCommandInfo info);
 
 			static uint32_t objectCount;
 			static std::vector<uint32_t> imageIndexes;

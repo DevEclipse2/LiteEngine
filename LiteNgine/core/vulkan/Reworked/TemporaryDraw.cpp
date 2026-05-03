@@ -1,6 +1,9 @@
 #include "TemporaryDraw.h"
 namespace lte {
 
+	float TemporaryDraw::prevtime = 0;
+	float TemporaryDraw::fps = 0;
+	float TemporaryDraw::frameTime = 0;
 	void TemporaryDraw::updateUniformBuffer(uint32_t frame , LtSwapChain* swap, std::vector<LtMeshInfo>* info)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();

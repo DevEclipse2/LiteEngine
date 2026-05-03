@@ -1,12 +1,12 @@
 #include "PipelineDelegate.h"
 namespace lte {
 
-	void PipelineDelegate::createPipelineFast (LtPipeline* pipeline , std::string shaderFilepath, std::string vertShadername , std::string fragShadername , vk::raii::Device* device , vk::raii::PhysicalDevice* physicalDevice, vk::SurfaceFormatKHR* surfaceformat,vk::DescriptorSetLayout layout) 
+	void PipelineDelegate::createPipelineFast (LtPipeline* pipeline , std::string shaderFilepath, std::string vertShadername , std::string fragShadername , vk::raii::Device& device , vk::raii::PhysicalDevice& physicalDevice, vk::SurfaceFormatKHR* surfaceformat,vk::DescriptorSetLayout layout) 
 	{
 		//this creates the very basic pipeline for general use
 		vk::PipelineShaderStageCreateInfo vertShaderInfo{};
 		vk::PipelineShaderStageCreateInfo fragShaderInfo{};
-		vk::ShaderModule module = createShaderModule(readShaderInfo(nullptr, shaderFilepath),device);
+		vk::ShaderModule module = createShaderModule(readShaderInfo(nullptr, shaderFilepath), device);
 		createShaderStage(&vertShaderInfo, vk::ShaderStageFlagBits::eVertex		, &module, &vertShadername);
 		createShaderStage(&fragShaderInfo, vk::ShaderStageFlagBits::eFragment	, &module, &fragShadername);
 		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderInfo, fragShaderInfo };
@@ -62,7 +62,7 @@ namespace lte {
 			pipelineLayoutInfo.pSetLayouts = &layout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-		vk::raii::PipelineLayout pipelineLayout = vk::raii::PipelineLayout(*device, pipelineLayoutInfo);
+		vk::raii::PipelineLayout pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
 
 		vk::Format depthFormat = findDepthFormat(physicalDevice);
 		pipeline->createPipeline(std::size(shaderStages),shaderStages,&vertexInputInfo,&inputAssembly,&viewportState,&rasterizer,&multisampling,&colorBlending,&dynamicState,&depthStencil,&pipelineLayout,1,&(surfaceformat->format), depthFormat,device);
@@ -95,26 +95,26 @@ namespace lte {
 	{
 
 	}
-	[[nodiscard]] vk::raii::ShaderModule PipelineDelegate::createShaderModule(const std::vector<char>& code , vk::raii::Device* pDevice)
+	[[nodiscard]] vk::raii::ShaderModule PipelineDelegate::createShaderModule(const std::vector<char>& code , vk::raii::Device& pDevice)
 	{
 
 		vk::ShaderModuleCreateInfo createInfo{};
 		createInfo.codeSize = code.size() * sizeof(char),
 			createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 		//createInfo.structureType = VK_KHR_shader_draw_parameters;
-		vk::raii::ShaderModule shaderModule{ *pDevice,createInfo }; //validationlayerError
+		vk::raii::ShaderModule shaderModule{pDevice,createInfo }; //validationlayerError
 		return shaderModule;
 	}
-	vk::Format PipelineDelegate::findDepthFormat(vk::raii::PhysicalDevice* device) {
+	vk::Format PipelineDelegate::findDepthFormat(vk::raii::PhysicalDevice& device) {
 		return findSupportedFormat(
 			{ vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint },
 			vk::ImageTiling::eOptimal,
 			vk::FormatFeatureFlagBits::eDepthStencilAttachment, device
 		);
 	}
-	vk::Format PipelineDelegate::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features , vk::raii::PhysicalDevice* physicalDevice) {
+	vk::Format PipelineDelegate::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features , vk::raii::PhysicalDevice& physicalDevice) {
 		auto formatIt = std::ranges::find_if(candidates, [&](auto const format) {
-			vk::FormatProperties props = physicalDevice->getFormatProperties(format);
+			vk::FormatProperties props = physicalDevice.getFormatProperties(format);
 			return (((tiling == vk::ImageTiling::eLinear) && ((props.linearTilingFeatures & features) == features)) ||
 				((tiling == vk::ImageTiling::eOptimal) && ((props.optimalTilingFeatures & features) == features)));
 			});
@@ -124,7 +124,7 @@ namespace lte {
 		}
 		return *formatIt;
 	}
-	void PipelineDelegate::createDescriptorSetLayout(vk::DescriptorSetLayout* descriptorSetLayout, vk::raii::Device* device) 
+	void PipelineDelegate::createDescriptorSetLayout(vk::DescriptorSetLayout* descriptorSetLayout, vk::raii::Device& device) 
 	{
 
 		std::array bindings = {
@@ -132,7 +132,7 @@ namespace lte {
 			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
 		};
 		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings.size(), bindings.data());
-		*descriptorSetLayout = vk::raii::DescriptorSetLayout(*device, layoutInfo);
+		*descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
 	}
 
 }

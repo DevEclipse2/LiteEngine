@@ -22,11 +22,11 @@ namespace lte {
 	private:
 
 		//static VulkanDevice* vkdevice;
-		GLFWwindow* window;
+		GLFWwindow* window = nullptr;
 		void initWindow();
-		const int width;
-		const int height;
-		std::string windowName;
+		const int width = 800;
+		const int height = 600;
+		std::string windowName = "";
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void charCallback(GLFWwindow* window, unsigned int codepoint);
