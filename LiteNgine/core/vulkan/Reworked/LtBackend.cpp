@@ -26,11 +26,12 @@ namespace lte {
 		createSurface();
 		deviceHandler.pickPhysicalDevice(&instance, &PhysicalDevice, &msaaSamples);
 		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
+
 		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
 		LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, primary.device, PhysicalDevice, msaaSamples);
+ 		ImageDelegate::createColorResources(&swapchain, colImg, primary.device, PhysicalDevice, msaaSamples);
 		ImageDelegate::createDepthResources(&swapchain, depImg, primary.device, PhysicalDevice, msaaSamples);
 
 		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
