@@ -3,7 +3,7 @@ the engine is a lie
 
 israel's strongest engien
 
-oh hey it compiles again ( it still doesn't work but at lest it compiles)
+oh hey it compiles again ( it still doesn't work but at least it compiles)
 
 
 ok so on the surface it looks like nothign is happening
