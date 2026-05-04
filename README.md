@@ -18,42 +18,69 @@ the one compiler error i have is actually a guardian angel protecting me from me
 
 i would be concerned for any companies that actually use wakatime because this is not it
 
+the following chunk of text is a parody of all the small things by blink 182
 
 all the swapchains
+
 code builds, lib links
+
 i'll run last success
+
 in debug x64
+
 always i know
+
 you throw an error
+
 checking, compiling
+
 spite me for building
 
 undefined symbol
+
 data can't null
+
 turn the bytes off
+
 go ask copilot
 
 nanananananannanananananana
 -interlude-
 
 say it aint so
+
 i cannot code
+
 commit the files
+
 wallow in denial
+
 run the last build
+
 out of sheer will
+
 compiler will go wrong
+
 the code will go on 
+
 my little windmill
 
 say it aint so
+
 the solution broke
+
 go ask a clanker
+
 copilot is a w*****
+
 keep the last build
+
 write my own will 
+
 compiler goes wrong
+
 life goes on
+
 my little vulkan build
 
 
@@ -104,6 +131,8 @@ created like 4 new classes (all static because i can't move on from my ex(i find
 WHERE ARE THOSE DAMN MEMORY LEAKS COMING FROM 
 
 Unique pointer bullsh*t <- you are here
+
+Vulkan doesn't work (again) <- you are here circa 4th may
 
 --time skip of ~3 days--
 
