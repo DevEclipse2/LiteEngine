@@ -24,10 +24,10 @@ namespace lte {
 			messenger.setupMessenger(&instance);
 		}
 		createSurface();
-		deviceHandler.pickPhysicalDevice(&instance, &PhysicalDevice, &msaaSamples);
-		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
+		deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
+		deviceHandler.createLogicalDevice(PhysicalDevice, surface, primary, requiredDeviceExtensions);
 
-		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
+		swapchain = LtSwapChain{ PhysicalDevice,primary.device,surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
 		LtImage colImg{};
 		LtImage depImg{};
@@ -178,9 +178,9 @@ namespace lte {
 		}
 		primary.device.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
-		deviceHandler.pickPhysicalDevice(&instance, &PhysicalDevice, &msaaSamples);
-		deviceHandler.createLogicalDevice(&PhysicalDevice, &surface, &primary, requiredDeviceExtensions);
-		swapchain = LtSwapChain{ &PhysicalDevice,&primary.device,&surface,&window,&minImageCount };
+		deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
+		deviceHandler.createLogicalDevice(PhysicalDevice, surface, primary, requiredDeviceExtensions);
+		swapchain = LtSwapChain{PhysicalDevice,primary.device,surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
 		ImageDelegate::requestImageDestruction(colorImageIndex);
 		ImageDelegate::requestImageDestruction(depthImageIndex);

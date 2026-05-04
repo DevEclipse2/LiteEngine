@@ -21,20 +21,30 @@ namespace lte
 		vk::raii::SwapchainKHR swapChain = nullptr;
 		std::vector<vk::Image> swapChainImages = {};
 		std::vector<vk::ImageView> imageViews = {};
-		LtSwapChain(vk::raii::PhysicalDevice* physicalDevice, vk::raii::Device* device, vk::raii::SurfaceKHR* surface, Lt_Window* window, uint32_t* minimgC)
+		LtSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, Lt_Window* window, uint32_t* minimgC)
 		{
+
+
 			if (physicalDevice == nullptr || device == nullptr || surface == nullptr || window == nullptr || minimgC == nullptr) return;
-			vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice->getSurfaceCapabilitiesKHR(**surface);
+			
+			
+			vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
 			swapChainExtent = SwapchainHandler::chooseSwapExtent(surfaceCapabilities, window);
 			uint32_t minImageCount = SwapchainHandler::chooseSwapMinImageCount(surfaceCapabilities, minimgC);
-			std::vector<vk::SurfaceFormatKHR> availableFormats = physicalDevice->getSurfaceFormatsKHR(**surface);
+			std::vector<vk::SurfaceFormatKHR> availableFormats = physicalDevice.getSurfaceFormatsKHR(*surface);
 			swapChainSurfaceFormat = SwapchainHandler::chooseSwapSurfaceFormat(availableFormats);
 
-			std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice->getSurfacePresentModesKHR(**surface);
+			std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
 			vk::PresentModeKHR              presentMode = SwapchainHandler::chooseSwapPresentMode(availablePresentModes);
 
+			
+			if (!(surfaceCapabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eSampled)) {
+				// You cannot use eSampled on this swapchain!
+			}
+
+
 			vk::SwapchainCreateInfoKHR swapChainCreateInfo{};
-			swapChainCreateInfo.surface = *surface,
+				swapChainCreateInfo.surface = *surface,
 				swapChainCreateInfo.minImageCount = minImageCount,
 				swapChainCreateInfo.imageFormat = swapChainSurfaceFormat.format,
 				swapChainCreateInfo.imageColorSpace = swapChainSurfaceFormat.colorSpace,
@@ -46,8 +56,8 @@ namespace lte
 				swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
 				swapChainCreateInfo.presentMode = SwapchainHandler::chooseSwapPresentMode(availablePresentModes),
 				swapChainCreateInfo.clipped = true;
-			swapChainCreateInfo.oldSwapchain = nullptr;
-			swapChain = vk::raii::SwapchainKHR(*device, swapChainCreateInfo);
+				swapChainCreateInfo.oldSwapchain = nullptr;
+			swapChain = vk::raii::SwapchainKHR(device, swapChainCreateInfo);
 			swapChainImages = swapChain.getImages();
 
 		}

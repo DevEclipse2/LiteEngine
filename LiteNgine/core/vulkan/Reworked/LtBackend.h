@@ -74,7 +74,7 @@ namespace lte {
 			vk::raii::Instance instance = nullptr;
 			vk::raii::SurfaceKHR surface = nullptr;
 			vk::SampleCountFlagBits msaaSamples;
-			LtSwapChain swapchain{nullptr,nullptr,nullptr,nullptr,nullptr};
+			LtSwapChain swapchain{PhysicalDevice,primary.device,surface,nullptr,nullptr};
 			//LtPipeline mainPipeline{};
 			uint32_t colorImageIndex = 0;
 			uint32_t depthImageIndex = 0;
