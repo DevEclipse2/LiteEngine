@@ -126,7 +126,7 @@ namespace lte {
     void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage& DepthRes,vk::raii::Device& device ,vk::raii::PhysicalDevice& physicalDevice,vk::SampleCountFlagBits msaaSamples) 
     {
         vk::Format depthFormat = PipelineDelegate::findDepthFormat(physicalDevice);
-        createImage(DepthRes,swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,0, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
+        createImage(DepthRes,swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,1, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
         //createImage(swapChainExtent.width, swapChainExtent.height, 1, vk::SampleCountFlagBits::e1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
         createImageView(DepthRes, depthFormat, vk::ImageAspectFlagBits::eDepth, 1,device);
     }
@@ -136,7 +136,7 @@ namespace lte {
     {
         vk::Format colorFormat = swapChain->swapChainSurfaceFormat.format;
        
-        createImage(ColorRes,swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,0, msaaSamples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physDev);
+        createImage(ColorRes,swapChain->swapChainExtent.width, swapChain->swapChainExtent.height,1, msaaSamples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physDev);
         createImageView(ColorRes, colorFormat, vk::ImageAspectFlagBits::eColor, 1, device);
     }
 

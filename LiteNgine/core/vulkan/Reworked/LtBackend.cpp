@@ -38,7 +38,7 @@ namespace lte {
 		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
 
 		
-		PipelineDelegate::createDescriptorSetLayout(&pipeline.descSetLayout, primary.device);
+		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, primary.device);
 		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", primary.device, PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
 		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
 	}
@@ -71,7 +71,7 @@ namespace lte {
 
 		Buffers::createUniformBuffers(&MeshInfo, framesInFlight , primary.device, PhysicalDevice);
 		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
-		deviceHandler.createDescriptorSets(&pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
+		deviceHandler.createDescriptorSets(pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
 		CommandBuffers::createCommandBuffer(&commandBuffers, &commandPool, &primary.device, framesInFlight);
 		LtSync::createSyncObjects(synchronizationSet,swapchain, &primary.device , framesInFlight);
 	}

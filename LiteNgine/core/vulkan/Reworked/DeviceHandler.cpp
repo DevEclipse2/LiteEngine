@@ -180,7 +180,7 @@ namespace lte {
 			poolInfo.pPoolSizes = poolSize.data();
 		*descriptorPool = vk::raii::DescriptorPool(*device, poolInfo);
 	}
-	void DeviceHandler::createDescriptorSets(vk::DescriptorSetLayout* descriptorSetLayout, vk::raii::DescriptorPool* descriptorPool,vk::raii::Sampler* sampler, std::vector<LtMeshInfo>* meshes, uint8_t maxFIF , vk::raii::Device* device , std::vector<RenderSet>* rs)
+	void DeviceHandler::createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool* descriptorPool,vk::raii::Sampler* sampler, std::vector<LtMeshInfo>* meshes, uint8_t maxFIF , vk::raii::Device* device , std::vector<RenderSet>* rs)
 	{
 
 		uint32_t meshNo = 0;

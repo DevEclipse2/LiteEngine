@@ -29,7 +29,7 @@ namespace lte {
 			void createLogicalDevice(vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface, LogicalDevice& logicalDevice, std::vector<const char*> requiredExtensions);
 			void createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device);
 			void createDescriptorPool(vk::raii::DescriptorPool* descriptorPool, vk::raii::Device* device, uint32_t maxObjects, uint8_t maxFIF);
-			void createDescriptorSets(vk::DescriptorSetLayout* descriptorSetLayout, vk::raii::DescriptorPool* descriptorPool, vk::raii::Sampler* sampler, std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device* device, std::vector<RenderSet>* rs);
+			void createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool* descriptorPool, vk::raii::Sampler* sampler, std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device* device, std::vector<RenderSet>* rs);
 
 	};
 }
