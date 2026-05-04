@@ -5,6 +5,10 @@ israel's strongest engien
 
 oh hey it compiles again ( it still doesn't work but at least it compiles)
 
+if you need an idea of how much this project has cooked me, i had a dream where the engine had a FULLY WORKING SKELETAL SYSTEM
+most people would be with their crush but NO WHY DO I HAVE TO RIG THE STAR OF DAVID
+
+
 for a more detailed report of what i've actually been up to and not insane ramblings of a lunatic, please refer to ReadMeToo, which is a name most creative
 
 ok so on the surface it looks like nothign is happening
