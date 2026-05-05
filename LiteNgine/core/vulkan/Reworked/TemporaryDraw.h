@@ -15,7 +15,7 @@ namespace lte {
 		static float fps;
 		static float frameTime;
 		static void updateUniformBuffer(uint32_t frame, LtSwapChain* swap, std::vector<LtMeshInfo>* info);
-		static void recordCommandBuffer(uint32_t imageIndex, uint32_t frameIndex, vk::raii::CommandBuffer* commandBuffer, LtSwapChain* swapChainImage,
+		static void recordCommandBuffer(uint32_t imageIndex, uint32_t frameIndex, vk::raii::CommandBuffer& commandBuffer, LtSwapChain* swapChainImage,
 			LtImage& colorImage, LtImage& depthImage, LtPipeline* pipeline, vk::raii::Buffer* vertexBuf, vk::raii::Buffer* indexBuf,
 			vk::raii::DeviceMemory* vertexMem, vk::raii::DeviceMemory* indiceMem, std::vector<LtMeshInfo>* meshes, std::vector<RenderSet>* rendersets);
 

@@ -73,7 +73,8 @@ namespace lte {
             imageIndexes.emplace_back(imgIndex);
             
             loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
-            loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
+            //loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
+            
             ////multiple textures
             //prepareModels();
             //createTextureImage(i, textures[i], &imagesArr[i], &imageMem[i]);
@@ -86,9 +87,9 @@ namespace lte {
         IndicesSize = 0;
         VertexSizes.clear();
         IndiceSizes.clear();
-        for (const auto& models : vertexBuf) {
-            VertexesSize += models.size();
-            VertexSizes.emplace_back(models.size());
+        for (const auto& objF : vertexBuf) {
+            VertexesSize += objF.size();
+            VertexSizes.emplace_back(objF.size());
         }
         for (const auto& indice : indexBuf) {
             IndicesSize += indice.size();
@@ -105,6 +106,7 @@ namespace lte {
         uint32_t Iindexes =0;
         for (uint32_t i = 0; i < vertexBuf.size(); i++)
         {
+            if (vertexBuf[i].size() == 0 ) continue;
             RenderSet rs{Vindexes,static_cast<uint32_t>(vertexBuf[i].size()),Iindexes,static_cast<uint32_t>(indexBuf[i].size()),imageIndexes[i]};
             renderSets.emplace_back(rs);
             Vindexes += vertexBuf[i].size();

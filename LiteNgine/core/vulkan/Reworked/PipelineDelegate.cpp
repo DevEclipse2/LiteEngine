@@ -6,11 +6,24 @@ namespace lte {
 		//this creates the very basic pipeline for general use
 		vk::PipelineShaderStageCreateInfo vertShaderInfo{};
 		vk::PipelineShaderStageCreateInfo fragShaderInfo{};
-		vk::ShaderModule module = createShaderModule(readShaderInfo(nullptr, shaderFilepath), device);
-		createShaderStage(vertShaderInfo, vk::ShaderStageFlagBits::eVertex		, &module, &vertShadername);
-		createShaderStage(fragShaderInfo, vk::ShaderStageFlagBits::eFragment	, &module, &fragShadername);
-		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderInfo, fragShaderInfo };
+		vk::raii::ShaderModule module = createShaderModule(readShaderInfo(nullptr, shaderFilepath), device);
+		
+		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
+		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
+			vertShaderStageInfo.module = module,
+			vertShaderStageInfo.pName = vertShadername.c_str();
+		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
+		fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
+			fragShaderStageInfo.module = module,
+			fragShaderStageInfo.pName = fragShadername.c_str();
+		//defines pipeline
 
+		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+
+		/*createShaderStage(vertShaderInfo, vk::ShaderStageFlagBits::eVertex		, &module, &vertShadername);
+		createShaderStage(fragShaderInfo, vk::ShaderStageFlagBits::eFragment	, &module, &fragShadername);
+		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderInfo, fragShaderInfo };*/
 
 		auto bindingDescription = Vertex::getBindingDescription();
 		auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -29,7 +42,7 @@ namespace lte {
 		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
 			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e16,
 			multisampling.sampleShadingEnable = vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 			depthStencil.depthTestEnable = vk::True,
@@ -67,7 +80,7 @@ namespace lte {
 
 		vk::Format depthFormat = findDepthFormat(physicalDevice);
 		pipeline->createPipeline(std::size(shaderStages),shaderStages,&vertexInputInfo,&inputAssembly,&viewportState,&rasterizer,&multisampling,&colorBlending,&dynamicState,&depthStencil,pipelineLayout,1,&(surfaceformat->format), depthFormat,device);
-
+		//vkDestroyShaderModule(*device,module,nullptr);
 	}
 	std::vector<char> PipelineDelegate::readShaderInfo(std::vector<char>* output, std::string filepath)
 	{
@@ -100,7 +113,7 @@ namespace lte {
 	{
 
 		vk::ShaderModuleCreateInfo createInfo{};
-		createInfo.codeSize = code.size() * sizeof(char),
+			createInfo.codeSize = code.size() * sizeof(char),
 			createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 		//createInfo.structureType = VK_KHR_shader_draw_parameters;
 		vk::raii::ShaderModule shaderModule{pDevice,createInfo }; //validationlayerError

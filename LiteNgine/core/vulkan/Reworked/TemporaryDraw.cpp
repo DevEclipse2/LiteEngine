@@ -42,13 +42,13 @@ namespace lte {
 		}
 		prevtime = time;
 	}
-	void TemporaryDraw::recordCommandBuffer(uint32_t imageIndex, uint32_t frameIndex,vk::raii::CommandBuffer* commandBuffer,LtSwapChain* swapChainImage,
+	void TemporaryDraw::recordCommandBuffer(uint32_t imageIndex, uint32_t frameIndex,vk::raii::CommandBuffer& commandBuffer,LtSwapChain* swapChainImage,
 		LtImage& colorImage, LtImage& depthImage, LtPipeline* pipeline,vk::raii::Buffer* vertexBuf,vk::raii::Buffer* indexBuf,
 		vk::raii::DeviceMemory* vertexMem,vk::raii::DeviceMemory* indiceMem, std::vector<LtMeshInfo>* meshes, std::vector<RenderSet>* rendersets)
 	{
 
 
-		commandBuffer->begin({});
+		commandBuffer.begin({});
 		ImageDelegate::transition_image_layout(
 			swapChainImage->swapChainImages[imageIndex],
 			vk::ImageLayout::eUndefined,
@@ -67,8 +67,9 @@ namespace lte {
 			vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::ImageAspectFlagBits::eColor, commandBuffer);
+			vk::ImageAspectFlagBits::eColor,commandBuffer);
 		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
+
 		ImageDelegate::transition_image_layout(
 			*depthImage.image,
 			vk::ImageLayout::eUndefined,
@@ -83,18 +84,17 @@ namespace lte {
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = colorImage.imageView,
+			attachmentInfo.imageView = *colorImage.imageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			attachmentInfo.resolveImageView = swapChainImage->imageViews[imageIndex],
+			attachmentInfo.resolveImageView = *swapChainImage->imageViews[imageIndex],
 			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
 			attachmentInfo.clearValue = clearColor;
 
-
 		vk::RenderingAttachmentInfo depthAttachmentInfo{};
-		depthAttachmentInfo.imageView = depthImage.imageView,
+			depthAttachmentInfo.imageView = *depthImage.imageView,
 			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
 			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,
@@ -102,19 +102,19 @@ namespace lte {
 
 
 		vk::RenderingInfo renderingInfo = {};
-		renderingInfo.renderArea = { .offset = { 0, 0 }, .extent = swapChainImage->swapChainExtent },
+			renderingInfo.renderArea = { .offset = { 0, 0 }, .extent = swapChainImage->swapChainExtent },
 			renderingInfo.layerCount = 1,
 			renderingInfo.colorAttachmentCount = 1,
 			renderingInfo.pColorAttachments = &attachmentInfo,
 			renderingInfo.pDepthAttachment = &depthAttachmentInfo;
 
-		commandBuffer->beginRendering(renderingInfo);
-		commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline->pipeline);
-		commandBuffer->setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainImage->swapChainExtent.width), static_cast<float>(swapChainImage->swapChainExtent.height), 0.0f, 1.0f));
-		commandBuffer->setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainImage->swapChainExtent));
+		commandBuffer.beginRendering(renderingInfo);
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline->pipeline);
+		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainImage->swapChainExtent.width), static_cast<float>(swapChainImage->swapChainExtent.height), 0.0f, 1.0f));
+		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainImage->swapChainExtent));
 
-		commandBuffer->bindVertexBuffers(0, **vertexBuf, { 0 });
-		commandBuffer->bindIndexBuffer(**indexBuf, 0, vk::IndexType::eUint32);
+		commandBuffer.bindVertexBuffers(0, **vertexBuf, { 0 });
+		commandBuffer.bindIndexBuffer(**indexBuf, 0, vk::IndexType::eUint32);
 
 		uint64_t objectid = 0;
 		uint64_t vertexOffsets = 0;
@@ -122,7 +122,7 @@ namespace lte {
 		for (const auto& gameObject : *meshes)
 		{
 			// Bind the descriptor set for this object
-			commandBuffer->bindDescriptorSets(
+			commandBuffer.bindDescriptorSets(
 				vk::PipelineBindPoint::eGraphics,
 				*pipeline->PipelineLayout,
 				0,
@@ -131,12 +131,12 @@ namespace lte {
 
 			// Draw the object
 
-			commandBuffer->drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, indexOffsets, vertexOffsets, 0);
+			commandBuffer.drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, indexOffsets, vertexOffsets, 0);
 			vertexOffsets += rendersets->at(objectid).vertexArraySize;
 			indexOffsets  += rendersets->at(objectid).IndiceArraySize;
 			objectid++;
 		}
-		commandBuffer->endRendering();
+		commandBuffer.endRendering();
 		ImageDelegate::transition_image_layout(
 			swapChainImage->swapChainImages[imageIndex],
 			vk::ImageLayout::eColorAttachmentOptimal,
@@ -148,7 +148,7 @@ namespace lte {
 			vk::ImageAspectFlagBits::eColor,
 			commandBuffer
 		);
-		commandBuffer->end();
+		commandBuffer.end();
 	}
 
 }

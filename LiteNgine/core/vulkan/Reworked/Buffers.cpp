@@ -18,22 +18,22 @@ namespace lte {
 	void Buffers::createVertexBuffer(uint32_t size , Vertex* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory ,singleTimeCommandInfo info , vk::raii::PhysicalDevice& device)
 	{
 		//assert(vertexBuffer == nullptr);
-
+		uint32_t ByteSize = size * sizeof(Vertex);
 		vk::BufferCreateInfo stagingInfo{};
-		stagingInfo.size = size,
+		stagingInfo.size = ByteSize,
 			stagingInfo.usage = vk::BufferUsageFlagBits::eTransferSrc,
 			stagingInfo.sharingMode = vk::SharingMode::eExclusive;
 		vk::raii::Buffer stagingBuffer(*info.device, stagingInfo);
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
 
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory , *info.device, device);
+		createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory , *info.device, device);
 		//stagingBuffer.bindMemory(stagingBufferMemory, 0);
-		void* dataStaging = stagingBufferMemory.mapMemory(0, size);
+		void* dataStaging = stagingBufferMemory.mapMemory(0, ByteSize);
 
-		memcpy(dataStaging, vertex, size);
+		memcpy(dataStaging, vertex, ByteSize);
 		stagingBufferMemory.unmapMemory();
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,*info.device,device);
-		copyBuffer(stagingBuffer, *buffer, size, info);
+		createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,*info.device,device);
+		copyBuffer(stagingBuffer, *buffer, ByteSize, info);
 	}
 
 	void Buffers::createIndexBuffer(uint32_t size, uint32_t* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory, singleTimeCommandInfo info, vk::raii::PhysicalDevice& device)
@@ -41,13 +41,13 @@ namespace lte {
 
 		vk::raii::Buffer stagingBuffer = nullptr;
 		vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, *info.device,device);
-		void* data = stagingBufferMemory.mapMemory(0, size);
-		memcpy(data, vertex, size);
+		createBuffer(size * sizeof(uint32_t), vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, *info.device,device);
+		void* data = stagingBufferMemory.mapMemory(0, size * sizeof(uint32_t));
+		memcpy(data, vertex, size * sizeof(uint32_t));
 		//memcpy(data, indices.data(), (size_t)bufferSize);
 		stagingBufferMemory.unmapMemory();
-		createBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,*info.device,device);
-		copyBuffer(stagingBuffer, *buffer, size, info);
+		createBuffer(size * sizeof(uint32_t), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, *buffer, *deviceMemory,*info.device,device);
+		copyBuffer(stagingBuffer, *buffer, size * sizeof(uint32_t), info);
 
 	}
 

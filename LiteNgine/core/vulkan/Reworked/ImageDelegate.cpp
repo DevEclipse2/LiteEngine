@@ -88,7 +88,7 @@ namespace lte {
         vk::PipelineStageFlags2 srcStageMask,
         vk::PipelineStageFlags2 dstStageMask,
         vk::ImageAspectFlags    image_aspect_flags,
-        vk::raii::CommandBuffer* commandBuffer
+        vk::raii::CommandBuffer& commandBuffer
     )
     {
         if (image == nullptr) {
@@ -120,7 +120,7 @@ namespace lte {
             dependencyInfo.imageMemoryBarrierCount = 1,
             dependencyInfo.pImageMemoryBarriers = &barrier;
 
-        commandBuffer->pipelineBarrier2(dependencyInfo);
+        commandBuffer.pipelineBarrier2(dependencyInfo);
     }
 
     void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage& DepthRes,vk::raii::Device& device ,vk::raii::PhysicalDevice& physicalDevice,vk::SampleCountFlagBits msaaSamples) 

@@ -12,6 +12,7 @@ namespace lte {
 	void Lt_ILayer::Loop()
 	{
 		backend.Update();
+		backend.Draw();
 	}
 	void Lt_ILayer::End() 
 	{

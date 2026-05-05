@@ -56,7 +56,7 @@ namespace lte
                 vk::PipelineStageFlags2 srcStageMask,
                 vk::PipelineStageFlags2 dstStageMask,
                 vk::ImageAspectFlags    image_aspect_flags,
-                vk::raii::CommandBuffer* commandBuffer
+                vk::raii::CommandBuffer& commandBuffer
             );
             //static void AllocatePointer
             //static std::list<std::unique_ptr<LtImage>> ImagePool;

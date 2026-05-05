@@ -39,7 +39,7 @@ namespace lte {
 
 		
 		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, primary.device);
-		PipelineDelegate::createPipelineFast(&pipeline, "shaders/shader.slang", "VerticeShader", "FragmentShader", primary.device, PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
+		PipelineDelegate::createPipelineFast(&pipeline, "shaders/slang.spv", "vertMain", "fragMain", primary.device, PhysicalDevice, &swapchain.swapChainSurfaceFormat, pipeline.descSetLayout);
 		CommandBuffers::createCommandPool(&commandPool, &primary.device, primary.queueIndex);
 	}
 
@@ -52,6 +52,7 @@ namespace lte {
 		Buffers::createIndexBuffer (FileLoader::IndicesSize	,FileLoader::IndicesArray, &indexBuffer , &indexBufferMem , cmdinfo,PhysicalDevice);
 
 		renderSets = FileLoader::renderSets;
+		//fix this later
 
 		MeshInfo.push_back(LtMeshInfo{});
 		MeshInfo.push_back(LtMeshInfo{});
@@ -80,6 +81,13 @@ namespace lte {
 	{
 		
 		TemporaryDraw::updateUniformBuffer(frameIndex,&swapchain,&MeshInfo);
+		/*Validation Error : [VUID - vkCmdDraw - None - 09600] | MessageID = 0x46582f7b
+		vkQueueSubmit() : pSubmits[0] command buffer VkCommandBuffer 0x2a505cb1918 expects VkImage 0x170000000017 (subresource : aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+			The Vulkan spec states : If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written(https ://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+				Objects : 2
+				[0] VkCommandBuffer 0x2a505cb1918
+				[1] VkImage 0x170000000017*/
+
 
 		auto fenceResult = primary.device.waitForFences(*synchronizationSet.inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
@@ -104,7 +112,7 @@ namespace lte {
 
 		primary.device.resetFences(*synchronizationSet.inFlightFences[frameIndex]);
 		commandBuffers[frameIndex].reset();
-		TemporaryDraw::recordCommandBuffer(imageIndex,frameIndex,&commandBuffers[frameIndex],&swapchain,*ImageDelegate::ImagePool[colorImageIndex], *ImageDelegate::ImagePool[depthImageIndex], &pipeline, &vertexBuffer, &indexBuffer, &vertexBufferMem, &indexBufferMem, &MeshInfo, &renderSets);
+		TemporaryDraw::recordCommandBuffer(imageIndex,frameIndex,commandBuffers[frameIndex],&swapchain,*ImageDelegate::ImagePool[colorImageIndex], *ImageDelegate::ImagePool[depthImageIndex], &pipeline, &vertexBuffer, &indexBuffer, &vertexBufferMem, &indexBufferMem, &MeshInfo, &renderSets);
 
 		/*if (gui->drawFrame()) {
 			gui->updateBuffers();
@@ -127,6 +135,7 @@ namespace lte {
 	}
 	void LtBackend::Draw() {
 
+		
 		const vk::PresentInfoKHR presentInfoKHR{ 1, &*synchronizationSet.renderFinishedSemaphores[availableIndex],1, &*swapchain.swapChain,&availableIndex };
 
 		if (window.Resized)
