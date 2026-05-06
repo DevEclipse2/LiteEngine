@@ -4,7 +4,7 @@ namespace lte {
 	float TemporaryDraw::prevtime = 0;
 	float TemporaryDraw::fps = 0;
 	float TemporaryDraw::frameTime = 0;
-	void TemporaryDraw::updateUniformBuffer(uint32_t frame , LtSwapChain* swap, std::vector<LtMeshInfo>* info)
+	void TemporaryDraw::updateUniformBuffer(uint32_t frame , LtSwapChain& swap, std::vector<LtMeshInfo>& info)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -16,15 +16,15 @@ namespace lte {
 
 		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj = glm::perspective(glm::radians(45.0f),
-			static_cast<float>(swap->swapChainExtent.width) / static_cast<float>(swap->swapChainExtent.height),
+			static_cast<float>(swap.swapChainExtent.width) / static_cast<float>(swap.swapChainExtent.height),
 			0.1f, 20.0f);
 
 		ubo.proj[1][1] *= -1;
 		// Update uniform buffers for each object
-		for (auto& gameObject : *info) {
+		for (auto& gameObject : info) {
 			// Apply continuous rotation to the object
 			const float rotationSpeed = 0.5f;                          // Rotation speed in radians per second
-			gameObject.rotation.y += rotationSpeed * (time - prevtime);
+			/*gameObject.rotation.y += rotationSpeed * (time - prevtime);*/
 
 			// Get the model matrix for this object
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -107,7 +107,7 @@ namespace lte {
 			renderingInfo.colorAttachmentCount = 1,
 			renderingInfo.pColorAttachments = &attachmentInfo,
 			renderingInfo.pDepthAttachment = &depthAttachmentInfo;
-
+			
 		commandBuffer.beginRendering(renderingInfo);
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline->pipeline);
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainImage->swapChainExtent.width), static_cast<float>(swapChainImage->swapChainExtent.height), 0.0f, 1.0f));
@@ -117,8 +117,7 @@ namespace lte {
 		commandBuffer.bindIndexBuffer(**indexBuf, 0, vk::IndexType::eUint32);
 
 		uint64_t objectid = 0;
-		uint64_t vertexOffsets = 0;
-		uint64_t indexOffsets = 0;
+		
 		for (const auto& gameObject : *meshes)
 		{
 			// Bind the descriptor set for this object
@@ -131,9 +130,10 @@ namespace lte {
 
 			// Draw the object
 
-			commandBuffer.drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, indexOffsets, vertexOffsets, 0);
-			vertexOffsets += rendersets->at(objectid).vertexArraySize;
-			indexOffsets  += rendersets->at(objectid).IndiceArraySize;
+			commandBuffer.drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, rendersets->at(objectid).IndiceArrayStartIndex, rendersets->at(objectid).vertexArrayStartIndex,0);
+			//commandBuffer.drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, rendersets->at(objectid).IndiceArrayStartIndex, rendersets->at(objectid).vertexArrayStartIndex, 0);
+			/*vertexOffsets += rendersets->at(objectid).vertexArraySize;
+			indexOffsets  += rendersets->at(objectid).IndiceArraySize;*/
 			objectid++;
 		}
 		commandBuffer.endRendering();

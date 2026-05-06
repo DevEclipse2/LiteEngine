@@ -45,20 +45,39 @@ namespace lte {
         ImagePool.clear();
     }
     
-    void ImageDelegate::requestImageDestruction(uint32_t imageIndex)
+    void ImageDelegate::requestDelayedImageDestruction(uint32_t imageIndex, float wait)
+    {
+
+    }
+
+    void ImageDelegate::requestImageDestruction(uint32_t& imageIndex)
     {
         if (imageIndex < ImagePool.size()) {
-            ImagePool.erase(ImagePool.begin() + imageIndex);
+            ImagePool[imageIndex]->image        = nullptr;
+            ImagePool[imageIndex]->imageMemory  = nullptr;
+            ImagePool[imageIndex]->imageSampler = nullptr;
+            ImagePool[imageIndex]->imageView    = nullptr;
+            AvailableIndexes.emplace_back(imageIndex);
+            imageIndex = -1;
         }
     }
     uint32_t ImageDelegate::requestImageCreation(LtImage& image)
     {   
-        ImagePool.emplace_back(std::make_unique<LtImage>(std::move(image)));
-        //ImagePool.emplace_back(std::move(image)); // no matching overloaded function founded
-        //ImagePool.emplace_back(std::move({})); // no matching overloaded function founded
-        //ImagePool.emplace_back(std::move(image)); // no matching overloaded function founded
-        return ImagePool.size() - 1;
-        
+        if (AvailableIndexes.size() > 0)
+        {
+            ImagePool[AvailableIndexes[0]]= std::make_unique<LtImage>(std::move(image));
+            uint32_t index = AvailableIndexes[0];
+            AvailableIndexes.erase(AvailableIndexes.begin());
+            return index;
+
+        }
+        else {
+            ImagePool.emplace_back(std::make_unique<LtImage>(std::move(image)));
+            //ImagePool.emplace_back(std::move(image)); // no matching overloaded function founded
+            //ImagePool.emplace_back(std::move({})); // no matching overloaded function founded
+            //ImagePool.emplace_back(std::move(image)); // no matching overloaded function founded
+            return ImagePool.size() - 1;
+        }
     }
 
     void ImageDelegate::createSwapchainImageViews( LtSwapChain* swap, vk::raii::Device* device)
@@ -192,6 +211,7 @@ namespace lte {
     void ImageDelegate::generateMipmaps(LtImage& ltImage,vk::Format imageFormat, vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo info) 
     {
 
+
         vk::FormatProperties formatProperties = physicalDevice.getFormatProperties(imageFormat);
 
         if (!(formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
@@ -239,9 +259,23 @@ namespace lte {
             blit.srcSubresource = vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, i - 1, 0, 1);
             blit.dstSubresource = vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, i, 0, 1);
             commandBuffer->blitImage(ltImage.image, vk::ImageLayout::eTransferSrcOptimal,ltImage.image, vk::ImageLayout::eTransferDstOptimal, { blit }, vk::Filter::eLinear);
+            barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
+            barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
             if (mipWidth > 1) mipWidth /= 2;
             if (mipHeight > 1) mipHeight /= 2;
         }
+
+        barrier.subresourceRange.baseMipLevel = ltImage.mipLevels - 1;
+        barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+        barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
 
         CommandBuffers::endSingleTimeCommands(*commandBuffer, info.queue);
     }

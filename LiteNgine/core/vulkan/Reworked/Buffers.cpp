@@ -102,7 +102,9 @@ namespace lte {
 			region.imageSubresource = { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
 			region.imageOffset = vk::Offset3D{ 0, 0, 0 },
 			region.imageExtent = vk::Extent3D{ width, height, 1 };
+		//commandBuffer->copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, { region });
 		commandBuffer->copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, { region });
+		//
 		CommandBuffers::endSingleTimeCommands(*commandBuffer,info.queue);
 	}
 }

@@ -51,6 +51,7 @@ namespace lte {
         Buffers::copyBufferToImage(stagingBuffer, ImageIndex.image, ImageIndex.width, ImageIndex.height, cmdInfo);
         //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
         ImageDelegate::generateMipmaps(ImageIndex, vk::Format::eR8G8B8A8Srgb,physicalDevice,cmdInfo);
+        //ImageDelegate::transitionImageLayout(ImageIndex.image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, ImageIndex.mipLevels, cmdInfo);
 
     }
 
@@ -107,11 +108,17 @@ namespace lte {
         for (uint32_t i = 0; i < vertexBuf.size(); i++)
         {
             if (vertexBuf[i].size() == 0 ) continue;
+            //starts at 0, length 12
+            //renders from zero to 11
+            //next one starts rendering from 12
             RenderSet rs{Vindexes,static_cast<uint32_t>(vertexBuf[i].size()),Iindexes,static_cast<uint32_t>(indexBuf[i].size()),imageIndexes[i]};
             renderSets.emplace_back(rs);
-            Vindexes += vertexBuf[i].size();
-            Iindexes += indexBuf[i].size();
-
+            //so we was reading garbage this whole time
+            memcpy(VertexArray  + Vindexes, vertexBuf[i].data(), sizeof(Vertex) * vertexBuf[i].size());
+            memcpy(IndicesArray + Iindexes, indexBuf[i].data(), sizeof(uint32_t) * indexBuf[i].size());
+            Vindexes += static_cast<uint32_t>(vertexBuf[i].size());
+            Iindexes += static_cast<uint32_t>(indexBuf[i].size());
+  
         }
 
         imageIndexes.clear();

@@ -39,11 +39,12 @@ namespace lte
             ImageDelegate();
             ~ImageDelegate();
             static uint32_t requestImageCreation(LtImage& ltImage);
-            static void requestImageDestruction(uint32_t index);
+            static void requestImageDestruction(uint32_t& index);
             //static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
             static void transitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mipLevels, singleTimeCommandInfo info);
             static void generateMipmaps(LtImage& ltImage, vk::Format imageFormat, vk::raii::PhysicalDevice& physicalDevice, singleTimeCommandInfo info);
             static void createSwapchainImageViews(LtSwapChain* swap, vk::raii::Device* device);
+            void requestDelayedImageDestruction(uint32_t imageIndex, float wait);
 
             static void createColorResources(LtSwapChain* swapChain, LtImage& ColorRes, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::SampleCountFlagBits msaaSamples);
             static void createDepthResources(LtSwapChain* swapChain, LtImage& DepthRes, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::SampleCountFlagBits msaaSamples);

@@ -56,23 +56,23 @@ namespace lte {
 
 		MeshInfo.push_back(LtMeshInfo{});
 		MeshInfo.push_back(LtMeshInfo{});
-		MeshInfo.push_back(LtMeshInfo{});
+		//MeshInfo.push_back(LtMeshInfo{});
 		MeshInfo[0].position = { 0.0f, 0.0f, -1.0f };
 		MeshInfo[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
 		MeshInfo[0].scale = { 1.1f, 1.1f,1.1f };
 
 		MeshInfo[1].position = { -2.0f, 0.0f, -1.0f };
 		MeshInfo[1].rotation = { 0.0f, 0.0f, 0.0f };
-		MeshInfo[1].scale = { 1.45f, 1.45f, 1.45f };
+		MeshInfo[1].scale = { 0.45f, 0.45f, 0.45f };
 
-		MeshInfo[2].position = { 2.0f, 0.0f, -1.0f };
+		/*MeshInfo[2].position = { 2.0f, 0.0f, -1.0f };
 		MeshInfo[2].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
 		MeshInfo[2].scale = { 0.85f, 0.85f, 0.85f };
-		MeshInfo.resize(renderSets.size());
+		MeshInfo.resize(renderSets.size());*/
 
 		Buffers::createUniformBuffers(&MeshInfo, framesInFlight , primary.device, PhysicalDevice);
 		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
-		deviceHandler.createDescriptorSets(pipeline.descSetLayout, &pool, &sampler, &MeshInfo, framesInFlight, &primary.device, &renderSets);
+		deviceHandler.createDescriptorSets(pipeline.descSetLayout, pool, sampler, MeshInfo, framesInFlight, primary.device, renderSets);
 		CommandBuffers::createCommandBuffer(&commandBuffers, &commandPool, &primary.device, framesInFlight);
 		LtSync::createSyncObjects(synchronizationSet,swapchain, &primary.device , framesInFlight);
 	}
@@ -80,7 +80,7 @@ namespace lte {
 	void LtBackend::Update()
 	{
 		
-		TemporaryDraw::updateUniformBuffer(frameIndex,&swapchain,&MeshInfo);
+		TemporaryDraw::updateUniformBuffer(frameIndex,swapchain,MeshInfo);
 		/*Validation Error : [VUID - vkCmdDraw - None - 09600] | MessageID = 0x46582f7b
 		vkQueueSubmit() : pSubmits[0] command buffer VkCommandBuffer 0x2a505cb1918 expects VkImage 0x170000000017 (subresource : aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
 			The Vulkan spec states : If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written(https ://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
@@ -88,7 +88,7 @@ namespace lte {
 				[0] VkCommandBuffer 0x2a505cb1918
 				[1] VkImage 0x170000000017*/
 
-
+		
 		auto fenceResult = primary.device.waitForFences(*synchronizationSet.inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{
@@ -187,8 +187,16 @@ namespace lte {
 		}
 		primary.device.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
-		deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
-		deviceHandler.createLogicalDevice(PhysicalDevice, surface, primary, requiredDeviceExtensions);
+		//physical device is unlikely to change tbh
+		//deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
+		//this frees the commandbuffers
+		/*commandBuffers.clear();
+		vertexBuffer = nullptr;
+		indexBuffer = nullptr;
+
+		
+		deviceHandler.createLogicalDevice(PhysicalDevice, surface, primary, requiredDeviceExtensions);*/
+		//do we really need to recreate the physical device??
 		swapchain = LtSwapChain{PhysicalDevice,primary.device,surface,&window,&minImageCount };
 		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
 		ImageDelegate::requestImageDestruction(colorImageIndex);
@@ -199,6 +207,10 @@ namespace lte {
 		ImageDelegate::createDepthResources(&swapchain, depImg, primary.device, PhysicalDevice, msaaSamples);
 		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
 		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
+		
+		/*deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
+		deviceHandler.createDescriptorSets(pipeline.descSetLayout, pool, sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
+
 	}
 
 	void LtBackend::createInstance(BackendInitInfo info) {

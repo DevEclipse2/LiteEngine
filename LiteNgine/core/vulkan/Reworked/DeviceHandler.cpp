@@ -180,43 +180,43 @@ namespace lte {
 			poolInfo.pPoolSizes = poolSize.data();
 		*descriptorPool = vk::raii::DescriptorPool(*device, poolInfo);
 	}
-	void DeviceHandler::createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool* descriptorPool,vk::raii::Sampler* sampler, std::vector<LtMeshInfo>* meshes, uint8_t maxFIF , vk::raii::Device* device , std::vector<RenderSet>* rs)
+	void DeviceHandler::createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool& descriptorPool,vk::raii::Sampler& sampler, std::vector<LtMeshInfo>& meshes, uint8_t maxFIF , vk::raii::Device& device , std::vector<RenderSet>& rs)
 	{
 
 		uint32_t meshNo = 0;
-		for (auto& gameObject : *meshes)
+		for (auto& gameObject : meshes)
 		{
 			// Create descriptor sets for each frame in flight
 			std::vector<vk::DescriptorSetLayout> layouts(maxFIF, *descriptorSetLayout);
 			vk::DescriptorSetAllocateInfo allocInfo{};
-			allocInfo.descriptorPool = **descriptorPool,
+				allocInfo.descriptorPool = *descriptorPool,
 				allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
 				allocInfo.pSetLayouts = layouts.data();
 
 			gameObject.descriptorSets.clear();
-			gameObject.descriptorSets = device->allocateDescriptorSets(allocInfo);
+			gameObject.descriptorSets = device.allocateDescriptorSets(allocInfo);
 			for (size_t i = 0; i < maxFIF; i++) {
 
 				vk::DescriptorBufferInfo bufferInfo{};
-				bufferInfo.buffer = *gameObject.uniformBuffers[i],
+					bufferInfo.buffer = *gameObject.uniformBuffers[i],
 					bufferInfo.offset = 0,
 					bufferInfo.range = sizeof(UniformBufferObject);
 
 				vk::DescriptorImageInfo imageInfo{};
-				imageInfo.sampler = **sampler,
-					imageInfo.imageView = (ImageDelegate::ImagePool[rs->at(meshNo).imageIndex])->imageView,
+					imageInfo.sampler = *sampler,
+					imageInfo.imageView = *(*ImageDelegate::ImagePool[rs[meshNo].imageIndex]).imageView,
 					imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
 
 				vk::WriteDescriptorSet descriptorbuffer{};
-				descriptorbuffer.dstSet = *gameObject.descriptorSets[i],
+					descriptorbuffer.dstSet = *gameObject.descriptorSets[i],
 					descriptorbuffer.dstBinding = 0,
 					descriptorbuffer.dstArrayElement = 0,
 					descriptorbuffer.descriptorCount = 1,
 					descriptorbuffer.descriptorType = vk::DescriptorType::eUniformBuffer,
 					descriptorbuffer.pBufferInfo = &bufferInfo;
 				vk::WriteDescriptorSet descriptorimage{};
-				descriptorimage.dstSet = *gameObject.descriptorSets[i],
+					descriptorimage.dstSet = *gameObject.descriptorSets[i],
 					descriptorimage.dstBinding = 1,
 					descriptorimage.dstArrayElement = 0,
 					descriptorimage.descriptorCount = 1,
@@ -227,7 +227,7 @@ namespace lte {
 					descriptorimage
 				};
 
-				device->updateDescriptorSets(descriptorWrites, {});
+				device.updateDescriptorSets(descriptorWrites, {});
 			}
 			meshNo++;
 		}
