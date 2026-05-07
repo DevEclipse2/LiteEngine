@@ -1,4 +1,4 @@
-/*
+
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
 #define GLFW_INCLUDE_VULKAN
@@ -113,5 +113,3 @@ namespace lte {
 		UiLayout* layoutMgr;
 	};
 }
-*/
-

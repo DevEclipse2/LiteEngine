@@ -102,6 +102,18 @@
     <ClCompile Include="core\vulkan\Reworked\TemporaryDraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_MultiWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_WindowTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -195,6 +207,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\Reworked\stbImagePacifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_MultiWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_WindowTracker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -199,6 +199,10 @@
     <ClCompile Include="core\vulkan\InterfaceLayers\Lt_ILayer.cpp" />
     <ClCompile Include="core\vulkan\Reworked\LtSync.cpp" />
     <ClCompile Include="core\vulkan\Reworked\TemporaryDraw.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Gui.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_MultiWindow.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_WindowTracker.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Vulkan.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +236,10 @@
     <ClInclude Include="core\vulkan\InterfaceLayers\Lt_ILayer.h" />
     <ClInclude Include="core\vulkan\Reworked\LtSync.h" />
     <ClInclude Include="core\vulkan\Reworked\TemporaryDraw.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Gui.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_MultiWindow.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_WindowTracker.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Vulkan.h" />
     <ClInclude Include="ThreadMgr.h" />
   </ItemGroup>
   <ItemGroup>

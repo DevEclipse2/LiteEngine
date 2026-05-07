@@ -15,9 +15,11 @@
 #include "FileLoader.h"
 #include "LtSync.h"
 #include "TemporaryDraw.h"
+#include "../EngineClasses/Lt_MultiWindow.h"
 namespace lte {
 	class DebugMessenger;
 	class Lt_Window;
+	class Lt_MultiWindow;
 	class DeviceHandler;
 	struct BackendInitInfo {
 		int width, height = 0;
@@ -58,6 +60,7 @@ namespace lte {
 			int height = 600;
 
 			Lt_Window window{};
+			Lt_MultiWindow* ltMultiWindow{};
 		private:
 			void createSurface();
 			void createInstance(BackendInitInfo info);

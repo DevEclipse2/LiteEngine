@@ -3,8 +3,17 @@ namespace lte {
 
 	void Lt_ILayer::Begin()
 	{
-		BackendInitInfo info{ 800,600,"LiteEngine : Agstrum",true,"LiteNgine editor" ,nullptr };
-		backend.InitializeVulkan(info);
+
+		BackendInitInfo backendInfo{ 800,600,"LiteEngine : Agstrum",true,"LiteNgine editor" ,nullptr };
+		Lt_WindowInfo info;
+		info.width = 800,
+			info.height = 600;
+		info.displayName = "LiteNgine editor";
+		info.internalName = "MainWindow";
+		windowMgr.createMainWindow(info);
+		vulkanHandler.Init("LiteNgine Editor");
+		
+		backend.InitializeVulkan(backendInfo);
 		singleTimeCommandInfo cmdInfo{ &backend.primary.device ,&backend.commandPool , &backend.primary.queue };
 		fileLoader.TemporaryFileLoad(backend.primary.device,backend.PhysicalDevice, cmdInfo);
 		backend.second();

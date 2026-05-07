@@ -19,11 +19,16 @@ namespace lte {
 	}
 	void LtBackend::InitializeVulkan(BackendInitInfo info) 
 	{
-		window.CreateWindow(info.width, info.height, info.name);
+		//window.CreateWindow(info.width, info.height, info.name);
+		createInstance(info);
+		if (true) {
+			messenger.setupMessenger(&instance);
+		}
+		/*window.CreateWindow(info.width, info.height, info.name);
 		createInstance(info);
 		if (info.useValidationLayers) {
 			messenger.setupMessenger(&instance);
-		}
+		}*/
 		createSurface();
 		deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
 		deviceHandler.createLogicalDevice(PhysicalDevice, surface, primary, requiredDeviceExtensions);
