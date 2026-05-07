@@ -9,6 +9,7 @@ namespace lte {
 	const std::vector<char const*> Lt_Vulkan::validationLayers = {
 			"VK_LAYER_KHRONOS_validation"
 	};
+	vk::raii::Context Lt_Vulkan::context;
 	std::vector<std::unique_ptr<Lt_DevicePair>> Lt_Vulkan::devices = {};
 	vk::raii::SurfaceKHR Lt_Vulkan::TempSurface = nullptr;
 	void Lt_Vulkan::createSurface(vk::raii::SurfaceKHR& surface, GLFWwindow* window)

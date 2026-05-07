@@ -12,8 +12,9 @@ namespace lte
 	class Lt_MultiWindow
 	{
 	public:
-		Lt_MultiWindow();
-		~Lt_MultiWindow();/*
+		/*Lt_MultiWindow();
+		~Lt_MultiWindow();*/
+		/*
 		Lt_MultiWindow(const Lt_MultiWindow&) = delete;
 		Lt_MultiWindow& operator=(const Lt_MultiWindow&) = delete;*/
 
@@ -27,6 +28,8 @@ namespace lte
 	private:
 
 		GLFWwindow* window = nullptr;
+		static GLFWwindow* resizedWindow ;
+		static bool resized;
 		int width = 800;
 		int height = 600;
 		std::string windowName = "You forgot to name this window properly";
