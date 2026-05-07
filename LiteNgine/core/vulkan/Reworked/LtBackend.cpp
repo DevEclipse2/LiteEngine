@@ -19,6 +19,7 @@ namespace lte {
 	}
 	void LtBackend::InitializeVulkan(BackendInitInfo info) 
 	{
+		window.CreateWindow(info.width, info.height, info.name);
 		createInstance(info);
 		if (info.useValidationLayers) {
 			messenger.setupMessenger(&instance);
@@ -170,6 +171,10 @@ namespace lte {
 		frameIndex = (frameIndex + 1) % framesInFlight;
 	}
 	void LtBackend::Exit() {
+		//wait for all commandbuffers to finish
+		vkQueueWaitIdle(*primary.queue);
+		//pool.clear();
+		primary.device.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
 	}
 

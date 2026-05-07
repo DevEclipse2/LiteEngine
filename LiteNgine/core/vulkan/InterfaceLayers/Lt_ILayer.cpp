@@ -16,7 +16,8 @@ namespace lte {
 	}
 	void Lt_ILayer::End() 
 	{
-
+		backend.Exit();
+		backend.window.DestroyWindow();
 	}
 	void Lt_ILayer::Cleanup()
 	{

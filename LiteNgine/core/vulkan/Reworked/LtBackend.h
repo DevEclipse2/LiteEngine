@@ -56,9 +56,8 @@ namespace lte {
 
 			int width = 800;
 			int height = 600;
-			std::string name = "window";
 
-			Lt_Window window{ width, height,name };
+			Lt_Window window{};
 		private:
 			void createSurface();
 			void createInstance(BackendInitInfo info);

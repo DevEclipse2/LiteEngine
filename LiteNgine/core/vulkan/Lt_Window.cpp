@@ -3,17 +3,30 @@
 #include <stdexcept>
 namespace lte {
 
+	int Lt_Window::width = 0;
+	int Lt_Window::height = 0;
 	//VulkanDevice* Lt_Window::vkdevice = nullptr;
 	bool Lt_Window::Resized = false;
 
-	Lt_Window::Lt_Window(int w, int h, std::string name) : width{ w }, height{ h }, windowName{ name } {
+	void Lt_Window::CreateWindow(int w, int h, std::string name){
+		width = w;
+		height = h;
+		windowName = name;
 		initWindow();
 	}
-	Lt_Window::~Lt_Window(){
+	void Lt_Window::DestroyWindow()
+	{
 		if (window) {
 			glfwDestroyWindow(window);
 		}
 		glfwTerminate();
+	}
+	Lt_Window::Lt_Window()
+	{
+
+	}
+	Lt_Window::~Lt_Window(){
+		
 	};
 	GLFWwindow* Lt_Window::getGLFWWindow() {
 		return window;
