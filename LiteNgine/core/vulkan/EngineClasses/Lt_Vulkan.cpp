@@ -35,10 +35,10 @@ namespace lte {
 		
 		// only one discardable surface to check graphics devices
 		//devices
-		devices.emplace_back();
-		handler.pickPhysicalDevice(instance, devices[0]->physicalDevice, devices[0]->sampling);
-		handler.createLogicalDevice(devices[0]->physicalDevice, devices[0]->logicalDevice, TempSurface, devices[0]->queue, devices[0]->queueIndex, requiredDeviceExtensions);
-		
+		Lt_DevicePair devicepair{};
+		handler.pickPhysicalDevice(instance, devicepair.physicalDevice, devicepair.sampling);
+		handler.createLogicalDevice(devicepair.physicalDevice, devicepair.logicalDevice, TempSurface, devicepair.queue, devicepair.queueIndex, requiredDeviceExtensions);
+		devices.emplace_back(std::make_unique<Lt_DevicePair>(std::move(devicepair)));
 		if (tempWindow) {
 			glfwDestroyWindow(tempWindow);
 		}

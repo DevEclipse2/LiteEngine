@@ -1,8 +1,7 @@
 #include "Lt_MultiWindow.h"
 namespace lte {
 	GLFWwindow* Lt_MultiWindow::resizedWindow = nullptr;
-	bool Lt_MultiWindow::resized = false;
-
+	void (Lt_MultiWindow::*resizeCallback)() = nullptr;
 	void Lt_MultiWindow::CreateWindow(int w, int h, std::string name) {
 		width = w;
 		height = h;
@@ -18,15 +17,22 @@ namespace lte {
 		/*glfwSetScrollCallback
 		glfwGetCursorPos*/
 	}
+
+	void Lt_MultiWindow::GetWindowSize(int& retwidth, int& retheight)
+	{
+		retwidth = width;
+		retheight = height;
+	}
+
 	void Lt_MultiWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		//ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 		//vkdevice->keyCallback(window, key, scancode, action, mods);
 	}
-
 	void Lt_MultiWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		resizedWindow = window;
 		resized = true;
+		resizeCallback();
 		//vkdevice->framebufferResized = true;
 	}
 	void Lt_MultiWindow::charCallback(GLFWwindow* window, unsigned int codepoint) {

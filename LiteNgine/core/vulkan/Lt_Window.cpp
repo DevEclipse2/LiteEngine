@@ -21,6 +21,7 @@ namespace lte {
 		}
 		glfwTerminate();
 	}
+	
 	Lt_Window::Lt_Window()
 	{
 

@@ -19,7 +19,7 @@ namespace lte {
 	}
 	void LtBackend::InitializeVulkan(BackendInitInfo info) 
 	{
-		//window.CreateWindow(info.width, info.height, info.name);
+		window.CreateWindow(info.width, info.height, info.name);
 		createInstance(info);
 		if (true) {
 			messenger.setupMessenger(&instance);
@@ -125,19 +125,7 @@ namespace lte {
 		}
 		gui->drawFrame();*/
 
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex] /*pUiCommandBuffer->at(frameIndex)*/ };
-
-		const vk::SubmitInfo submitInfo{
-										1,
-										//here
-										&* synchronizationSet.presentCompleteSemaphores[frameIndex],
-										&waitDestinationStageMask,
-										static_cast<uint32_t>(std::size(PackedBuffer)),
-										&*PackedBuffer,
-										1,
-										&*synchronizationSet.renderFinishedSemaphores[imageIndex] };
-		primary.queue.submit(submitInfo, *synchronizationSet.inFlightFences[frameIndex]);
+		
 	}
 	void LtBackend::Draw() {
 
@@ -174,6 +162,24 @@ namespace lte {
 		}
 		frameNumber++;
 		frameIndex = (frameIndex + 1) % framesInFlight;
+	}
+	void LtBackend::SubmitCommandBuffers()
+	{
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex] /*pUiCommandBuffer->at(frameIndex)*/ };
+
+		const vk::SubmitInfo submitInfo{
+										1,
+										//here
+										&*synchronizationSet.presentCompleteSemaphores[frameIndex],
+										&waitDestinationStageMask,
+										static_cast<uint32_t>(std::size(PackedBuffer)),
+										&*PackedBuffer,
+										1,
+										&*synchronizationSet.renderFinishedSemaphores[availableIndex] };
+		primary.queue.submit(submitInfo, *synchronizationSet.inFlightFences[frameIndex]);
+
+
 	}
 	void LtBackend::Exit() {
 		//wait for all commandbuffers to finish

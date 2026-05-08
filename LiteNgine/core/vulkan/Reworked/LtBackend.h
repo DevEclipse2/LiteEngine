@@ -56,8 +56,12 @@ namespace lte {
 
 			void Draw();
 
+			void SubmitCommandBuffers();
+
 			int width = 800;
 			int height = 600;
+			vk::raii::Instance instance = nullptr;
+			uint32_t minImageCount = 0;
 
 			Lt_Window window{};
 			Lt_MultiWindow* ltMultiWindow{};
@@ -73,7 +77,6 @@ namespace lte {
 			DebugMessenger messenger{};
 			DeviceHandler deviceHandler{};
 			vk::raii::Context context;
-			vk::raii::Instance instance = nullptr;
 			vk::raii::SurfaceKHR surface = nullptr;
 			vk::SampleCountFlagBits msaaSamples;
 			LtSwapChain swapchain{PhysicalDevice,primary.device,surface,nullptr,nullptr};
@@ -81,7 +84,6 @@ namespace lte {
 			uint32_t colorImageIndex = 0;
 			uint32_t depthImageIndex = 0;
 			LtPipeline pipeline{};
-			uint32_t minImageCount = 0;
 
 			//this is for drawing
 			//dont @me on this

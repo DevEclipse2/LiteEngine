@@ -63,7 +63,6 @@ namespace lte{
 		pDepthImageView = pDevice->getDepthImageView();
 		depthFormat = pDevice->getDepthFormat();
 		swapChainImageViews = pDevice->getSwapChainImageViews();
-		
 	}
 	std::vector<vk::raii::CommandBuffer>* Gui::getpCommandBuffers() {
 		return &commandBuffers;
@@ -576,6 +575,7 @@ namespace lte{
 
 	}
 	void Gui::InitGUI() {
+
 		IMGUI_CHECKVERSION();
 		//IMGUI_DEBUG_LOG();
 		ImGui::CreateContext();

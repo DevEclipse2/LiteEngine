@@ -17,23 +17,24 @@ namespace lte
 		/*
 		Lt_MultiWindow(const Lt_MultiWindow&) = delete;
 		Lt_MultiWindow& operator=(const Lt_MultiWindow&) = delete;*/
+		static GLFWwindow* resizedWindow;
 
 		bool shouldClose() { return glfwWindowShouldClose(window); }
 		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 		GLFWwindow* getGLFWWindow();
-		bool Resized;
+		bool thisResized = false;
+		
 		void CreateWindow(int width, int height, std::string name);
 		void DestroyWindow();
-
+		void GetWindowSize(int& width, int& height);
+		static void (*resizeCallback)();
+		int width = 800;
+		int height = 600;
 	private:
 
 		GLFWwindow* window = nullptr;
-		static GLFWwindow* resizedWindow ;
-		static bool resized;
-		int width = 800;
-		int height = 600;
+		
 		std::string windowName = "You forgot to name this window properly";
-
 
 
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
