@@ -110,15 +110,16 @@ namespace lte {
 
 		//command pools and command buffers are made in lt_Vulkan
 
-		/*vk::CommandPoolCreateInfo poolInfo{};
-		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-		poolInfo.queueFamilyIndex = pDevice->getQueueIndex();
-		commandPool = vk::raii::CommandPool(*device, poolInfo);
 		vk::CommandBufferAllocateInfo allocInfo{};
-		allocInfo.commandPool = commandPool,
+			allocInfo.commandPool = *creationInfo.commandPool,
 			allocInfo.level = vk::CommandBufferLevel::ePrimary,
-			allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
-		commandBuffers = vk::raii::CommandBuffers(*device, allocInfo);*/
+			allocInfo.commandBufferCount = creationInfo.maxFramesInFlight;
+		commandBuffers = vk::raii::CommandBuffers(*creationInfo.device, allocInfo);
+	}
+	void Lt_Gui::Terminate()
+	{
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
 	}
 	void Lt_Gui::createImages() 
 	{
@@ -262,17 +263,65 @@ namespace lte {
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-		pipelineLayout = device->createPipelineLayout(pipelineLayoutInfo);
+		pipelineLayout = creationInfo.device->createPipelineLayout(pipelineLayoutInfo);
 
 		VkCommandBufferAllocateInfo cmdBufAllocInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.pNext = NULL,
-		.commandPool = *commandPool,
+		.commandPool = **creationInfo.commandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = static_cast<uint32_t>(commandBuffers.size())
 		};
 	}
+	void Lt_Gui::updateBuffers() {
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData || drawData->CmdListsCount == 0) {
+			return;
+		}
 
+		// Calculate required buffer sizes
+		vk::DeviceSize vertexBufferSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
+		vk::DeviceSize indexBufferSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
+		vk::raii::DeviceMemory memory({});
+		vk::raii::DeviceMemory Indexmemory({});
+		// Resize buffers if needed
+		if (drawData->TotalVtxCount > vertexCount) {
+			// Recreate vertex buffer with new size
+
+
+			Buffers::createBuffer(vertexBufferSize, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer, memory, *creationInfo.device, *creationInfo.physicalDevice);
+			vertexCount = drawData->TotalVtxCount;
+		}
+
+		if (drawData->TotalIdxCount > indexCount) {
+			// Recreate index buffer with new size
+			Buffers::createBuffer(indexBufferSize, vk::BufferUsageFlagBits::eIndexBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, indexBuffer, Indexmemory, *creationInfo.device, *creationInfo.physicalDevice);
+			indexCount = drawData->TotalIdxCount;
+		}
+
+		// Upload data to buffers
+		ImDrawVert* vtxDst = static_cast<ImDrawVert*>(memory.mapMemory(0, vertexBufferSize));
+		ImDrawIdx* idxDst = static_cast<ImDrawIdx*>(Indexmemory.mapMemory(0, indexBufferSize));
+
+		for (int n = 0; n < drawData->CmdListsCount; n++) {
+			const ImDrawList* cmdList = drawData->CmdLists[n];
+			memcpy(vtxDst, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
+			memcpy(idxDst, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
+			vtxDst += cmdList->VtxBuffer.Size;
+			idxDst += cmdList->IdxBuffer.Size;
+		}
+		memory.unmapMemory();
+		Indexmemory.unmapMemory();
+	}
+	void Lt_Gui::updateFrameBuffer(int width, int height)
+	{
+		fbWidth = width;
+		fbHeight = height;
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize.x = (float)fbWidth;
+		io.DisplaySize.y = (float)fbHeight;
+	}
 	void Lt_Gui::createDescriptorPool()
 	{
 		VkDescriptorPoolSize PoolSizes[] = {
@@ -297,7 +346,144 @@ namespace lte {
 			.pPoolSizes = PoolSizes
 		};
 
-		VkResult res = vkCreateDescriptorPool(**device, &PoolCreateInfo, NULL, &descriptorPoolHandle);
+		VkResult res = vkCreateDescriptorPool(**creationInfo.device, &PoolCreateInfo, NULL, &descriptorPoolHandle);
 		CheckVKResult(res);
+	}
+	bool Lt_Gui::drawFrame(char frameIndex)
+	{
+
+		ImGui_ImplVulkan_NewFrame();
+		ImGui::NewFrame();
+		// In your main loop, after ImGui::NewFrame()
+		ImGui::SetNextWindowBgAlpha(0.0f); // 0.0f = fully transparent, 1.0f = fully opaque
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		/*	ImGui::SetNextWindowPos(viewport->WorkPos);
+			ImGui::SetNextWindowSize(viewport->WorkSize);*/
+			// Create your UI elements here
+			// For example:
+		//layoutMgr->beginDrawData();
+
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+		ImGui::Begin("scene viewport",NULL,window_flags);
+		ImGui::Text("Hello, Vulkan!");
+		if (ImGui::Button("Click me!")) {
+			// Handle button click
+			std::cout << "srjitndkf\n";
+		}
+		ImGui::End();
+
+		/*ImGui::Begin("Performance: ", &showWindow2);
+		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
+		std::string fpsStr = "Fps :" + std::to_string(fps);
+		ImGui::Text(fpsStr.c_str());
+		std::string str = "FrameTime : " + std::to_string(Frametime) + " miliseconds";
+		ImGui::Text(str.c_str());
+		str = "Vertices :" + std::to_string(verticeCount);
+		ImGui::Text(str.c_str());
+		str = "Indices :" + std::to_string(indiceCount);
+		ImGui::Text(str.c_str());
+		str = "models :" + std::to_string(modelCount);
+		ImGui::Text(str.c_str());
+		if (ImGui::Button("Close"))
+			showProfiler = false;
+		ImGui::End();*/
+
+		ImGui::EndFrame();
+		ImGui::UpdatePlatformWindows();
+		// Render to generate draw data
+		ImGui::Render();
+		firstFrame = false;
+
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData || drawData->CmdListsCount == 0) {
+			return true;
+		}
+		if (drawData && drawData->CmdListsCount > 0) {
+			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
+				return true;
+			}
+		}
+		recordCommandBuffer(drawData, frameIndex);
+
+
+		
+		return false;
+	}
+
+	void Lt_Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
+	{
+		auto& commandBuffer = commandBuffers[index];
+		//commandBuffer.reset();
+		vk::CommandBufferBeginInfo info{};
+		info.sType = vk::StructureType::eCommandBufferBeginInfo;
+		info.pNext = NULL;
+		info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+		info.pInheritanceInfo = NULL;
+		commandBuffer.begin(info);
+
+
+		// Convert from ImGui coordinates into NDC via a simple scale/translate
+		pushConstBlock.scale = glm::vec2(2.0f / data->DisplaySize.x, 2.0f / data->DisplaySize.y);
+		pushConstBlock.translate = glm::vec2(-1.0f);
+		commandBuffer.pushConstants<PushConstBlock>(*pipelineLayout, vk::ShaderStageFlagBits::eVertex,
+			0, pushConstBlock);
+
+
+
+		commandBuffer.reset();
+		doDynamicRendering(commandBuffer, data, index);
+		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
+		commandBuffer.endRendering();
+		ImageDelegate::transition_image_layout(
+			ImageDelegate::ImagePool[fontImgIndex]->image,
+			vk::ImageLayout::eShaderReadOnlyOptimal,
+			vk::ImageLayout::ePresentSrcKHR,
+			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+			{},                                                     // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::ImageAspectFlagBits::eColor, commandBuffer
+		);
+		commandBuffer.end();
+	}
+
+	void Lt_Gui::doDynamicRendering(vk::raii::CommandBuffer& commandBuffer, ImDrawData* data, char drawindex)
+	{
+
+		// Begin dynamic rendering
+		vk::RenderingAttachmentInfo attachmentInfo = {};
+			attachmentInfo.sType = vk::StructureType::eRenderingAttachmentInfo;
+			attachmentInfo.pNext = NULL;
+			attachmentInfo.imageView = *ImageDelegate::ImagePool[*creationInfo.colorImageViewIndex]->imageView,
+			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
+			attachmentInfo.resolveImageView = creationInfo.pImageViews->at(drawindex),
+			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.loadOp = vk::AttachmentLoadOp::eLoad,
+			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
+		//attachmentInfo.clearValue = clearColor;
+	// Note: In a real implementation, you would set imageView, imageLayout,
+	// loadOp, storeOp, and clearValue based on your swapchain image
+
+		vk::RenderingInfo renderingInfo{};
+		renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
+													   static_cast<uint32_t>(data->DisplaySize.y)} };
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.pColorAttachments = &attachmentInfo;
+		// Configure viewport for UI pixel coordinates
+		vk::Viewport viewport{};
+		viewport.width = data->DisplaySize.x;
+		viewport.height = data->DisplaySize.y;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+
+		commandBuffer.beginRendering(renderingInfo);
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *creationInfo.pipeline);
+		commandBuffer.setViewport(0, viewport);
+		// Bind the pipeline used for ImGui
+
 	}
 }

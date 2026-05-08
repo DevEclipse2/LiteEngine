@@ -30,18 +30,25 @@ namespace lte {
 		GuiCreationInfo.queueFamily = backend.primary.queueIndex;
 		GuiCreationInfo.window = backend.window.getGLFWWindow();
 		GuiCreationInfo.commandPool = &backend.commandPool;
+		GuiCreationInfo.maxFramesInFlight = backend.framesInFlight;
 		guiHandler.InitGui(GuiCreationInfo);
 	}
 	void Lt_ILayer::Loop()
 	{
 		backend.Update();
 		//add any gui draw commands here
-		guiHandler.drawFrame();
+		if (guiHandler.drawFrame(backend.frameIndex)) 
+		{
+			//update stuff
+			guiHandler.updateFrameBuffer(backend.width, backend.height);
+			guiHandler.updateBuffers();
+		}
 		backend.SubmitCommandBuffers();
 		backend.Draw();
 	}
 	void Lt_ILayer::End() 
 	{
+		guiHandler.Terminate();
 		backend.Exit();
 		backend.window.DestroyWindow();
 	}

@@ -65,6 +65,10 @@ namespace lte {
 
 			Lt_Window window{};
 			Lt_MultiWindow* ltMultiWindow{};
+			uint8_t framesInFlight = 3;
+			uint32_t availableIndex = 0;
+			uint32_t frameNumber = 0;
+			uint8_t frameIndex = 0;
 		private:
 			void createSurface();
 			void createInstance(BackendInitInfo info);
@@ -91,7 +95,6 @@ namespace lte {
 			char drawList[6] = { 'c','c','c', 'c', 'c' ,'c'};
 			uint64_t objects = 0;
 			void updateDrawCount();
-			uint8_t framesInFlight = 3;
 			uint32_t maxObjects = 2048;
 			vk::raii::Sampler sampler = nullptr;
 
@@ -110,11 +113,7 @@ namespace lte {
 			std::vector<vk::raii::CommandBuffer> commandBuffers = {};
 
 			bool framebufferResized = false;
-			uint32_t availableIndex = 0;
-			uint32_t frameNumber = 0;
-			uint8_t frameIndex = 0;
 			void recreateSwapChain();
-
 	};
 
 }

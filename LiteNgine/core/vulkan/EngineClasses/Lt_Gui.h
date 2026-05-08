@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include "../Reworked/ImageDelegate.h"
 #include "../Reworked/Buffers.h"
+//#include "../Reworked/LtSync.h"
 #include <vector>
 #include <iostream>
 //this should be a static thing and should only have 1! instance ever
@@ -33,10 +34,15 @@ namespace lte
 		uint32_t minImgCount = 0;
 		vk::raii::Instance* instance = nullptr;
 		vk::raii::CommandPool* commandPool = nullptr;
+		uint8_t maxFramesInFlight = 3;
+		std::vector<vk::raii::ImageView>* pImageViews = nullptr;
 		//physical device
 		//command pool
 		//command buffers
 		//window data
+		uint32_t* colorImageViewIndex = 0;
+		vk::raii::Pipeline* pipeline;
+
 
 	};
 	class Lt_Gui
@@ -44,15 +50,16 @@ namespace lte
 	public:
 
 		void Instantiate();
-		bool drawFrame();
+		bool drawFrame(char frameIndex);
 		void updateBuffers();
-		void updateFrameBuffer();
+		void updateFrameBuffer(int width, int height);
 		bool firstFrame = true;
 		void handleKey(int key, int scancode, int action, int mods);
 		void charPressed(uint32_t key);
 		bool getWantKeyCapture();
 		void InitGui(Lt_GuiCreationInfo& info);
-		vk::raii::Device* device = nullptr;
+		std::vector<vk::raii::CommandBuffer> commandBuffers = {};
+		void Terminate();
 	private:
 		VkDescriptorPool descriptorPoolHandle;
 		void createDescriptorPool();
@@ -60,6 +67,9 @@ namespace lte
 		void setStyle(char index);
 		vk::Format colorFormat = vk::Format::eB8G8R8A8Unorm;   // Target framebuffer format
 		vk::Format depthFormat;
+		void recordCommandBuffer(ImDrawData* data, uint8_t index);
+		void doDynamicRendering(vk::raii::CommandBuffer& commandBuffer, ImDrawData* data, char drawindex);
+
 		void createResources();
 		uint32_t fontImgIndex;
 		Lt_GuiCreationInfo creationInfo;
@@ -67,6 +77,14 @@ namespace lte
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		vk::raii::DescriptorSetLayout descriptorSetLayout = nullptr;
 		vk::raii::DescriptorSet descriptorSet = nullptr;
+		vk::raii::PipelineLayout pipelineLayout = nullptr;
+
+		uint32_t vertexCount = 0;
+		uint32_t indexCount = 0;
+		vk::raii::Buffer vertexBuffer;
+		vk::raii::Buffer indexBuffer;
+		int fbWidth = 0;
+		int fbHeight = 0;
 	};
 
 }
