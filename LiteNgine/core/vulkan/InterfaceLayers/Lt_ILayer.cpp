@@ -17,6 +17,9 @@ namespace lte {
 		singleTimeCommandInfo cmdInfo{ &backend.primary.device ,&backend.commandPool , &backend.primary.queue };
 		fileLoader.TemporaryFileLoad(backend.primary.device,backend.PhysicalDevice, cmdInfo);
 		backend.second();
+
+
+
 		Lt_GuiCreationInfo GuiCreationInfo{};
 		GuiCreationInfo.width = info.width;
 		GuiCreationInfo.height = info.height;
@@ -40,6 +43,7 @@ namespace lte {
 		guiHandler.Instantiate();
 		guiHandler.updateFrameBuffer(backend.width, backend.height);
 		guiHandler.updateBuffers();
+
 	}
 	void Lt_ILayer::Loop()
 	{

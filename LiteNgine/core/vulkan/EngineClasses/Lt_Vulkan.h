@@ -6,7 +6,8 @@
 #include <vector>
 #include "../Reworked/DebugMessenger.h"
 #include "../Reworked/DeviceHandler.h"
-
+#include "Lt_MultiWindow.h"
+#include "../Reworked/LtSync.h"
 
 #define FOUND_DEVICES_HIGHER_THAN_EXPECTED	1;
 #define FOUND_DEVICES_LOWER_THAN_EXPECTED	2;
@@ -14,6 +15,10 @@
 #define FOUND_DEVICES_NO_PRESENT_SUPPORT	4;
 #define FOUND_DEVICES_NO_DEVICES			5;
 #define FOUND_DEVICES_NONE_SUITABLE			6;
+
+#define CREATE_DEPTH_IMG					1;
+#define CREATE_COLOR_IMG					2;
+
 
 
 //the all in one class that does only one thing and one thing badly
@@ -34,9 +39,16 @@ namespace lte {
 		//surfaces
 		vk::raii::SurfaceKHR surface = nullptr;
 		//pipelines
+		LtPipeline pipeline{};
+		LtSwapChain swapchain;
 		//commandbuffer
+		std::vector<vk::raii::CommandBuffer> commandBuffers = {};
 		//sync stuff
-
+		LtSyncSet syncSet{};
+		uint32_t ltMultiWindowIndex = 0;
+		void registerWindow(uint32_t& windowIndex);
+		void createSwapChain	(char arguments, char deviceID);
+		void recreateSwapChain	();
 	};
 	class DebugMessenger; 
 	class Lt_Vulkan
@@ -45,21 +57,27 @@ namespace lte {
 		void Init(std::string name);
 
 		void createSurfaces();
+
+		static vk::raii::CommandPool commandPool;
+
 		static std::vector<std::unique_ptr<Lt_WindowVK>> windows;
-	private:
+
 		static std::vector<std::unique_ptr<Lt_DevicePair>> devices;
+
+		static void createSurface(vk::raii::SurfaceKHR& surface, GLFWwindow* window);
+
+	private:
 		static vk::raii::SurfaceKHR TempSurface;
 		static vk::raii::Context context;
 		static vk::raii::Instance instance;
 		static std::vector<const char*> getRequiredInstanceExtensions(bool enableValidationLayers);
 		static void createInstance(std::string name, bool useValidationLayers);
-		static void createSurface(vk::raii::SurfaceKHR& surface, GLFWwindow* window);
+		
 		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
 
 
 		DebugMessenger messenger{};
 		static const std::vector<char const*> validationLayers;
 		DeviceHandler handler{};
-
 	};
 }

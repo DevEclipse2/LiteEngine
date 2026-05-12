@@ -21,6 +21,10 @@ namespace lte
 		vk::raii::SwapchainKHR swapChain = nullptr;
 		std::vector<vk::Image> swapChainImages = {};
 		std::vector<vk::raii::ImageView> imageViews = {};
+
+		uint32_t colorImage = 0;
+		uint32_t depthImage = 0;
+
 		LtSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, Lt_Window* window, uint32_t* minimgC)
 		{
 

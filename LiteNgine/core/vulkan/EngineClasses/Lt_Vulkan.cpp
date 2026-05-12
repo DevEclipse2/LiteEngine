@@ -12,6 +12,8 @@ namespace lte {
 	vk::raii::Context Lt_Vulkan::context;
 	std::vector<std::unique_ptr<Lt_DevicePair>> Lt_Vulkan::devices = {};
 	vk::raii::SurfaceKHR Lt_Vulkan::TempSurface = nullptr;
+	vk::raii::CommandPool Lt_Vulkan::commandPool = nullptr;
+
 	void Lt_Vulkan::createSurface(vk::raii::SurfaceKHR& surface, GLFWwindow* window)
 	{
 		//connects the vulkan object with the window created by GLFW
@@ -43,9 +45,9 @@ namespace lte {
 			glfwDestroyWindow(tempWindow);
 		}
 
-		//only one please
-		
 		//only one command pool
+		CommandBuffers::createCommandPool(&commandPool, &devices[0]->logicalDevice, devices[0]->queueIndex);
+
 		//create device pairs, one for each gpu to use
 		//heres what you need multiple of for windows:
 		//surfaces
@@ -105,5 +107,32 @@ namespace lte {
 		}
 
 		return extensions;
+	}
+	void Lt_WindowVK::registerWindow(uint32_t& windowIndex)
+	{
+		windowIndex = Lt_Vulkan::windows.size();
+
+		Lt_Vulkan::createSurface(surface, Lt_MultiWindow::);
+
+
+
+		//registers itself
+		Lt_Vulkan::windows.emplace_back(std::make_unique<Lt_WindowVK>(std::move(this)));
+	}
+	void Lt_WindowVK::createSwapChain(char arguments, char deviceID)
+	{
+
+		swapchain = LtSwapChain{ Lt_Vulkan::devices[deviceID]->physicalDevice,Lt_Vulkan::devices[deviceID]->logicalDevice,surface,&window,&minImageCount};
+		ImageDelegate::createSwapchainImageViews(&swapchain, &primary.device);
+		LtImage colImg{};
+		LtImage depImg{};
+		ImageDelegate::createColorResources(&swapchain, colImg, primary.device, PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, primary.device, PhysicalDevice, msaaSamples);
+
+		colorImageIndex = ImageDelegate::requestImageCreation(colImg);
+		depthImageIndex = ImageDelegate::requestImageCreation(depImg);
+
+
+		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, primary.device);
 	}
 }
