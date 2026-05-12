@@ -8,6 +8,11 @@ namespace lte {
 	LtBackend::~LtBackend()
 	{
 	}
+	bool LtBackend::AddAdditionalCommands(vk::raii::CommandBuffer& commandBuffer)
+	{	
+		additionalCommands.emplace_back(*commandBuffer);
+		return true;
+	}
 	void LtBackend::createSurface()
 	{
 		//connects the vulkan object with the window created by GLFW
@@ -115,7 +120,7 @@ namespace lte {
 			assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
 			throw std::runtime_error("failed to acquire swap chain image!");
 		}
-
+		additionalCommands.clear();
 		primary.device.resetFences(*synchronizationSet.inFlightFences[frameIndex]);
 		commandBuffers[frameIndex].reset();
 		TemporaryDraw::recordCommandBuffer(imageIndex,frameIndex,commandBuffers[frameIndex],&swapchain,*ImageDelegate::ImagePool[colorImageIndex], *ImageDelegate::ImagePool[depthImageIndex], &pipeline, &vertexBuffer, &indexBuffer, &vertexBufferMem, &indexBufferMem, &MeshInfo, &renderSets);
@@ -166,15 +171,28 @@ namespace lte {
 	void LtBackend::SubmitCommandBuffers()
 	{
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex] /*pUiCommandBuffer->at(frameIndex)*/ };
+		std::vector<vk::CommandBuffer> commands = {};
+		commands.reserve(2 + additionalCommands.size());
+		//for safety pursposes :shrug:
+		
+		commands.emplace_back(*commandBuffers[frameIndex]); 
+		commands.insert(
+			commands.end(),
+			additionalCommands.begin(),
+			additionalCommands.end()
+		);
 
+		//vkQueueSubmit() : pSubmits[0].pCommandBuffers[1] VkCommandBuffer 0x24b461d1cc8 is unrecorded and contains no commands.
+		//	The Vulkan spec states : Each element of the pCommandBuffers member of each element of pSubmits must be in the pending or executable state(https ://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pCommandBuffers-00070)
+		//		Objects : 1
+		//		[0] VkCommandBuffer 0x24b461d1cc8
 		const vk::SubmitInfo submitInfo{
 										1,
 										//here
 										&*synchronizationSet.presentCompleteSemaphores[frameIndex],
 										&waitDestinationStageMask,
-										static_cast<uint32_t>(std::size(PackedBuffer)),
-										&*PackedBuffer,
+										static_cast<uint32_t>(std::size(commands)),
+										&*commands.data(),
 										1,
 										&*synchronizationSet.renderFinishedSemaphores[availableIndex] };
 		primary.queue.submit(submitInfo, *synchronizationSet.inFlightFences[frameIndex]);

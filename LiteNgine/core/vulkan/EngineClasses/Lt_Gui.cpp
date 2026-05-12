@@ -1,5 +1,29 @@
 #include "Lt_Gui.h"
 
+
+
+
+
+//known issues
+/*
+* 
+* 
+* this refers to the 
+Validation Error : [VUID - VkImageMemoryBarrier2 - oldLayout - 01208] | MessageID = 0xfdca3e6d
+vkCmdPipelineBarrier2() : pDependencyInfo->pImageMemoryBarriers[0].newLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) is not compatible with VkImage 0x480000000048 usage flags VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT.
+The Vulkan spec states : If layouts are not ignored, oldLayout or newLayout is VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL then image must have been created with the VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT usage flag set(https ://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01208)
+	Objects : 1
+	[0] VkImage 0x480000000048
+*/
+
+
+
+
+
+
+
+
+
 void CheckVKResult(VkResult err) {
 	if (err == 0) {
 		return;
@@ -13,8 +37,8 @@ void CheckVKResult(VkResult err) {
 namespace lte {
 	void Lt_Gui::Instantiate()
 	{
-		createDescriptorPool();
-		createImages();
+		/*createDescriptorPool();
+		createResources();*/
 	}
 
 	void Lt_Gui::setStyle(char index)
@@ -85,6 +109,11 @@ namespace lte {
 		pipelineCreateInfo.depthAttachmentFormat = depthFormat;
 		pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
+
+		createDescriptorPool();
+		createResources();
+
+
 		ImGui_ImplVulkan_InitInfo init_info = {};
 		init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
 		init_info.Instance = **(creationInfo.instance);
@@ -95,14 +124,14 @@ namespace lte {
 		//init_info.PipelineCache = NULL;
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = pipelineCreateInfo;
 		init_info.Queue = **(creationInfo.queue);
-		init_info.PipelineCache = **creationInfo.cache;
+		init_info.PipelineCache = *creationInfo.cache;
 		init_info.MinImageCount = creationInfo.minImgCount; //stuff
 		init_info.UseDynamicRendering = true;
 		init_info.ImageCount = creationInfo.minImgCount;
 		init_info.Allocator = NULL;
 		init_info.PipelineInfoMain.RenderPass = NULL;
 		init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_8_BIT;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_16_BIT;
 		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
 		ImGui_ImplVulkan_Init(&init_info);
 
@@ -153,10 +182,11 @@ namespace lte {
 		// This image will be sampled by shaders during UI rendering
 
 		LtImage fontImage{};
-		ImageDelegate::createImage(fontImage, texWidth, texHeight, 1, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
-			vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+		ImageDelegate::createImage(fontImage, texWidth, texHeight, 1, vk::SampleCountFlagBits::e1, vk::Format::eB8G8R8A8Srgb,
+			vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst
+			,
 			vk::MemoryPropertyFlagBits::eDeviceLocal,*creationInfo.device, *creationInfo.physicalDevice);
-		ImageDelegate::createImageView(fontImage, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor, 1, *creationInfo.device);
+		ImageDelegate::createImageView(fontImage, vk::Format::eB8G8R8A8Srgb, vk::ImageAspectFlagBits::eColor, 1, *creationInfo.device);
 		fontImgIndex = ImageDelegate::requestImageCreation(fontImage);
 		vk::raii::Buffer stagingBuffer({});
 		vk::raii::DeviceMemory memory({});
@@ -181,7 +211,7 @@ namespace lte {
 		// Transition image to shader-readable layout for rendering
 		// Final layout optimization enables efficient sampling during UI rendering
 		ImageDelegate::transitionImageLayout(ImageDelegate::ImagePool[fontImgIndex]->image,
-			vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal, 1, singleTCommandInfo);
+			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, singleTCommandInfo);
 		// Configure texture sampling parameters for optimal text rendering
 		// These settings directly impact text quality and performance
 		vk::SamplerCreateInfo samplerInfo{};
@@ -248,7 +278,7 @@ namespace lte {
 
 		// Create pipeline cache
 		vk::PipelineCacheCreateInfo pipelineCacheInfo{};
-		creationInfo.cache = &creationInfo.device->createPipelineCache(pipelineCacheInfo);
+		creationInfo.cache = vk::raii::PipelineCache(*creationInfo.device,pipelineCacheInfo);
 
 		// Create pipeline layout
 		vk::PushConstantRange pushConstantRange{};
@@ -365,7 +395,10 @@ namespace lte {
 			// For example:
 		//layoutMgr->beginDrawData();
 
+
+
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+		//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 1.0f, 0.0f, 0.0f));
 		ImGui::Begin("scene viewport",NULL,window_flags);
 		ImGui::Text("Hello, Vulkan!");
 		if (ImGui::Button("Click me!")) {
@@ -402,9 +435,10 @@ namespace lte {
 		}
 		if (drawData && drawData->CmdListsCount > 0) {
 			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
-				return true;
-			}
+				updateBuffers();
+			} 
 		}
+
 		recordCommandBuffer(drawData, frameIndex);
 
 
@@ -416,6 +450,7 @@ namespace lte {
 	{
 		auto& commandBuffer = commandBuffers[index];
 		//commandBuffer.reset();
+		commandBuffer.reset();
 		vk::CommandBufferBeginInfo info{};
 		info.sType = vk::StructureType::eCommandBufferBeginInfo;
 		info.pNext = NULL;
@@ -431,22 +466,33 @@ namespace lte {
 			0, pushConstBlock);
 
 
-
-		commandBuffer.reset();
-		doDynamicRendering(commandBuffer, data, index);
-		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
-		commandBuffer.endRendering();
 		ImageDelegate::transition_image_layout(
 			ImageDelegate::ImagePool[fontImgIndex]->image,
-			vk::ImageLayout::eShaderReadOnlyOptimal,
-			vk::ImageLayout::ePresentSrcKHR,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eTransferDstOptimal,
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
 			{},                                                     // dstAccessMask
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
 			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
 			vk::ImageAspectFlagBits::eColor, commandBuffer
 		);
+		
+		doDynamicRendering(commandBuffer, data, index);
+		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
+
+		commandBuffer.endRendering();
+		
 		commandBuffer.end();
+		//ImageDelegate::transition_image_layout(
+		//	ImageDelegate::ImagePool[fontImgIndex]->image,
+		//	vk::ImageLayout::eShaderReadOnlyOptimal,
+		//	vk::ImageLayout::ePresentSrcKHR,
+		//	vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+		//	{},                                                     // dstAccessMask
+		//	vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+		//	vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+		//	vk::ImageAspectFlagBits::eColor, commandBuffer
+		//);
 	}
 
 	void Lt_Gui::doDynamicRendering(vk::raii::CommandBuffer& commandBuffer, ImDrawData* data, char drawindex)

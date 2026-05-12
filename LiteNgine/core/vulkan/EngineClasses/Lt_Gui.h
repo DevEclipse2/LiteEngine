@@ -16,19 +16,16 @@
 // a slightly better (or worse) implementation of GUI
 namespace lte 
 {
-	struct PushConstBlock {
-		glm::vec2 scale;                                    // UI scaling factors for different screen sizes
-		glm::vec2 translate;                                // Translation offset for UI positioning
-	} pushConstBlock;
+	
 	struct Lt_GuiCreationInfo 
 	{
 		int width = 0;
 		int height = 0;
-		vk::raii::Device* device;
-		vk::raii::PhysicalDevice* physicalDevice;
-		GLFWwindow* window;
-		vk::Format colorFormat = vk::Format::eB8G8R8A8Unorm;
-		vk::raii::PipelineCache* cache = nullptr;
+		vk::raii::Device* device = nullptr;
+		vk::raii::PhysicalDevice* physicalDevice = nullptr;
+		GLFWwindow* window = nullptr;
+		vk::Format colorFormat = vk::Format::eB8G8R8A8Srgb;
+		vk::raii::PipelineCache cache = nullptr;
 		uint32_t queueFamily = 0;
 		vk::raii::Queue* queue = nullptr;
 		uint32_t minImgCount = 0;
@@ -40,13 +37,18 @@ namespace lte
 		//command pool
 		//command buffers
 		//window data
-		uint32_t* colorImageViewIndex = 0;
-		vk::raii::Pipeline* pipeline;
-
+		uint32_t* colorImageViewIndex = nullptr;
+		vk::raii::Pipeline* pipeline = nullptr;
+		vk::raii::PipelineLayout* layout = nullptr;
+		uint32_t* frameIndex = nullptr;
 
 	};
 	class Lt_Gui
 	{
+		struct PushConstBlock {
+			glm::vec2 scale;                                    // UI scaling factors for different screen sizes
+			glm::vec2 translate;                                // Translation offset for UI positioning
+		} pushConstBlock;
 	public:
 
 		void Instantiate();
@@ -65,13 +67,13 @@ namespace lte
 		void createDescriptorPool();
 		void createImages();
 		void setStyle(char index);
-		vk::Format colorFormat = vk::Format::eB8G8R8A8Unorm;   // Target framebuffer format
+		vk::Format colorFormat = vk::Format::eB8G8R8A8Srgb;   // Target framebuffer format
 		vk::Format depthFormat;
 		void recordCommandBuffer(ImDrawData* data, uint8_t index);
 		void doDynamicRendering(vk::raii::CommandBuffer& commandBuffer, ImDrawData* data, char drawindex);
 
 		void createResources();
-		uint32_t fontImgIndex;
+		uint32_t fontImgIndex = 0;
 		Lt_GuiCreationInfo creationInfo;
 		vk::raii::Sampler sampler = nullptr;
 		vk::raii::DescriptorPool descriptorPool = nullptr;
@@ -81,8 +83,8 @@ namespace lte
 
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
-		vk::raii::Buffer vertexBuffer;
-		vk::raii::Buffer indexBuffer;
+		vk::raii::Buffer vertexBuffer = nullptr;
+		vk::raii::Buffer indexBuffer = nullptr;
 		int fbWidth = 0;
 		int fbHeight = 0;
 	};

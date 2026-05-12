@@ -1,7 +1,8 @@
 #include "Lt_MultiWindow.h"
 namespace lte {
 	GLFWwindow* Lt_MultiWindow::resizedWindow = nullptr;
-	void (Lt_MultiWindow::*resizeCallback)() = nullptr;
+	//void (Lt_MultiWindow::*resizeCallback)() = nullptr;
+	void (*Lt_MultiWindow::resizeCallback)(void) = nullptr;
 	void Lt_MultiWindow::CreateWindow(int w, int h, std::string name) {
 		width = w;
 		height = h;
@@ -31,10 +32,18 @@ namespace lte {
 	void Lt_MultiWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		resizedWindow = window;
-		resized = true;
-		resizeCallback();
+		if (resizeCallback != nullptr) {
+			resizeCallback();
+		}
+		else {
+			std::cout << "no assigned Callback!" << std::endl;
+		}
 		//vkdevice->framebufferResized = true;
 	}
+	GLFWwindow* Lt_MultiWindow::getGLFWWindow() {
+		return window;
+	}
+
 	void Lt_MultiWindow::charCallback(GLFWwindow* window, unsigned int codepoint) {
 		//ImGui_ImplGlfw_CharCallback(window, codepoint);
 		//vkdevice->charCallback(window, codepoint);

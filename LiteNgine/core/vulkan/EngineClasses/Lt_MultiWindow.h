@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <vulkan/vulkan_raii.hpp>
+#include <iostream>
 
 //can you believe it? the Lt_window class is already deprecated after what, like 2 months?
 //my code is bad

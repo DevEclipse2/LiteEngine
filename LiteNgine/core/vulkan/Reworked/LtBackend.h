@@ -69,6 +69,10 @@ namespace lte {
 			uint32_t availableIndex = 0;
 			uint32_t frameNumber = 0;
 			uint8_t frameIndex = 0;
+			LtPipeline pipeline{};
+			uint32_t colorImageIndex = 0;
+			LtSwapChain swapchain{ PhysicalDevice,primary.device,surface,nullptr,nullptr };
+			bool AddAdditionalCommands(vk::raii::CommandBuffer& commandBuffer);
 		private:
 			void createSurface();
 			void createInstance(BackendInitInfo info);
@@ -83,11 +87,8 @@ namespace lte {
 			vk::raii::Context context;
 			vk::raii::SurfaceKHR surface = nullptr;
 			vk::SampleCountFlagBits msaaSamples;
-			LtSwapChain swapchain{PhysicalDevice,primary.device,surface,nullptr,nullptr};
 			//LtPipeline mainPipeline{};
-			uint32_t colorImageIndex = 0;
 			uint32_t depthImageIndex = 0;
-			LtPipeline pipeline{};
 
 			//this is for drawing
 			//dont @me on this
@@ -111,7 +112,7 @@ namespace lte {
 
 			vk::raii::DescriptorPool pool = nullptr;
 			std::vector<vk::raii::CommandBuffer> commandBuffers = {};
-
+			std::vector<vk::CommandBuffer>additionalCommands = {};
 			bool framebufferResized = false;
 			void recreateSwapChain();
 	};

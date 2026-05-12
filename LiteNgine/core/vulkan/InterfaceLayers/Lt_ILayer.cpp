@@ -31,17 +31,34 @@ namespace lte {
 		GuiCreationInfo.window = backend.window.getGLFWWindow();
 		GuiCreationInfo.commandPool = &backend.commandPool;
 		GuiCreationInfo.maxFramesInFlight = backend.framesInFlight;
+		GuiCreationInfo.pipeline = &backend.pipeline.pipeline;
+		GuiCreationInfo.layout = &backend.pipeline.PipelineLayout;
+		//theres a chance that it might override the original so im leaving this shit alone
+		GuiCreationInfo.colorImageViewIndex = &backend.colorImageIndex;
+		GuiCreationInfo.pImageViews = &backend.swapchain.imageViews;
 		guiHandler.InitGui(GuiCreationInfo);
+		guiHandler.Instantiate();
+		guiHandler.updateFrameBuffer(backend.width, backend.height);
+		guiHandler.updateBuffers();
 	}
 	void Lt_ILayer::Loop()
 	{
 		backend.Update();
+		if (backend.window.Resized) {
+			glfwGetWindowSize(backend.window.getGLFWWindow(), &backend.width, &backend.height);
+			guiHandler.updateFrameBuffer(backend.width, backend.height);
+
+		}
 		//add any gui draw commands here
 		if (guiHandler.drawFrame(backend.frameIndex)) 
 		{
 			//update stuff
 			guiHandler.updateFrameBuffer(backend.width, backend.height);
 			guiHandler.updateBuffers();
+			guiHandler.drawFrame(backend.frameIndex);
+		}
+		if(!backend.AddAdditionalCommands(guiHandler.commandBuffers[backend.frameIndex])) {
+			std::cerr << "cannot submit additional commands" << std::endl;
 		}
 		backend.SubmitCommandBuffers();
 		backend.Draw();
