@@ -26,14 +26,14 @@ namespace lte {
 			static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice& physicalDevice);
 			//static char createDevicePairs(std::vector<std::unique_ptr<Lt_DevicePair>>& devices, char maxDevices, vk::raii::Instance& instance);
 
-			void pickPhysicalDevice(vk::raii::Instance& instance, vk::raii::PhysicalDevice& physicalDevice, vk::SampleCountFlagBits& sampling);
+			static void pickPhysicalDevice(vk::raii::Instance& instance, vk::raii::PhysicalDevice& physicalDevice, vk::SampleCountFlagBits& sampling);
 			static vk::SampleCountFlagBits getMaxUsableSampleCount(vk::raii::PhysicalDevice& physicalDevice);
-			void createLogicalDevice(vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface, LogicalDevice& logicalDevice, std::vector<const char*> requiredExtensions);
-			void createLogicalDevice(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, vk::raii::Queue& queue, uint16_t& queueindex, std::vector<const char*> requiredExtensions);
+			static void createLogicalDevice(vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface, LogicalDevice& logicalDevice, std::vector<const char*> requiredExtensions);
+			static void createLogicalDevice(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, vk::raii::Queue& queue, uint16_t& queueindex, std::vector<const char*> requiredExtensions);
 
-			void createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device);
-			void createDescriptorPool(vk::raii::DescriptorPool* descriptorPool, vk::raii::Device* device, uint32_t maxObjects, uint8_t maxFIF);
-			void createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool& descriptorPool, vk::raii::Sampler& sampler, std::vector<LtMeshInfo>& meshes, uint8_t maxFIF, vk::raii::Device& device, std::vector<RenderSet>& rs);
+			static void createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device);
+			static void createDescriptorPool(vk::raii::DescriptorPool* descriptorPool, vk::raii::Device* device, uint32_t maxObjects, uint8_t maxFIF);
+			static void createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool& descriptorPool, vk::raii::Sampler& sampler, std::vector<LtMeshInfo>& meshes, uint8_t maxFIF, vk::raii::Device& device, std::vector<RenderSet>& rs);
 
 	};
 }

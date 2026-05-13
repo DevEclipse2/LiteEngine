@@ -1,7 +1,5 @@
 #pragma once
-#include "../Reworked/LtBackend.h"
 #include "../Reworked/FileLoader.h"
-#include "../Lt_Window.h"
 #include "../EngineClasses/Lt_WindowTracker.h"
 #include "../EngineClasses/Lt_Vulkan.h"
 #include "../EngineClasses/Lt_Gui.h"
@@ -20,12 +18,18 @@ namespace lte {
 		void End();
 		void Cleanup();
 		void Loop();
-		LtBackend backend{};
+		void Resize();
+
 	private:
 		//Lt_Window ltWindow{ 800, 600 ,"LiteEngine : Agstrum"};
 		FileLoader fileLoader{};
 		Lt_WindowTracker windowMgr{};
 		Lt_Vulkan vulkanHandler{};
 		Lt_Gui guiHandler{};
+
+		uint32_t mainWindowIndex = 0;
+		uint8_t frames = 0;
+
+		bool mainResized = false;
 	};
 }

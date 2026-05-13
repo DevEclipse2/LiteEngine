@@ -8,7 +8,8 @@
 #include "../Reworked/DeviceHandler.h"
 #include "Lt_MultiWindow.h"
 #include "../Reworked/LtSync.h"
-
+#include "../Reworked/FileLoader.h"
+#include "Lt_WindowTracker.h"
 #define FOUND_DEVICES_HIGHER_THAN_EXPECTED	1;
 #define FOUND_DEVICES_LOWER_THAN_EXPECTED	2;
 //#define FOUND_DEVICES_NO_VULKAN_SUPPORT		= 3;
@@ -31,10 +32,12 @@ namespace lte {
 		vk::raii::Device logicalDevice = nullptr;
 		vk::SampleCountFlagBits sampling;
 		vk::raii::Queue queue = nullptr;
-		uint16_t queueIndex;
+		uint16_t queueIndex = 0;
 	};
 	struct Lt_WindowVK
 	{
+		//constructor for stuff i guess
+		Lt_WindowVK();
 		//heres what you need multiple of for windows:
 		//surfaces
 		vk::raii::SurfaceKHR surface = nullptr;
@@ -42,15 +45,30 @@ namespace lte {
 		LtPipeline pipeline{};
 		LtSwapChain swapchain;
 		//commandbuffer
-		std::vector<vk::raii::CommandBuffer> commandBuffers = {};
+		std::vector<vk::CommandBuffer> Commands = {};
+	
 		//sync stuff
 		LtSyncSet syncSet{};
+		//registry for that index
 		uint32_t ltMultiWindowIndex = 0;
-		void registerWindow(uint32_t& windowIndex);
-		void createSwapChain	(char arguments, char deviceID);
+		uint32_t deviceID = 0;
+		vk::Extent2D swapChainExtent;
+		uint32_t minImageCount = 0;
+		int width = 800;
+		int height = 600;
+		void registerWindow(uint32_t& windowIndex, uint32_t glfwWindowIndex);
+		void createSwapChain(Lt_MultiWindow& window);
 		void recreateSwapChain	();
+		void addCommand(vk::raii::CommandBuffer& commandBuffer);
+
+		//these are called globally
+		void resetBuffers();
+		void submitBuffers(uint8_t index);
 	};
+
 	class DebugMessenger; 
+
+
 	class Lt_Vulkan
 	{
 	public:
@@ -64,12 +82,20 @@ namespace lte {
 
 		static std::vector<std::unique_ptr<Lt_DevicePair>> devices;
 
+		static std::vector<void (*)()> resetFunction;
+		static std::vector<void (*)()> submitFunction;
+
 		static void createSurface(vk::raii::SurfaceKHR& surface, GLFWwindow* window);
+
+		static vk::raii::Instance instance;
+
+		static vk::raii::Sampler sampler;
+
+		static uint8_t FramesInFlight;
 
 	private:
 		static vk::raii::SurfaceKHR TempSurface;
 		static vk::raii::Context context;
-		static vk::raii::Instance instance;
 		static std::vector<const char*> getRequiredInstanceExtensions(bool enableValidationLayers);
 		static void createInstance(std::string name, bool useValidationLayers);
 		
@@ -78,6 +104,5 @@ namespace lte {
 
 		DebugMessenger messenger{};
 		static const std::vector<char const*> validationLayers;
-		DeviceHandler handler{};
 	};
 }
