@@ -142,10 +142,9 @@ namespace lte {
 		DeviceHandler::createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		DeviceHandler::createDescriptorSets(pipeline.descSetLayout, pool, Lt_Vulkan::sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
 		//CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &device, Lt_Vulkan::FramesInFlight);
-		
+		LtSync::createSyncObjects(syncSet, swapchain, &device,Lt_Vulkan::FramesInFlight);
 		//
-		Lt_Vulkan::windows.emplace_back(std::move(this));
-
+		CommandBuffers::createCommandBuffer(&cmdBuffer, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, Lt_Vulkan::FramesInFlight);
 	}
 	void Lt_WindowVK::createSwapChain(Lt_MultiWindow& window)
 	{
@@ -169,15 +168,6 @@ namespace lte {
 	}
 	void Lt_WindowVK::recreateSwapChain() {
 
-
-		width = 0;
-		height = 0;
-
-		while (width == 0 || height == 0)
-		{
-			glfwGetFramebufferSize(Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window.getGLFWWindow(), &width, &height);
-			glfwWaitEvents();
-		}
 		Lt_Vulkan::devices[deviceID].logicalDevice.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
 		//physical device is unlikely to change tbh
@@ -190,11 +180,12 @@ namespace lte {
 
 		deviceHandler.createLogicalDevice(PhysicalDevice, surface, primary, requiredDeviceExtensions);*/
 		////do we really need to recreate the physical device??
-		//swapchain = LtSwapChain{PhysicalDevice,primary.device,surface,&window,&minImageCount };
 
 		vk::raii::Device& device = Lt_Vulkan::devices[deviceID].logicalDevice;
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID].physicalDevice;
 		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[deviceID].sampling;
+		assert(swapchain.swapChainImages.size() != 0);
+		swapchain.createSwapChain(PhysicalDevice, device, surface, Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window, &minImageCount);
 		ImageDelegate::createSwapchainImageViews(&swapchain, &device);
 		ImageDelegate::requestImageDestruction(swapchain.colorImage);
 		ImageDelegate::requestImageDestruction(swapchain.depthImage);
@@ -213,15 +204,44 @@ namespace lte {
 	{
 		Commands.emplace_back(*commandBuffer);
 	}
+	void Lt_WindowVK::addCommand(vk::CommandBuffer& commandBuffer)
+	{
+		Commands.emplace_back(std::move(commandBuffer));
+	}
+	void Lt_WindowVK::newFrame(uint8_t frameIndex)
+	{
+		auto fenceResult = Lt_Vulkan::devices[0].logicalDevice.waitForFences(*syncSet.inFlightFences[frameIndex], vk::True, UINT64_MAX);
+		if (fenceResult != vk::Result::eSuccess)
+		{
+			throw std::runtime_error("failed to wait for fence!");
+		}
+
+		//here
+		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, *syncSet.presentCompleteSemaphores[frameIndex], nullptr);
+
+		//availableIndex = imageIndex;
+		if (result == vk::Result::eErrorOutOfDateKHR)
+		{
+			recreateSwapChain();
+			return;
+		}
+		if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+		{
+			assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
+			throw std::runtime_error("failed to acquire swap chain image!");
+		}
+		Lt_Vulkan::devices[0].logicalDevice.resetFences(*syncSet.inFlightFences[frameIndex]);
+	}
 	void Lt_WindowVK::resetBuffers()
 	{
 		Commands.clear();
 	}
 	void Lt_WindowVK::submitBuffers(uint8_t frameIndex)
 	{
+		
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		std::vector<vk::CommandBuffer> commands = {};
-		commands.reserve(2 + Commands.size());
+		commands.reserve(Commands.size());
 		//for safety pursposes :shrug:
 
 		commands.insert(
@@ -244,5 +264,111 @@ namespace lte {
 										1,
 										&*syncSet.renderFinishedSemaphores[frameIndex] };
 		Lt_Vulkan::devices[0].queue.submit(submitInfo, *syncSet.inFlightFences[frameIndex]);
+	}
+	void Lt_WindowVK::startRender(uint8_t index)
+	{
+
+		const vk::PresentInfoKHR presentInfoKHR{ 1, &*syncSet.renderFinishedSemaphores[index],1, &*swapchain.swapChain,&availableIndex};
+
+		vk::Result result = Lt_Vulkan::devices[0].queue.presentKHR(presentInfoKHR); //error here 
+
+		switch (result)
+		{
+		case vk::Result::eSuccess:
+			break;
+		case vk::Result::eSuboptimalKHR:
+			//window.Resized = false;
+			recreateSwapChain();
+			std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n";
+			break;
+		default:
+			//window.Resized = false;
+			recreateSwapChain();
+			std::cerr << "what the fuck" << "\n";
+			break;        // an unexpected result is returned!
+		}
+	}
+	void Lt_WindowVK::prepCommand(uint8_t frame)
+	{
+		
+		cmdBuffer[frame].begin({});
+		ImageDelegate::transition_image_layout(
+			swapchain.swapChainImages[frame],
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			{},                                                        // srcAccessMask (no need to wait for previous operations)
+			vk::AccessFlagBits2::eColorAttachmentWrite,                // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // srcStage
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // dstStage
+			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);
+		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
+		ImageDelegate::transition_image_layout(
+			*ImageDelegate::ImagePool[swapchain.colorImage]->image,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);
+		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
+
+		ImageDelegate::transition_image_layout(
+			*ImageDelegate::ImagePool[swapchain.depthImage]->image,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eDepthAttachmentOptimal,
+			vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+			vk::ImageAspectFlagBits::eDepth, cmdBuffer[frame]);
+
+		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.05f, 0.1f, 1.0f);
+		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+
+		vk::RenderingAttachmentInfo attachmentInfo = {};
+			attachmentInfo.imageView = *ImageDelegate::ImagePool[swapchain.colorImage]->imageView,
+			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
+			attachmentInfo.resolveImageView = *swapchain.imageViews[frame],
+			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
+			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
+			attachmentInfo.clearValue = clearColor;
+
+		vk::RenderingAttachmentInfo depthAttachmentInfo{};
+		depthAttachmentInfo.imageView = *ImageDelegate::ImagePool[swapchain.depthImage]->imageView,
+			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
+			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
+			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,
+			depthAttachmentInfo.clearValue = clearDepth;
+
+
+		vk::RenderingInfo renderingInfo = {};
+			renderingInfo.renderArea = { .offset = { 0, 0 }, .extent = swapchain.swapChainExtent },
+			renderingInfo.layerCount = 1,
+			renderingInfo.colorAttachmentCount = 1,
+			renderingInfo.pColorAttachments = &attachmentInfo,
+			renderingInfo.pDepthAttachment = &depthAttachmentInfo;
+
+		cmdBuffer[frame].beginRendering(renderingInfo);
+		cmdBuffer[frame].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.pipeline);
+		cmdBuffer[frame].setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapchain.swapChainExtent.width), static_cast<float>(swapchain.swapChainExtent.height), 0.0f, 1.0f));
+		cmdBuffer[frame].setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapchain.swapChainExtent));
+
+		cmdBuffer[frame].endRendering();
+		ImageDelegate::transition_image_layout(
+			swapchain.swapChainImages[frame],
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::ImageLayout::ePresentSrcKHR,
+			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+			{},                                                     // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::ImageAspectFlagBits::eColor,
+			cmdBuffer[frame]
+		);
+		cmdBuffer[frame].end();
+		addCommand(cmdBuffer[frame]);
 	}
 }

@@ -46,7 +46,10 @@ namespace lte {
 		LtSwapChain swapchain{};
 		//commandbuffer
 		std::vector<vk::CommandBuffer> Commands = {};
-	
+		std::vector<vk::raii::CommandBuffer> cmdBuffer = {};
+		//this is something to help transition the images properly
+
+
 		//sync stuff
 		LtSyncSet syncSet{};
 		//registry for that index
@@ -60,10 +63,14 @@ namespace lte {
 		void createSwapChain(Lt_MultiWindow& window);
 		void recreateSwapChain	();
 		void addCommand(vk::raii::CommandBuffer& commandBuffer);
-
+		void addCommand(vk::CommandBuffer& commandBuffer);
+		void newFrame(uint8_t index);
 		//these are called globally
 		void resetBuffers();
 		void submitBuffers(uint8_t index);
+		void startRender(uint8_t index);
+		void prepCommand(uint8_t frame);
+		uint32_t availableIndex = 0;
 	};
 
 	class DebugMessenger; 

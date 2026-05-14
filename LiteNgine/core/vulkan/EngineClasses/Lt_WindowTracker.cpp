@@ -26,6 +26,7 @@ namespace lte {
 				{
 					windowInfo[windowIndex]->resizePointers[funcIndex]();
 				}
+				break;
 			}
 			windowIndex++;
 		}

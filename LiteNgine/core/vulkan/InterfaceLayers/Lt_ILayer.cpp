@@ -3,7 +3,7 @@ namespace lte {
 
 	void Lt_ILayer::Begin()
 	{
-
+		windowMgr.Startup();
 		Lt_WindowInfo info;
 		info.width = 800,
 			info.height = 600;
@@ -26,6 +26,7 @@ namespace lte {
 		
 		Lt_WindowVK mainWindow{};
 		mainWindow.registerWindow(mainWindowIndex, windowMgr.mainId);
+		Lt_Vulkan::windows.emplace_back(std::move(mainWindow));
 		//load models and textures
 
 		
@@ -65,16 +66,17 @@ namespace lte {
 	}
 	void Lt_ILayer::Loop()
 	{
-		frames++;
-		frames %= Lt_Vulkan::FramesInFlight;
+		
 		//backend.Update();
 		
 		//leads to weird behaviour
+		Lt_Vulkan::windows[mainWindowIndex].newFrame(frames);
 		Lt_Vulkan::windows[mainWindowIndex].resetBuffers();
 		
 		if (mainResized) {
 			glfwGetWindowSize(windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex].ltMultiWindowIndex]->window.getGLFWWindow()
 			, &Lt_Vulkan::windows[mainWindowIndex].width, &Lt_Vulkan::windows[mainWindowIndex].height);
+			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
 		}
@@ -89,10 +91,14 @@ namespace lte {
 		/*if(!backend.AddAdditionalCommands(guiHandler.commandBuffers[backend.frameIndex])) {
 			std::cerr << "cannot submit additional commands" << std::endl;
 		}*/
+		Lt_Vulkan::windows[mainWindowIndex].prepCommand(frames);
 		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
 		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
+		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
 		/*backend.SubmitCommandBuffers();
 		backend.Draw();*/
+		frames++;
+		frames %= Lt_Vulkan::FramesInFlight;
 	}
 	void Lt_ILayer::Resize()
 	{
