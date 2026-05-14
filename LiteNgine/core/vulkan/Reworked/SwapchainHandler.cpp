@@ -26,22 +26,6 @@ namespace lte {
 		*minImageCount = minImageC;
 		return minImageC;
 	}
-	vk::Extent2D SwapchainHandler::chooseSwapExtentOld(vk::SurfaceCapabilitiesKHR const& capabilities , Lt_Window* window)
-	{
-		if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)())
-		{
-			return capabilities.currentExtent;
-		}
-		int w, h;
-		glfwGetFramebufferSize(window->getGLFWWindow(), &w, &h);
-		uint32_t width = static_cast<uint32_t>(w);
-		uint32_t height = static_cast<uint32_t>(h);
-		return {
-			std::clamp<uint32_t>(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
-			std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
-		};
-	}
-	
 	vk::Extent2D SwapchainHandler::chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities, Lt_MultiWindow& window)
 	{
 		if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)())

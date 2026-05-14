@@ -8,8 +8,8 @@ namespace lte {
 		vkDevice.setGuiRef(&uiProc);
 		vkDevice.setGuiCommandBuffers(uiProc.getpCommandBuffers());
 		uiProc.setLayoutManager(&uiLayout);*/
-		pWindow = &InterfaceLayer.backend.window;
-		while (!pWindow->shouldClose()) {
+		mainWindow = &Lt_WindowTracker::windowInfo[InterfaceLayer.mainWindowIndex]->window;
+		while (!mainWindow->shouldClose()) {
 			glfwPollEvents();
 			InterfaceLayer.Loop();
 		}

@@ -1,6 +1,5 @@
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
-#include "../Lt_Window.h"
 #include "../EngineClasses/Lt_MultiWindow.h"
 namespace lte
 {
@@ -12,7 +11,6 @@ namespace lte
 		static vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes);
 		static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities, uint32_t* minImageCount);
 		static void cleanupSwapChain(LtSwapChain* swap);
-		static vk::Extent2D chooseSwapExtentOld(vk::SurfaceCapabilitiesKHR const& capabilities, Lt_Window* window);
 		static vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& capabilities, Lt_MultiWindow& window);
 
 	};
@@ -27,7 +25,9 @@ namespace lte
 		uint32_t colorImage = 0;
 		uint32_t depthImage = 0;
 
-		LtSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, Lt_MultiWindow& window, uint32_t* minimgC)
+		
+
+		void createSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, Lt_MultiWindow& window, uint32_t* minimgC)
 		{
 
 			vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
@@ -43,8 +43,6 @@ namespace lte
 			if (!(surfaceCapabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eSampled)) {
 				// You cannot use eSampled on this swapchain!
 			}
-
-
 			vk::SwapchainCreateInfoKHR swapChainCreateInfo{};
 			swapChainCreateInfo.surface = *surface,
 				swapChainCreateInfo.minImageCount = minImageCount,

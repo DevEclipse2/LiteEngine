@@ -2,6 +2,7 @@
 #include "Lt_MultiWindow.h"
 #include <vector>
 #include <string>
+#include <functional>
 namespace lte {
 
 	struct Lt_WindowInfo {
@@ -10,7 +11,7 @@ namespace lte {
 		std::string internalName = "";
 		uint16_t width = 0;
 		uint16_t height = 0;
-		std::vector<void(*)()> resizePointers = {};
+		std::vector<std::function<void()>> resizePointers;
 	};
 
 	class Lt_WindowTracker

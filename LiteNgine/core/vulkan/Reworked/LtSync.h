@@ -13,5 +13,6 @@ namespace lte {
 	{
 	public:
 		static void createSyncObjects(LtSyncSet& set, LtSwapChain& swapchain, vk::raii::Device* device, uint8_t maxFiF);
+
 	};
 }

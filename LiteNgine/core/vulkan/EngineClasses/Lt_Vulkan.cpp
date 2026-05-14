@@ -10,7 +10,8 @@ namespace lte {
 			"VK_LAYER_KHRONOS_validation"
 	};
 	vk::raii::Context Lt_Vulkan::context;
-	std::vector<std::unique_ptr<Lt_DevicePair>> Lt_Vulkan::devices = {};
+	std::vector<Lt_WindowVK> Lt_Vulkan::windows = {};
+	std::vector<Lt_DevicePair> Lt_Vulkan::devices = {};
 	vk::raii::SurfaceKHR Lt_Vulkan::TempSurface = nullptr;
 	vk::raii::CommandPool Lt_Vulkan::commandPool = nullptr;
 	vk::raii::Sampler Lt_Vulkan::sampler = nullptr;
@@ -46,13 +47,13 @@ namespace lte {
 		DeviceHandler::createLogicalDevice(devicepair.physicalDevice, devicepair.logicalDevice, TempSurface, devicepair.queue, devicepair.queueIndex, requiredDeviceExtensions);
 
 		DeviceHandler::createTextureSampler(&sampler, devicepair.physicalDevice, devicepair.logicalDevice);
-		devices.emplace_back(std::make_unique<Lt_DevicePair>(std::move(devicepair)));
+		devices.emplace_back(std::move(devicepair));
 		if (tempWindow) {
 			glfwDestroyWindow(tempWindow);
 		}
 
 		//only one command pool
-		CommandBuffers::createCommandPool(&commandPool, &devices[0]->logicalDevice, devices[0]->queueIndex);
+		CommandBuffers::createCommandPool(&commandPool, &devices[0].logicalDevice, devices[0].queueIndex);
 
 		//create device pairs, one for each gpu to use
 		//heres what you need multiple of for windows:
@@ -114,15 +115,19 @@ namespace lte {
 
 		return extensions;
 	}
+	Lt_WindowVK::Lt_WindowVK()
+	{
+		//do nothing
+	}
 	void Lt_WindowVK::registerWindow(uint32_t& windowIndex, uint32_t glfwWindowIndex)
 	{
 		windowIndex = Lt_Vulkan::windows.size();
 		ltMultiWindowIndex = glfwWindowIndex;
 		GLFWwindow* glfwWindow = Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window.getGLFWWindow();
 		//new surface
-		vk::raii::Device& device = Lt_Vulkan::devices[deviceID]->logicalDevice;
-		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID]->physicalDevice;
-
+		vk::raii::Device& device = Lt_Vulkan::devices[deviceID].logicalDevice;
+		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID].physicalDevice;
+		Commands = {};
 		Lt_Vulkan::createSurface(surface, glfwWindow);
 		//new swapchain
 		createSwapChain(Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window);
@@ -137,8 +142,10 @@ namespace lte {
 		DeviceHandler::createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		DeviceHandler::createDescriptorSets(pipeline.descSetLayout, pool, Lt_Vulkan::sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
 		//CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &device, Lt_Vulkan::FramesInFlight);
-		LtSync::createSyncObjects(syncSet, swapchain, &device, Lt_Vulkan::FramesInFlight);
-		Lt_Vulkan::windows.emplace_back(std::make_unique<Lt_WindowVK>(std::move(this)));
+		
+		//
+		Lt_Vulkan::windows.emplace_back(std::move(this));
+
 	}
 	void Lt_WindowVK::createSwapChain(Lt_MultiWindow& window)
 	{
@@ -146,12 +153,12 @@ namespace lte {
 		//LtSwapChain(vk::raii::PhysicalDevice & physicalDevice, vk::raii::Device & device, vk::raii::SurfaceKHR & surface, Lt_MultiWindow & window, uint32_t * minimgC)
 		//swapchain = LtSwapChain{Lt_Vulkan::devices[deviceID]->physicalDevice}
 
-		vk::raii::Device& device = Lt_Vulkan::devices[deviceID]->logicalDevice;
-		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID]->physicalDevice;
-		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[deviceID]->sampling;
+		vk::raii::Device& device = Lt_Vulkan::devices[deviceID].logicalDevice;
+		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID].physicalDevice;
+		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[deviceID].sampling;
 
-		swapchain = LtSwapChain{ PhysicalDevice ,device,surface,window, &minImageCount};
-		ImageDelegate::createSwapchainImageViews(&swapchain, &Lt_Vulkan::devices[deviceID]->logicalDevice);
+		swapchain.createSwapChain(PhysicalDevice ,device,surface,window, &minImageCount);
+		ImageDelegate::createSwapchainImageViews(&swapchain, &Lt_Vulkan::devices[deviceID].logicalDevice);
 		LtImage colImg{};
 		LtImage depImg{};
 		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,msaaSamples);
@@ -171,7 +178,7 @@ namespace lte {
 			glfwGetFramebufferSize(Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window.getGLFWWindow(), &width, &height);
 			glfwWaitEvents();
 		}
-		Lt_Vulkan::devices[deviceID]->logicalDevice.waitIdle();
+		Lt_Vulkan::devices[deviceID].logicalDevice.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
 		//physical device is unlikely to change tbh
 		//deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
@@ -185,9 +192,9 @@ namespace lte {
 		////do we really need to recreate the physical device??
 		//swapchain = LtSwapChain{PhysicalDevice,primary.device,surface,&window,&minImageCount };
 
-		vk::raii::Device& device = Lt_Vulkan::devices[deviceID]->logicalDevice;
-		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID]->physicalDevice;
-		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[deviceID]->sampling;
+		vk::raii::Device& device = Lt_Vulkan::devices[deviceID].logicalDevice;
+		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[deviceID].physicalDevice;
+		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[deviceID].sampling;
 		ImageDelegate::createSwapchainImageViews(&swapchain, &device);
 		ImageDelegate::requestImageDestruction(swapchain.colorImage);
 		ImageDelegate::requestImageDestruction(swapchain.depthImage);
@@ -236,6 +243,6 @@ namespace lte {
 										&*commands.data(),
 										1,
 										&*syncSet.renderFinishedSemaphores[frameIndex] };
-		Lt_Vulkan::devices[0]->queue.submit(submitInfo, *syncSet.inFlightFences[frameIndex]);
+		Lt_Vulkan::devices[0].queue.submit(submitInfo, *syncSet.inFlightFences[frameIndex]);
 	}
 }

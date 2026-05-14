@@ -43,7 +43,7 @@ namespace lte {
 		vk::raii::SurfaceKHR surface = nullptr;
 		//pipelines
 		LtPipeline pipeline{};
-		LtSwapChain swapchain;
+		LtSwapChain swapchain{};
 		//commandbuffer
 		std::vector<vk::CommandBuffer> Commands = {};
 	
@@ -74,13 +74,11 @@ namespace lte {
 	public:
 		void Init(std::string name);
 
-		void createSurfaces();
-
 		static vk::raii::CommandPool commandPool;
 
-		static std::vector<std::unique_ptr<Lt_WindowVK>> windows;
+		static std::vector<Lt_WindowVK> windows;
 
-		static std::vector<std::unique_ptr<Lt_DevicePair>> devices;
+		static std::vector<Lt_DevicePair> devices;
 
 		static std::vector<void (*)()> resetFunction;
 		static std::vector<void (*)()> submitFunction;
@@ -93,16 +91,24 @@ namespace lte {
 
 		static uint8_t FramesInFlight;
 
+
 	private:
 		static vk::raii::SurfaceKHR TempSurface;
 		static vk::raii::Context context;
 		static std::vector<const char*> getRequiredInstanceExtensions(bool enableValidationLayers);
 		static void createInstance(std::string name, bool useValidationLayers);
 		
+
+
+		static std::vector<std::vector<vk::CommandBuffer>> commandBuffer; // one set for each
+
 		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
 
 
 		DebugMessenger messenger{};
 		static const std::vector<char const*> validationLayers;
+
+		//one please
+
 	};
 }

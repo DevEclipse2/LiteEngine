@@ -19,6 +19,7 @@ namespace lte {
 		void Cleanup();
 		void Loop();
 		void Resize();
+		uint32_t mainWindowIndex = 0;
 
 	private:
 		//Lt_Window ltWindow{ 800, 600 ,"LiteEngine : Agstrum"};
@@ -27,7 +28,6 @@ namespace lte {
 		Lt_Vulkan vulkanHandler{};
 		Lt_Gui guiHandler{};
 
-		uint32_t mainWindowIndex = 0;
 		uint8_t frames = 0;
 
 		bool mainResized = false;

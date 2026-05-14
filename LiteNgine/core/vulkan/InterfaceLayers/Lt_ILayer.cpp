@@ -9,16 +9,17 @@ namespace lte {
 			info.height = 600;
 		info.displayName = "LiteNgine editor";
 		info.internalName = "MainWindow";
-		info.resizePointers = {};
-		info.resizePointers.emplace_back(&Resize);
+		info.resizePointers.emplace_back([this]() {
+			this->Resize();
+			});
 		windowMgr.createMainWindow(info);
 		vulkanHandler.Init("LiteNgine Editor");
 
 
-		vk::raii::Device& device = Lt_Vulkan::devices[0]->logicalDevice;
-		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0]->physicalDevice;
-		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0]->sampling;
-		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0]->queue};
+		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
+		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
+		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
+		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
 		fileLoader.TemporaryFileLoad(device, PhysicalDevice, cmdInfo);
 
 
@@ -43,54 +44,55 @@ namespace lte {
 		GuiCreationInfo.device = &device;
 		GuiCreationInfo.instance = &Lt_Vulkan::instance;
 		GuiCreationInfo.physicalDevice = &PhysicalDevice;
-		GuiCreationInfo.queue = &Lt_Vulkan::devices[0]->queue;
-		GuiCreationInfo.minImgCount = Lt_Vulkan::windows[mainWindowIndex]->minImageCount;
-		GuiCreationInfo.queueFamily = Lt_Vulkan::devices[0]->queueIndex;
+		GuiCreationInfo.queue = &Lt_Vulkan::devices[0].queue;
+		GuiCreationInfo.minImgCount = Lt_Vulkan::windows[mainWindowIndex].minImageCount;
+		GuiCreationInfo.queueFamily = Lt_Vulkan::devices[0].queueIndex;
 
 
 
-		GuiCreationInfo.window = windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex]->ltMultiWindowIndex]->window.getGLFWWindow();
+		GuiCreationInfo.window = windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex].ltMultiWindowIndex]->window.getGLFWWindow();
 		GuiCreationInfo.commandPool = &Lt_Vulkan::commandPool;
 		GuiCreationInfo.maxFramesInFlight = Lt_Vulkan::FramesInFlight;
-		GuiCreationInfo.pipeline = &Lt_Vulkan::windows[mainWindowIndex]->pipeline.pipeline;
-		GuiCreationInfo.layout = &Lt_Vulkan::windows[mainWindowIndex]->pipeline.PipelineLayout;
+		GuiCreationInfo.pipeline = &Lt_Vulkan::windows[mainWindowIndex].pipeline.pipeline;
+		GuiCreationInfo.layout = &Lt_Vulkan::windows[mainWindowIndex].pipeline.PipelineLayout;
 		//theres a chance that it might override the original so im leaving this shit alone
-		GuiCreationInfo.colorImageViewIndex = &Lt_Vulkan::windows[mainWindowIndex]->swapchain.colorImage;
-		GuiCreationInfo.pImageViews = &Lt_Vulkan::windows[mainWindowIndex]->swapchain.imageViews;
+		GuiCreationInfo.colorImageViewIndex = &Lt_Vulkan::windows[mainWindowIndex].swapchain.colorImage;
+		GuiCreationInfo.pImageViews = &Lt_Vulkan::windows[mainWindowIndex].swapchain.imageViews;
 		guiHandler.InitGui(GuiCreationInfo);
-		guiHandler.Instantiate();
-		guiHandler.updateFrameBuffer(backend.width, backend.height);
+		guiHandler.Instantiate();			
+		guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 		guiHandler.updateBuffers();
-
 	}
 	void Lt_ILayer::Loop()
 	{
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;
 		//backend.Update();
-		Lt_Vulkan::windows[mainWindowIndex]->resetBuffers();
+		
+		//leads to weird behaviour
+		Lt_Vulkan::windows[mainWindowIndex].resetBuffers();
 		
 		if (mainResized) {
-			glfwGetWindowSize(windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex]->ltMultiWindowIndex]->window.getGLFWWindow()
-			, &Lt_Vulkan::windows[mainWindowIndex]->width, &Lt_Vulkan::windows[mainWindowIndex]->height);
-			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex]->width, Lt_Vulkan::windows[mainWindowIndex]->height);
+			glfwGetWindowSize(windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex].ltMultiWindowIndex]->window.getGLFWWindow()
+			, &Lt_Vulkan::windows[mainWindowIndex].width, &Lt_Vulkan::windows[mainWindowIndex].height);
+			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
 		}
 		//add any gui draw commands here
 		if (guiHandler.drawFrame(frames)) 
 		{
 			//update stuff			
-			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex]->width, Lt_Vulkan::windows[mainWindowIndex]->height);
+			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			guiHandler.updateBuffers();
 			guiHandler.drawFrame(frames);
 		}
 		/*if(!backend.AddAdditionalCommands(guiHandler.commandBuffers[backend.frameIndex])) {
 			std::cerr << "cannot submit additional commands" << std::endl;
 		}*/
-		Lt_Vulkan::windows[mainWindowIndex]->addCommand(guiHandler.commandBuffers[backend.frameIndex]);
-		Lt_Vulkan::windows[mainWindowIndex]->submitBuffers(frames);
-		backend.SubmitCommandBuffers();
-		backend.Draw();
+		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
+		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
+		/*backend.SubmitCommandBuffers();
+		backend.Draw();*/
 	}
 	void Lt_ILayer::Resize()
 	{
