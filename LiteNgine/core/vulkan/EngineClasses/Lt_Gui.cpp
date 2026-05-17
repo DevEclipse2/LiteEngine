@@ -15,15 +15,6 @@ The Vulkan spec states : If layouts are not ignored, oldLayout or newLayout is V
 	Objects : 1
 	[0] VkImage 0x480000000048
 */
-
-
-
-
-
-
-
-
-
 void CheckVKResult(VkResult err) {
 	if (err == 0) {
 		return;
@@ -381,7 +372,6 @@ namespace lte {
 	}
 	bool Lt_Gui::drawFrame(char frameIndex)
 	{
-
 		ImGui_ImplVulkan_NewFrame();
 		ImGui::NewFrame();
 		// In your main loop, after ImGui::NewFrame()

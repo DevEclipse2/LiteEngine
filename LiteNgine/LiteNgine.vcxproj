@@ -201,6 +201,7 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_MultiWindow.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_WindowTracker.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Vulkan.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +237,7 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_MultiWindow.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_WindowTracker.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Vulkan.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h" />
     <ClInclude Include="ThreadMgr.h" />
   </ItemGroup>
   <ItemGroup>
