@@ -12,10 +12,11 @@
 #define LOG_CRIT_SEVERITY	4 // 001
 #define LOG_FATAL_SEVERITY	5 // 101
 
-#define LOG_UDEF			8 // 0001
-#define LOG_WARN			16// 00001
-#define LOG_ERR				24// 00011
-#define LOG_NOPT			32// 000001
+#define LOG_VERBOSE			8 // 0001
+#define LOG_INFO			16 // 0001
+#define LOG_WARN			24// 00001
+#define LOG_ERR				32// 00011
+#define LOG_NOPT			64// 000001
 
 
 #include <fstream>

@@ -34,7 +34,17 @@ namespace lte {
 		//vulkan only needs 1 instance. Ever. Period.
 		//Period? you need a pad?
 		if (true) {
-			messenger.setupMessenger(&instance);
+			DebugMessenger::setupMessenger(&instance);
+
+			vk::DebugUtilsMessengerCallbackDataEXT callbackData{};
+			callbackData.pMessage = "--- TEST TRIGGER DEBUG MESSENGER---";
+
+			// Manually submit an info message to see if your breakpoint hits
+			instance.submitDebugUtilsMessageEXT(
+				vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo,
+				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral,
+				callbackData
+			);
 		}
 		//creates a surface for window 0
 		GLFWwindow* tempWindow = glfwCreateWindow(200, 200, "tempWindow", nullptr, nullptr);

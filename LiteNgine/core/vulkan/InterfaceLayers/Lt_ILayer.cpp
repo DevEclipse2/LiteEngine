@@ -3,6 +3,7 @@ namespace lte {
 
 	void Lt_ILayer::Begin()
 	{
+		Con::Init();
 		windowMgr.Startup();
 		Lt_WindowInfo info;
 		info.width = 800,
@@ -14,8 +15,6 @@ namespace lte {
 			});
 		windowMgr.createMainWindow(info);
 		vulkanHandler.Init("LiteNgine Editor");
-
-
 		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
 		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
@@ -66,7 +65,7 @@ namespace lte {
 	}
 	void Lt_ILayer::Loop()
 	{
-		
+		Con::Display();
 		//backend.Update();
 		
 		//leads to weird behaviour
@@ -107,7 +106,7 @@ namespace lte {
 	void Lt_ILayer::End() 
 	{
 		guiHandler.Terminate();
-		
+		Con::OutputFile();
 		
 		/*
 		backend.Exit();

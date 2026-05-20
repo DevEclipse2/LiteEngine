@@ -9,8 +9,8 @@ namespace lte {
 	public:
 		DebugMessenger();
 		~DebugMessenger();
-		void setupMessenger(vk::raii::Instance* instance);
-		vk::DebugUtilsMessengerEXT debugMessenger;
+		static void setupMessenger(vk::raii::Instance* instance);
+		static vk::DebugUtilsMessengerEXT debugMessenger;
 	};
 }
 

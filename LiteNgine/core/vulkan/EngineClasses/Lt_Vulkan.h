@@ -112,7 +112,6 @@ namespace lte {
 		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
 
 
-		DebugMessenger messenger{};
 		static const std::vector<char const*> validationLayers;
 
 		//one please

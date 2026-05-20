@@ -33,18 +33,29 @@ namespace lte
         char buffer[26];
         std::strftime(buffer, sizeof(buffer), "%c\n", &time_info);
         AddLog(buffer);
-        AddLog("LITENGINE, AN ECLIPSE SUPERSYSTEMS PRODUCT");
+        AddLog("LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT");
+        Con::OutputFile();
+        //so you don't get an empty file
 	}
 
     void Con::Display()
     {
-        for (uint32_t i = lastIndex; i < logEntry.size(); i++) 
+        if (logEntry.size() > 0)
         {
+            for (uint32_t i = lastIndex; i < logEntry.size(); i++) 
+            {
+                auto logentry = logEntry[i];
+                std::string Time = std::format("{:%Y-%m-%d %H:%M:%S.%.3f}", std::get<1>(logentry));
+                Time += std::get<2>(logentry);
 
-            // convert to miliseconds
-            // hour , min , sec ,ms
+                //Time += ;
+                AddLog(Time);
+                // convert to miliseconds
+                // hour , min , sec ,ms
+            }
         }
-       
+        
+        lastIndex = logEntry.size();
     }
 
     void Con::OutputFile()
@@ -64,8 +75,12 @@ namespace lte
     {
         std::string firstLine;
         std::getline(data, firstLine);
-
-        std::string fname = "Log" + firstLine + ".txt";
+        for (int i = 0; i < firstLine.size(); i++) {
+            if (firstLine[i] == ':') {
+                firstLine[i] = '-';
+            }
+        }
+        std::string fname = "log at " + firstLine + ".txt";
         std::stringstream buffer;
         buffer << data.rdbuf();
         std::string fileContent = buffer.str();
@@ -99,6 +114,6 @@ namespace lte
 	void Con::Log(std::string information, uint8_t severity)
 	{
 
-		Con::logEntry.emplace_back(std::chrono::system_clock::now, information, 0);
+		Con::logEntry.emplace_back(std::chrono::system_clock::now(), information, 0);
 	}
 }
