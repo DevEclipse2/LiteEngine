@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdlib>
 namespace lte {
+
 	class DebugMessenger
 	{
 	public:

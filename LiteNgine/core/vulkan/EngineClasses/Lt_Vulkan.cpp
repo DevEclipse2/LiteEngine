@@ -92,10 +92,10 @@ namespace lte {
 		auto extensionProperties = context.enumerateInstanceExtensionProperties();
 		auto unsupportedPropertyIt =
 			std::ranges::find_if(requiredExtensions,
-				[&extensionProperties](auto const& requiredExtension) {
-					return std::ranges::none_of(extensionProperties,
-						[requiredExtension](auto const& extensionProperty) { return strcmp(extensionProperty.extensionName, requiredExtension) == 0; });
-				});
+			[&extensionProperties](auto const& requiredExtension) {
+				return std::ranges::none_of(extensionProperties,
+					[requiredExtension](auto const& extensionProperty) { return strcmp(extensionProperty.extensionName, requiredExtension) == 0; });
+			});
 		if (unsupportedPropertyIt != requiredExtensions.end())
 		{
 			throw std::runtime_error("Required extension not supported: " + std::string(*unsupportedPropertyIt));
@@ -105,9 +105,8 @@ namespace lte {
 		createInfo.pApplicationInfo = &appInfo;
 		createInfo.enabledLayerCount = static_cast<uint32_t>(requiredLayers.size());
 		createInfo.ppEnabledLayerNames = requiredLayers.data(),
-			createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
 		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
-
 		instance = vk::raii::Instance(context, createInfo);
 	}
 	std::vector<const char*> Lt_Vulkan::getRequiredInstanceExtensions(bool enableValidationLayers)
