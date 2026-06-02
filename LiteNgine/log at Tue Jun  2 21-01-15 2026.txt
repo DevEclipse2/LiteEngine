@@ -1,0 +1,50 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+21:01:15 validation layer: type { General } msg: --- WELCOME TO LITENGINE ---                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg: Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll)                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\graphics-hook64.dll)                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg: vkCreateDevice layer callstack setup to:                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:    <Application>                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:      ||                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:    <Loader>                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:      ||                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:    VK_LAYER_OBS_HOOK                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Type: Implicit                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Enabled By: Implicit Layer                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Library:  C:\ProgramData\obs-studio-hook\graphics-hook64.dll                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:      ||                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:    VK_LAYER_KHRONOS_validation                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Type: Explicit                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Enabled By: By the Application                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Manifest: C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.json                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:            Library:  C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:      ||                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:    <Device>                              severity: undefined vulkan info
+
+21:01:15 validation layer: type { General } msg:        Using "Intel(R) UHD Graphics" with driver: "C:\windows\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_ee473bb1b3cf1637\igvk64.dll"                              severity: undefined vulkan info
+
+21:01:15 Invalid presentation type specifier                              fatal error
+

@@ -37,7 +37,7 @@ namespace lte {
 			DebugMessenger::setupMessenger(instance);
 
 			vk::DebugUtilsMessengerCallbackDataEXT callbackData{};
-			callbackData.pMessage = "--- TEST TRIGGER DEBUG MESSENGER---";
+			callbackData.pMessage = "--- WELCOME TO LITENGINE ---";
 
 			// Manually submit an info message to see if your breakpoint hits
 			instance.submitDebugUtilsMessageEXT(

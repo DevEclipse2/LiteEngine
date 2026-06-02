@@ -13,10 +13,10 @@
 #define LOG_FATAL_SEVERITY	5 // 101
 
 #define LOG_VERBOSE			8 // 0001
-#define LOG_INFO			16 // 0001
-#define LOG_WARN			24// 00001
-#define LOG_ERR				32// 00011
-#define LOG_NOPT			64// 000001
+#define LOG_INFO			16// 00001
+#define LOG_WARN			24// 00011
+#define LOG_ERR				32// 000001
+#define LOG_NOPT			40// 000101
 
 
 #include <fstream>
@@ -33,6 +33,7 @@ namespace lte {
 		static const std::time_t now;
 		static bool Ready;
 		static void Log(std::string information, uint8_t severity);
+		static void LogVB(std::string information, uint8_t severity, std::string notes, std::string documentation);
 		/*
 		static void LogWarn(std::string information, uint8_t severity);
 		static void LogErr(std::string information, uint8_t severity);
@@ -44,7 +45,8 @@ namespace lte {
 	private:
 		static std::string debugBoilerPlate;
 		static void AddLog(std::string data);
-		static std::string convertSeverity(uint8_t severity);
+		static void AddLogTimed(std::string data);
+		static std::string convertSeverity(uint8_t severity, std::string& descriptor);
 	};
 
 }

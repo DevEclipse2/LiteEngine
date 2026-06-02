@@ -9,7 +9,7 @@ import vulkan_hpp;
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
-
+#include "EngineClasses/Lt_Console.h"
 //idk why but nothing runs without this
 
 int main()
@@ -19,6 +19,9 @@ int main()
         app.run();
     }
     catch (const std::exception& e){
+        //crash
+        lte::Con::Log(e.what(), LOG_FATAL_SEVERITY);
+        lte::Con::OutputFile();
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
