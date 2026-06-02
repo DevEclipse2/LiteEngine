@@ -3,6 +3,10 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT       severity,
+	vk::DebugUtilsMessageTypeFlagsEXT              type,
+	const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData);
 namespace lte {
 
 	class DebugMessenger
@@ -10,8 +14,8 @@ namespace lte {
 	public:
 		DebugMessenger();
 		~DebugMessenger();
-		static void setupMessenger(vk::raii::Instance* instance);
-		static vk::DebugUtilsMessengerEXT debugMessenger;
+		static void setupMessenger(vk::raii::Instance& instance);
+		static vk::raii::DebugUtilsMessengerEXT debugMessenger;
 	};
 }
 

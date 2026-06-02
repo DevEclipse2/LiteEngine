@@ -79,11 +79,11 @@
     <OutDir>..\build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -202,6 +202,7 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_WindowTracker.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Vulkan.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Importer.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -238,9 +239,14 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_WindowTracker.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Vulkan.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Importer.h" />
     <ClInclude Include="ThreadMgr.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">
+      <SubType>
+      </SubType>
+    </None>
     <None Include="shaders\Particle.slang" />
     <None Include="shaders\shader.slang" />
   </ItemGroup>

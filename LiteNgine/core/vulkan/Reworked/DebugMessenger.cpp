@@ -34,7 +34,8 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
 
 namespace lte {
 
-	vk::DebugUtilsMessengerEXT DebugMessenger::debugMessenger;
+	vk::raii::DebugUtilsMessengerEXT DebugMessenger::debugMessenger = nullptr;
+
 
 
 	DebugMessenger::DebugMessenger() {
@@ -45,7 +46,7 @@ namespace lte {
 	}
 	//validation layer stuff
 
-	void DebugMessenger::setupMessenger(vk::raii::Instance* instance)
+	void DebugMessenger::setupMessenger(vk::raii::Instance& instance)
 	{
 
 		//sets it up for both warnings AND errors using container
@@ -61,11 +62,12 @@ namespace lte {
 		vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance);
 
 		//this makes the message
+		//idfk why debug callback aint wokring
 		vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT{};
 			debugUtilsMessengerCreateInfoEXT.messageSeverity = severityFlags,
 			debugUtilsMessengerCreateInfoEXT.messageType = messageTypeFlags,
 			debugUtilsMessengerCreateInfoEXT.pfnUserCallback = &::debugCallback;
-		debugMessenger = instance->createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
+		debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 	}
 }
 

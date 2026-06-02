@@ -111,6 +111,9 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Lt_Importer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -215,10 +218,14 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Importer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
     <None Include="shaders\Particle.slang" />
+    <None Include="core\vulkan\EngineClasses\FileFormats\file types.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\engine\engine formatting.txt" />

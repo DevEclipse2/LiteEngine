@@ -44,6 +44,7 @@ namespace lte {
 	private:
 		static std::string debugBoilerPlate;
 		static void AddLog(std::string data);
+		static std::string convertSeverity(uint8_t severity);
 	};
 
 }

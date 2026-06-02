@@ -34,7 +34,7 @@ namespace lte {
 		//vulkan only needs 1 instance. Ever. Period.
 		//Period? you need a pad?
 		if (true) {
-			DebugMessenger::setupMessenger(&instance);
+			DebugMessenger::setupMessenger(instance);
 
 			vk::DebugUtilsMessengerCallbackDataEXT callbackData{};
 			callbackData.pMessage = "--- TEST TRIGGER DEBUG MESSENGER---";

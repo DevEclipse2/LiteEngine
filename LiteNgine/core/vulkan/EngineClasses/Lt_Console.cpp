@@ -111,9 +111,26 @@ namespace lte
         debugBoilerPlate += data + '\n';
     }
 
+    std::string Con::convertSeverity(uint8_t severity)
+    {
+        std::string output = "";
+        switch (severity)
+        {
+        case UDEF_SEVERITY:
+            output += "severity: undefined";
+            break;
+        case LOG_LOW_SEVERITY:
+            break;
+        }
+
+        return std::string();
+    }
+
 	void Con::Log(std::string information, uint8_t severity)
 	{
 
-		Con::logEntry.emplace_back(std::chrono::system_clock::now(), information, 0);
+		Con::logEntry.emplace_back(std::chrono::system_clock::now(), information, severity);
+        
+        
 	}
 }
