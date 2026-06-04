@@ -34,6 +34,7 @@ namespace lte {
 		static bool Ready;
 		static void Log(std::string information, uint8_t severity);
 		static void LogVB(std::string information, uint8_t severity, std::string notes, std::string documentation);
+		static void LogVBSrc(std::string information, uint8_t severity, std::string notes, std::string origin);
 		/*
 		static void LogWarn(std::string information, uint8_t severity);
 		static void LogErr(std::string information, uint8_t severity);
@@ -45,8 +46,10 @@ namespace lte {
 	private:
 		static std::string debugBoilerPlate;
 		static void AddLog(std::string data);
-		static void AddLogTimed(std::string data);
 		static std::string convertSeverity(uint8_t severity, std::string& descriptor);
+
+		static void convertTime(std::string& string, std::chrono::system_clock::time_point time);
+
 	};
 
 }

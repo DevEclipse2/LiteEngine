@@ -1,0 +1,6 @@
+how the importer is going to function
+
+basically one large 'vat' of model data stored centrally
+one single assimp instance
+models are loaded, stored, and purged individually
+they are read via id

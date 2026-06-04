@@ -40,22 +40,27 @@ namespace lte
 
     void Con::Display()
     {
-        if (logEntry.size() > 0)
+        if (logEntry.size() > 0 && lastIndex < (logEntry.size()-1))
         {
             for (uint32_t i = lastIndex; i < logEntry.size(); i++) 
             {
-                auto logentry = logEntry[i];
-                std::string Time = std::format("{:%Y-%m-%d %H:%M:%S.%.3f}", std::get<1>(logentry));
-                Time += std::get<2>(logentry);
-
+                const auto& logentry = logEntry[i];
+                std::string outputline;
+                convertTime(outputline, std::get<0>(logentry));
+                std::string desc;
+                outputline += "  " + convertSeverity(std::get<2>(logentry), desc) + "    " + std::get<1>(logentry);
                 //Time += ;
-                AddLog(Time);
+                AddLog(outputline);
                 // convert to miliseconds
                 // hour , min , sec ,ms
+
+                //for in engine stuff , it goes here
+
+
+
             }
+            lastIndex = logEntry.size();
         }
-        
-        lastIndex = logEntry.size();
     }
 
     void Con::OutputFile()
@@ -111,21 +116,21 @@ namespace lte
         debugBoilerPlate += data + '\n';
     }
 
-    void Con::AddLogTimed(std::string data)
-    {
-        //i have no clue how efficient this is
-        std::tm time_info;
-        #ifdef _WIN32
-                localtime_s(&time_info, &now); // Windows secure alternative
-        #else
-                localtime_r(&now_c, &time_info); // POSIX secure alternative
-        #endif
+    //void Con::AddLogTimed(std::string data)
+    //{
+    //    //i have no clue how efficient this is
+    //    std::tm time_info;
+    //    #ifdef _WIN32
+    //            localtime_s(&time_info, &now); // Windows secure alternative
+    //    #else
+    //            localtime_r(&now_c, &time_info); // POSIX secure alternative
+    //    #endif
 
-        char buffer[26];
-        std::strftime(buffer, sizeof(buffer), "%c\n", &time_info);
-        std::string timestamp(&buffer[11],&buffer[20]);
-        debugBoilerPlate += timestamp + data + '\n';
-    }
+    //    char buffer[26];
+    //    std::strftime(buffer, sizeof(buffer), "%c\n", &time_info);
+    //    std::string timestamp(&buffer[11],&buffer[20]);
+    //    debugBoilerPlate += timestamp + data + '\n';
+    //}
 
     std::string Con::convertSeverity(uint8_t severity, std::string& descriptor)
     {
@@ -179,19 +184,47 @@ namespace lte
         return output;
     }
 
+    void Con::convertTime(std::string& string, std::chrono::system_clock::time_point time)
+    {
+
+        // Convert to time_t for the date/time part
+        auto tt = std::chrono::system_clock::to_time_t(time);
+
+        // Extract milliseconds
+        auto ms = duration_cast<std::chrono::milliseconds>(time.time_since_epoch()) % 1000;
+
+        // Thread-safe localtime
+        std::tm tm{};
+#if defined(_WIN32)
+        localtime_s(&tm, &tt);
+#else
+        localtime_r(&tt, &tm);
+#endif
+
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%H:%M:%S")
+            << '.' << std::setw(3) << std::setfill('0') << ms.count();
+
+        string = oss.str();
+    }
+
 	void Con::Log(std::string information, uint8_t severity)
 	{
-
 		Con::logEntry.emplace_back(std::chrono::system_clock::now(), information, severity);
         std::string description;
-        AddLogTimed(convertSeverity(severity, description) + "    " + information + "\n");
-        
 	}
 
     void Con::LogVB(std::string information, uint8_t severity, std::string notes, std::string documentation)
     {
-        Con::logEntry.emplace_back(std::chrono::system_clock::now(), information, severity);
         std::string description;
-        AddLogTimed( convertSeverity(severity, description) + "    " + information + "\n" + description + "\n" + notes + "\n" + "to know more, visit documentation at" + documentation);
+        convertSeverity(severity, description);
+        Con::logEntry.emplace_back(std::chrono::system_clock::now(), information + "\n" + description + "\n" + notes + "\n" + "to know more, visit documentation at" + documentation, severity);
+    }
+
+    void Con::LogVBSrc(std::string information, uint8_t severity, std::string notes, std::string origin)
+    {
+        std::string description;
+        convertSeverity(severity, description);
+        Con::logEntry.emplace_back(std::chrono::system_clock::now(), information + "\n" + description + "\n" + notes + "\n" + "error called from: " + origin, severity);
     }
 }
