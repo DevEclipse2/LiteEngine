@@ -1,0 +1,6 @@
+heres the one stop shop for engine classes
+
+
+
+bootstrap is the precursor to interface layer,
+bootstrap allows user to specify boot instructions and set some variables 

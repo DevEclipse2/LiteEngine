@@ -4,7 +4,7 @@
 #include "../EngineClasses/Lt_Vulkan.h"
 #include "../EngineClasses/Lt_Gui.h"
 #include "../EngineClasses/Lt_Console.h"
-
+#include "Bootstrapper.h"
 //this is where the main function comes to meet with the usable code
 namespace lte {
 	

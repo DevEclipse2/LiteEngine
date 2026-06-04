@@ -114,6 +114,9 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Importer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -221,6 +224,9 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Importer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
@@ -228,9 +234,11 @@
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="core\engine\engine formatting.txt" />
-    <Text Include="core\engine\notes\fileSys.txt" />
-    <Text Include="core\engine\notes\codeGraph.txt" />
+    <Text Include="core\documentas\engine formatting.txt" />
+    <Text Include="core\documentas\fileSys.txt" />
+    <Text Include="core\documentas\codeGraph.txt" />
     <Text Include="core\engine\Log.txt" />
+    <Text Include="core\vulkan\EngineClasses\importer.txt" />
+    <Text Include="core\documentas\class guide.txt" />
   </ItemGroup>
 </Project>

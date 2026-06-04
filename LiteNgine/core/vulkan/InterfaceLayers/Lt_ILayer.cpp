@@ -4,13 +4,27 @@ namespace lte {
 	void Lt_ILayer::Begin()
 	{
 		Con::Init();
+		uint8_t result = 0;
+		Bootstrapper::OnWake(&result);
+		switch (result) {
+		case 0:
+			Con::Log("program to continue execution", LOG_INFORMATIONAL);
+			break;
+		case 1:
+			Con::Log("requested program abort launch, terminating...", LOG_INFORMATIONAL);
+			End();
+			break;
+		default:
+			Con::LogVBSrc("unknown on wake result, possible programming oversight", LOG_MED_SEVERITY, "please submit an issue on github", " interface layers / bootstrapper class");
+			break;
+		}
 		windowMgr.Startup();
 		Lt_WindowInfo info;
-		info.width = 800,
+			info.width = 800,
 			info.height = 600;
-		info.displayName = "LiteNgine editor";
-		info.internalName = "MainWindow";
-		info.resizePointers.emplace_back([this]() {
+			info.displayName = "LiteNgine editor";
+			info.internalName = "MainWindow";
+			info.resizePointers.emplace_back([this]() {
 			this->Resize();
 			});
 		windowMgr.createMainWindow(info);
@@ -78,6 +92,7 @@ namespace lte {
 			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
+			Con::Log("main window resized", LOG_INFORMATIONAL);
 		}
 		//add any gui draw commands here
 		if (guiHandler.drawFrame(frames)) 

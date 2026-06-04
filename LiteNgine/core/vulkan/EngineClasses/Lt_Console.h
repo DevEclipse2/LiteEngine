@@ -11,6 +11,8 @@
 #define LOG_HIGH_SEVERITY	3 // 11
 #define LOG_CRIT_SEVERITY	4 // 001
 #define LOG_FATAL_SEVERITY	5 // 101
+#define LOG_INFORMATIONAL	6 // 011
+#define LOG_NOTE			7 // 111
 
 #define LOG_VERBOSE			8 // 0001
 #define LOG_INFO			16// 00001
