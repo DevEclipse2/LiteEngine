@@ -1,0 +1,42 @@
+[Graphics]
+main_window_w = 800
+main_window_h = 600
+vsync = true
+multisampling = true
+antialiasing = true
+frames_in_flight = 3
+use_vulkan = true
+vulkan_version = 14
+
+
+
+[debug]
+debug = true
+log_filepath = logs/
+console_filter_level = none
+
+
+
+[performance]
+gpu_compute = false
+multithreading = false
+
+
+
+[profiling]
+use_profiler = true
+cpu_profiler = true
+gpu_profiler = true
+show_fps	 = false
+manual_begin = true
+write_profiler_file = true
+profiler_res_directory = iridium_profiler/
+
+[addon]
+use_addons = true
+safety_level = 1
+; safety level 0 = official addons 1 = endorsed addons 2 = managed installed addons 3 = unknown import addons
+safemode = false
+recovery = false
+[special]
+;if you need to specify anything you want, do it here

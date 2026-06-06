@@ -240,5 +240,6 @@
     <Text Include="core\engine\Log.txt" />
     <Text Include="core\vulkan\EngineClasses\importer.txt" />
     <Text Include="core\documentas\class guide.txt" />
+    <Text Include="core\documentas\bootprefs.txt" />
   </ItemGroup>
 </Project>

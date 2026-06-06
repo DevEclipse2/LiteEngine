@@ -253,6 +253,7 @@
     <None Include="shaders\shader.slang" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="core\documentas\bootprefs.txt" />
     <Text Include="core\documentas\class guide.txt" />
     <Text Include="core\documentas\engine formatting.txt" />
     <Text Include="core\engine\Log.txt" />
