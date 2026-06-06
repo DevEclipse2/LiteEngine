@@ -82,7 +82,10 @@ namespace lte {
 				Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
 
 			}
-
+			std::cout << "Preferences Reset Sucessfully" << std::endl;
+			std::cout << "Operation complete, returning to main..." << std::endl;
+			Con::Log("preferences reset successfully", LOG_INFORMATIONAL);
+			goto choice;
 		}
 		else if (input == "load")
 		{
