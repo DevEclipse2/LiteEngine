@@ -1,0 +1,78 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+21:56:04.088  severity: undefined ,vulkan info    validation layer: type { General } msg: --- WELCOME TO LITENGINE ---
+21:56:04.095  severity: undefined ,vulkan info    validation layer: type { General } msg: Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll)
+21:56:04.095  severity: undefined ,vulkan info    validation layer: type { General } msg: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\graphics-hook64.dll)
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg: vkCreateDevice layer callstack setup to:
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg:    <Application>
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg:    <Loader>
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg:    VK_LAYER_OBS_HOOK
+21:56:04.096  severity: undefined ,vulkan info    validation layer: type { General } msg:            Type: Implicit
+21:56:04.097  severity: undefined ,vulkan info    validation layer: type { General } msg:            Enabled By: Implicit Layer
+21:56:04.097  severity: undefined ,vulkan info    validation layer: type { General } msg:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE
+21:56:04.097  severity: undefined ,vulkan info    validation layer: type { General } msg:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+21:56:04.097  severity: undefined ,vulkan info    validation layer: type { General } msg:            Library:  C:\ProgramData\obs-studio-hook\graphics-hook64.dll
+21:56:04.097  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+21:56:04.098  severity: undefined ,vulkan info    validation layer: type { General } msg:    VK_LAYER_KHRONOS_validation
+21:56:04.098  severity: undefined ,vulkan info    validation layer: type { General } msg:            Type: Explicit
+21:56:04.098  severity: undefined ,vulkan info    validation layer: type { General } msg:            Enabled By: By the Application
+21:56:04.099  severity: undefined ,vulkan info    validation layer: type { General } msg:            Manifest: C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.json
+21:56:04.099  severity: undefined ,vulkan info    validation layer: type { General } msg:            Library:  C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll
+21:56:04.099  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+21:56:04.100  severity: undefined ,vulkan info    validation layer: type { General } msg:    <Device>
+21:56:04.101  severity: undefined ,vulkan info    validation layer: type { General } msg:        Using "Intel(R) UHD Graphics" with driver: "C:\windows\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_ee473bb1b3cf1637\igvk64.dll"
+21:56:04.428  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:04.438  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:04.458  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x230000000023) is being signaled by VkQueue 0x1a4c8245838, but it may still be in use by VkSwapchainKHR 0x100000000010.
+Most recently acquired image indices: [0], 1, 2, 0, 0.
+(Brackets mark the last use of VkSemaphore 0x230000000023 in a presentation operation.)
+Swapchain image 0 was presented but was not re-acquired, so VkSemaphore 0x230000000023 may still be in use and cannot be safely reused with image index 0.
+Vulkan insight: See https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html for details on swapchain semaphore reuse. Examples of possible approaches:
+   a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
+   b) Consider the VK_KHR_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+21:56:07.336  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:07.338  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:07.390  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:07.404  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] images passed to present must be in layout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR but VkImage 0x5f000000005f is in VK_IMAGE_LAYOUT_UNDEFINED.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:07.411  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x240000000024) is being signaled by VkQueue 0x1a4c8245838, but it may still be in use by VkSwapchainKHR 0x5e000000005e.
+Most recently acquired image indices: [0], 1, 2, 0.
+(Brackets mark the last use of VkSemaphore 0x240000000024 in a presentation operation.)
+Swapchain image 0 was presented but was not re-acquired, so VkSemaphore 0x240000000024 may still be in use and cannot be safely reused with image index 0.
+Vulkan insight: See https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html for details on swapchain semaphore reuse. Examples of possible approaches:
+   a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
+   b) Consider the VK_KHR_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+21:56:07.432  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] images passed to present must be in layout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR but VkImage 0x5f000000005f is in VK_IMAGE_LAYOUT_UNDEFINED.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:07.436  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x220000000022) is being signaled by VkQueue 0x1a4c8245838, but it may still be in use by VkSwapchainKHR 0x5e000000005e.
+Most recently acquired image indices: [0], 1, 2, 0, 0.
+(Brackets mark the last use of VkSemaphore 0x220000000022 in a presentation operation.)
+Swapchain image 0 was presented but was not re-acquired, so VkSemaphore 0x220000000022 may still be in use and cannot be safely reused with image index 0.
+Vulkan insight: See https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html for details on swapchain semaphore reuse. Examples of possible approaches:
+   a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
+   b) Consider the VK_KHR_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+21:56:09.345  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:09.347  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:09.426  severity: undefined ,vulkan error    validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+21:56:09.449  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x220000000022) is being signaled by VkQueue 0x1a4c8245838, but it may still be in use by VkSwapchainKHR 0x6b000000006b.
+Most recently acquired image indices: [0], 1, 2, 0.
+(Brackets mark the last use of VkSemaphore 0x220000000022 in a presentation operation.)
+Swapchain image 0 was presented but was not re-acquired, so VkSemaphore 0x220000000022 may still be in use and cannot be safely reused with image index 0.
+Vulkan insight: See https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html for details on swapchain semaphore reuse. Examples of possible approaches:
+   a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
+   b) Consider the VK_KHR_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)

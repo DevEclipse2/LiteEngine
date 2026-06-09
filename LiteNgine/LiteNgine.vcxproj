@@ -127,14 +127,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
       <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Program Files\Assimp\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Shell32.lib;assimp-vc145-mt.lib</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:library</IgnoreSpecificDefaultLibraries>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -153,14 +153,14 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
       <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Program Files\Assimp\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Shell32.lib;assimp-vc145-mt.lib</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:library</IgnoreSpecificDefaultLibraries>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>

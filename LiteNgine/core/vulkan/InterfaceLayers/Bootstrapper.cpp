@@ -2,8 +2,14 @@
 namespace lte {
 
 	std::string Bootstrapper::preferencesFileName = "LiteNginePref.ini";
+	std::map<std::string, std::map< std::string, Preference>>  Bootstrapper::data;
+	std::map<uint16_t, std::string> Bootstrapper::comments;
+
+	
+
 	void Bootstrapper::OnWake(uint8_t* result)
 	{
+		LoadPrefs(preferencesFileName);
 		Con::Log("begin launch bootstrap process", LOG_INFORMATIONAL);
 		std::string input;
 		choice:
@@ -13,7 +19,7 @@ namespace lte {
 		std::cout << "'modify'		to modify launch parameters" << std::endl;
 		std::cout << "'addarg'		to add special parameters" << std::endl;
 		std::cout << "'reset'		to reset all preferences" << std::endl;
-		std::cout << "'exit'		to abort launch of liteNgine :[ " << std::endl;
+		std::cout << "'exit'		to abort launch of liteNgine :( " << std::endl;
 		std::cin >> input;
 		Con::Log("user entered selection", LOG_INFORMATIONAL);
 
@@ -89,6 +95,7 @@ namespace lte {
 		}
 		else if (input == "load")
 		{
+			loadprocess:
 			Con::Log("launch bootstrap proceeding with operation : load preferences", LOG_INFORMATIONAL);
 			std::cout << "please enter the file path of the designated file" << std::endl;
 			std::string path;
@@ -103,7 +110,7 @@ namespace lte {
 			{
 				std::cerr << "unable to open new preferences file" << std::endl;
 				Con::Log("launch bootstrap preferences was not found with filepath : " + path, LOG_LOW_SEVERITY);
-
+				goto loadprocess;
 			}
 			chooseIfSave:
 			std::cout << "would you like to save current preferences as a new file in a different location? \n Type Y/N " << std::endl;
@@ -119,6 +126,8 @@ namespace lte {
 				{
 					std::cerr << "unable to open original preferences file" << std::endl;
 					Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
+					goto chooseIfSave;
+
 				}
 				std::string newName;
 				std::cin >> newName;
@@ -131,7 +140,9 @@ namespace lte {
 				}
 				else {
 					std::cerr << "Could not open and write to the file." << std::endl;
+					std::cerr << "Retrying..." << std::endl;
 					Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
+					goto chooseIfSave;
 
 				}
 
@@ -169,7 +180,30 @@ namespace lte {
 		}
 		else if (input == "modify")
 		{
+			Con::Log("launch bootstrap process proceeding with response : modify value", LOG_INFORMATIONAL);
+			std::cout << "List of available key-value pairs are as follows : " << std::endl;
+			for (const auto& [key, value] : data) {
+				// key and value are read-only references
+				std::cout << key << std::endl;
+				for (const auto& [keyinner, valueinner] : value) 
+				{
+					// key and value are read-only references
+					//this code makes each line of certain length
+					uint8_t strLength = 40 - keyinner.length();
+					if (strLength > 40)
+					{
+						strLength = 0;
+					}
+					std::string str(strLength, ' ');
 
+
+
+					std::cout << keyinner << str << valueinner.value << std::endl;
+				}
+			}
+			std::cout << "use \" help \" to" << std::endl;
+			std::string choice;
+			std::cin >> choice;
 		}
 		else if (input == "addarg")
 		{
@@ -182,6 +216,72 @@ namespace lte {
 			Con::Log("retrying", LOG_INFORMATIONAL);
 			goto choice;
 		}
+	}
+	void Bootstrapper::LoadPrefs(std::string filename)
+	{
+
+		std::ifstream file(filename);
+		if (!file.is_open()) 
+		{
+			std::cout << "No Preferences file found,generating new file..." << std::endl;
+			Con::Log("no preference file found : generating new", LOG_LOW_SEVERITY);
+			std::ofstream outFile(preferencesFileName);
+			if (outFile.is_open())
+			{
+				outFile << GenerateFile();
+				outFile.close();
+			}
+			std::ifstream file(filename);
+			if (!file.is_open())
+			{
+				std::cout << "unable to generate required file. please contact developer" << std::endl;
+				Con::Log("unable to generate or load preferences file", LOG_CRIT_SEVERITY);
+				std::ofstream outFile(preferencesFileName);
+				if (outFile.is_open())
+				{
+					outFile << GenerateFile();
+					outFile.close();
+				}
+				std::ifstream file(filename);
+
+			}
+		}
+
+		std::string line;
+		uint16_t linecount = 0;
+		std::string subsectName = "";
+		while (std::getline(file, line)) {
+			// Remove whitespace/newlines
+			line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+			if (line.empty())continue; // Skip empty or comments
+			switch (line[0])
+			{
+			case ';':
+				comments[linecount] = line.substr(1);
+				continue;
+			case '[':
+				//this is a new subsection
+				subsectName = line;
+				continue;
+			default:
+				break;
+			}
+
+			size_t delimiterPos = line.find('=');
+			if (delimiterPos != std::string::npos) {
+				std::string key = line.substr(0, delimiterPos);
+				std::string value = line.substr(delimiterPos + 1);
+				Preference loadedPref;
+				loadedPref.value = value;
+				loadedPref.lineNum = linecount;
+				data[subsectName][key] = loadedPref;
+			}
+			linecount++;
+		}
+	}
+	void Bootstrapper::SavePrefs(std::string fileName)
+	{
+
 	}
 	std::string Bootstrapper::GenerateFile()
 	{
@@ -215,4 +315,6 @@ namespace lte {
 	{
 		str += information + "\n";
 	}
+	
+
 }
