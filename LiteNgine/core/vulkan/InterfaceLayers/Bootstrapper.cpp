@@ -201,14 +201,56 @@ namespace lte {
 					std::cout << keyinner << str << valueinner.value << std::endl;
 				}
 			}
-			std::cout << "use \" help \" to" << std::endl;
-			std::string choice;
-			std::cin >> choice;
+			bool proceed = false;
+			std::map<std::string, std::map<std::string, Preference>> newprefs = data;
+			while (!proceed)
+			{
+				std::cout << "use \" help \" to see available commands" << std::endl;
+				std::string choice;
+				std::cin >> choice;
+				std::string category = "uuddlrlrbaStart";
+				if (choice == "help")
+				{
+					std::cout << "available commands:" << std::endl;
+					std::cout << "'save'			to save all changed entries" << std::endl;
+					std::cout << "'quit'			to discard all changed entries" << std::endl;
+					std::cout << "'revert'			to discard current changed entry" << std::endl;
+					std::cout << "'restore'			to restore engine entries to defaults; leaves custom values unchanged" << std::endl;
+					std::cout << "[category_name]	to change scope to that category" << std::endl;
+					std::cout << "'exit'			to reset category or finish modifying values" << std::endl;
+
+					std::cout << "list				to list all key value pairs within that category" << std::endl;
+					std::cout << "type the name of desired key to enter a new value" << std::endl;
+
+				}
+				else if (choice == "exit")
+				{
+					category = "uuddlrlrbaStart";
+				}
+				else if (choice == "")
+				{
+
+				}
+				else if (category != "uuddlrlrbaStart" && newprefs[category].find(choice) != newprefs[category].end())
+				{
+					std::cout<<"currently selected key : " << choice << "\t with current value :\t" << newprefs[category][choice].value << '\n' << "enter new value :" << std::endl;
+					std::string newVal;
+					std::cin >> newVal;
+					newprefs[category][choice].value = newVal;
+					std::cout << "new value saved!" << std::endl;
+				}
+				else
+				{
+					std::cout << "unknown command : \""<< choice  <<"\" entered; use \" help \" to see available commands" << std::endl;
+					Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
+				}
+			}
 		}
 		else if (input == "addarg")
 		{
 
 		}
+		else if(input == "")
 		else
 		{
 			Con::Log("launch bootstrap process failed with result : unidentified input , retrying...", LOG_LOW_SEVERITY);
@@ -286,7 +328,7 @@ namespace lte {
 	std::string Bootstrapper::GenerateFile()
 	{
 		std::string newFile = "";
-		Insert(newFile, "[Graphics]");
+		Insert(newFile, "[graphics]");
 		Insert(newFile, "main_window_w = 800");
 		Insert(newFile, "main_window_h = 600");
 		Insert(newFile, "vsync = true");
