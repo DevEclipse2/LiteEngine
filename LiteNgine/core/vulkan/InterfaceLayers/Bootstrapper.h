@@ -16,11 +16,19 @@ namespace lte {
 		uint16_t lineNum;
 	};
 
+	struct Change
+	{
+		std::string category;
+		std::string KeyNew;
+		std::string KeyOld;
+		std::string ValNew;
+		std::string ValOld;
+	};
+
 	class Bootstrapper
 	{
 		public:
 			
-
 			static std::string preferencesFileName;
 			static void OnWake(uint8_t* result);
 			static void LoadPrefs(std::string fileName);

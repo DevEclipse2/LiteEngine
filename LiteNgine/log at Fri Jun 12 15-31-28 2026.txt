@@ -1,0 +1,33 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+15:31:28.841      begin launch bootstrap process
+15:31:34.429      user entered selection
+15:31:34.429      launch bootstrap process proceeding with response : modify value
+15:32:18.960      program to continue execution
+15:32:19.141  severity: undefined ,vulkan info    validation layer: type { General } msg: --- WELCOME TO LITENGINE ---
+15:32:19.149  severity: undefined ,vulkan info    validation layer: type { General } msg: Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll)
+15:32:19.150  severity: undefined ,vulkan info    validation layer: type { General } msg: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\graphics-hook64.dll)
+15:32:19.151  severity: undefined ,vulkan info    validation layer: type { General } msg: vkCreateDevice layer callstack setup to:
+15:32:19.152  severity: undefined ,vulkan info    validation layer: type { General } msg:    <Application>
+15:32:19.153  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+15:32:19.154  severity: undefined ,vulkan info    validation layer: type { General } msg:    <Loader>
+15:32:19.154  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+15:32:19.155  severity: undefined ,vulkan info    validation layer: type { General } msg:    VK_LAYER_OBS_HOOK
+15:32:19.156  severity: undefined ,vulkan info    validation layer: type { General } msg:            Type: Implicit
+15:32:19.156  severity: undefined ,vulkan info    validation layer: type { General } msg:            Enabled By: Implicit Layer
+15:32:19.158  severity: undefined ,vulkan info    validation layer: type { General } msg:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE
+15:32:19.158  severity: undefined ,vulkan info    validation layer: type { General } msg:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+15:32:19.158  severity: undefined ,vulkan info    validation layer: type { General } msg:            Library:  C:\ProgramData\obs-studio-hook\graphics-hook64.dll
+15:32:19.159  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+15:32:19.159  severity: undefined ,vulkan info    validation layer: type { General } msg:    VK_LAYER_KHRONOS_validation
+15:32:19.161  severity: undefined ,vulkan info    validation layer: type { General } msg:            Type: Explicit
+15:32:19.162  severity: undefined ,vulkan info    validation layer: type { General } msg:            Enabled By: By the Application
+15:32:19.163  severity: undefined ,vulkan info    validation layer: type { General } msg:            Manifest: C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.json
+15:32:19.163  severity: undefined ,vulkan info    validation layer: type { General } msg:            Library:  C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll
+15:32:19.164  severity: undefined ,vulkan info    validation layer: type { General } msg:      ||
+15:32:19.164  severity: undefined ,vulkan info    validation layer: type { General } msg:    <Device>
+15:32:19.166  severity: undefined ,vulkan info    validation layer: type { General } msg:        Using "Intel(R) UHD Graphics" with driver: "C:\windows\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_7bee8b32df4bfc59\igvk64.dll"
+15:32:19.498  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+15:32:19.500  severity: undefined ,vulkan error    validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)

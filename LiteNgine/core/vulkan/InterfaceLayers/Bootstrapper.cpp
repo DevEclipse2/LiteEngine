@@ -20,7 +20,7 @@ namespace lte {
 		std::cout << "'addarg'		to add special parameters" << std::endl;
 		std::cout << "'reset'		to reset all preferences" << std::endl;
 		std::cout << "'exit'		to abort launch of liteNgine :( " << std::endl;
-		std::cin >> input;
+		std::getline(std::cin, input);
 		Con::Log("user entered selection", LOG_INFORMATIONAL);
 
 		if (input == "continue")
@@ -196,61 +196,163 @@ namespace lte {
 					}
 					std::string str(strLength, ' ');
 
-
-
 					std::cout << keyinner << str << valueinner.value << std::endl;
 				}
 			}
 			bool proceed = false;
 			std::map<std::string, std::map<std::string, Preference>> newprefs = data;
+			std::cout << "use \" help \" to see available commands" << std::endl;
+			std::string category = "uuddlrlrbaStart";
+
 			while (!proceed)
 			{
-				std::cout << "use \" help \" to see available commands" << std::endl;
 				std::string choice;
-				std::cin >> choice;
-				std::string category = "uuddlrlrbaStart";
+				std::getline(std::cin, choice);
 				if (choice == "help")
 				{
 					std::cout << "available commands:" << std::endl;
-					std::cout << "'save'			to save all changed entries" << std::endl;
-					std::cout << "'quit'			to discard all changed entries" << std::endl;
-					std::cout << "'revert'			to discard current changed entry" << std::endl;
-					std::cout << "'restore'			to restore engine entries to defaults; leaves custom values unchanged" << std::endl;
-					std::cout << "[category_name]	to change scope to that category" << std::endl;
-					std::cout << "'exit'			to reset category or finish modifying values" << std::endl;
-
-					std::cout << "list				to list all key value pairs within that category" << std::endl;
+					std::cout << "'save'				to save all changed entries" << std::endl; //done
+					std::cout << "'history'				to see all changed entries" << std::endl; 
+					std::cout << "'revert 00'			to discard changed entry at index" << std::endl; 
+					std::cout << "'restore'				to restore engine entries to defaults; leaves custom values unchanged" << std::endl;
+					std::cout << "'cat [category_name]'	to change scope to that category" << std::endl;
+					std::cout << "'exit'				to reset category or finish modifying values" << std::endl;
+					std::cout << "'listkv'				to list all key value pairs within that category" << std::endl;
+					std::cout << "'listcat'				to list all categories" << std::endl;
 					std::cout << "type the name of desired key to enter a new value" << std::endl;
 
 				}
 				else if (choice == "exit")
 				{
-					category = "uuddlrlrbaStart";
+					if (category == "uuddlrlrbaStart")
+					{
+						std::cout << "Warning : exiting does not save your modifications. call 'save' to do so now \n 'cancel' cancels this operation and \n 'continue' to go through with this operation" << std::endl;
+						std::string exitchoice;
+						std::cin >> exitchoice;
+						if (exitchoice == "save")
+						{
+							std::cout << "saving key value pairs and exiting..." << std::endl;
+							data = newprefs;
+							proceed = true;
+						}
+						else if (exitchoice == "cancel")
+						{
+							std::cout << "returning to main modify tab..." << std::endl;
+							
+						}
+						else if (exitchoice == "continue")
+						{
+							std::cout << "exiting..." << std::endl;
+							proceed = true;
+						}
+					}
+					else
+					{
+						category = "uuddlrlrbaStart";
+					}
 				}
-				else if (choice == "")
+				else if (choice == "save")
 				{
+					std::cout << "saving key value pairs..." << std::endl;
+					data = newprefs;
+				}
+				
+				else if (choice.compare(0, 3, "cat") == 0)
+				{
+					std::string catstring = choice;
+					while (catstring.at(0) != '[')
+					{
+						if (catstring.size() == 0)
+						{
+							std::cout << "error : specified category must be present and bracketed in '[' ']' characters" << std::endl;
+							Con::Log("missing category" + choice, LOG_LOW_SEVERITY);
+							break;
+						}
+						catstring.erase(0, 1);
+					}
+
+					if (newprefs.find(catstring) != newprefs.end())
+					{
+						category = catstring;
+						std::cout << "switched selected category" << std::endl;
+					}
+					else
+					{
+						std::cout << "no matching category found" << std::endl;
+					}
+				}
+				else if (choice[0] == 'r' && choice[2] == 'v')
+				{
+					//revert
 
 				}
-				else if (category != "uuddlrlrbaStart" && newprefs[category].find(choice) != newprefs[category].end())
+				else if (choice == "listkv")
 				{
-					std::cout<<"currently selected key : " << choice << "\t with current value :\t" << newprefs[category][choice].value << '\n' << "enter new value :" << std::endl;
-					std::string newVal;
-					std::cin >> newVal;
-					newprefs[category][choice].value = newVal;
-					std::cout << "new value saved!" << std::endl;
+					if (category != "uuddlrlrbaStart")
+					{
+						for (const auto& [keyinner, valueinner] : newprefs[category])
+						{
+							// key and value are read-only references
+							//this code makes each line of certain length
+							uint8_t strLength = 40 - keyinner.length();
+							if (strLength > 40)
+							{
+								strLength = 0;
+							}
+							std::string str(strLength, ' ');
+
+							std::cout << keyinner << str << valueinner.value << std::endl;
+						}
+					}
+					else
+					{
+						std::cout << " please select a category first! \nuse 'listcat' to see all categories and 'cat [category-name]' to select it" << std::endl;
+					}
+				}
+				else if (choice == "listcat")
+				{
+					for (const auto& [keyinner, valueinner] : newprefs)
+					{
+						std::cout << keyinner << std::endl;
+					}
+				}
+				else if (category != "uuddlrlrbaStart")
+				{
+					//trims whitespace
+					while (choice.at(choice.size() - 1) == ' ')
+					{
+						choice.erase(choice.size() - 1, 1);
+					}
+					if (newprefs[category].find(choice) != newprefs[category].end())
+					{
+						std::cout << "currently selected key : " << choice << "\t with current value :\t" << newprefs[category][choice].value << " under category : \"" << category << "\"" << '\n' << "enter new value :" << std::endl;
+						std::string newVal;
+						std::cin >> newVal;
+						newprefs[category][choice].value = newVal;
+						std::cout << "new value saved!" << std::endl;
+					}
+					else 
+					{
+						std::cout << "unknown command : \"" << choice << "\" entered; use \" help \" to see available commands" << std::endl;
+						Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
+					}
 				}
 				else
 				{
 					std::cout << "unknown command : \""<< choice  <<"\" entered; use \" help \" to see available commands" << std::endl;
 					Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
 				}
+				choice = "";
 			}
 		}
 		else if (input == "addarg")
 		{
 
 		}
-		else if(input == "")
+		else if (input == "")
+		{
+
+		}
 		else
 		{
 			Con::Log("launch bootstrap process failed with result : unidentified input , retrying...", LOG_LOW_SEVERITY);
@@ -312,6 +414,10 @@ namespace lte {
 			size_t delimiterPos = line.find('=');
 			if (delimiterPos != std::string::npos) {
 				std::string key = line.substr(0, delimiterPos);
+				while (key.at(key.size() - 1) == ' ')
+				{
+					key.erase(key.size() - 1, 1);
+				}
 				std::string value = line.substr(delimiterPos + 1);
 				Preference loadedPref;
 				loadedPref.value = value;
