@@ -80,7 +80,8 @@ namespace lte
     {
         std::string firstLine;
         std::getline(data, firstLine);
-        for (int i = 0; i < firstLine.size(); i++) {
+        firstLine.erase(0, 4);
+        for (int i = 6; i < firstLine.size(); i++) {
             if (firstLine[i] == ':') {
                 firstLine[i] = '-';
             }
