@@ -12,7 +12,7 @@ namespace lte {
 		LoadPrefs(preferencesFileName);
 		Con::Log("begin launch bootstrap process", LOG_INFORMATIONAL);
 		std::string input;
-		choice:
+		
 		std::cout << "Welcome to LiteNgine \n you may specify launch parameters here or change preferences without launching the engine. \n you may type:" << std::endl;
 		std::cout << "'continue'	to continue launch with previous session's preferences " << std::endl;
 		std::cout << "'load'		to load different preferences from last session" << std::endl;
@@ -20,346 +20,361 @@ namespace lte {
 		std::cout << "'addarg'		to add special parameters" << std::endl;
 		std::cout << "'reset'		to reset all preferences" << std::endl;
 		std::cout << "'exit'		to abort launch of liteNgine :( " << std::endl;
-		std::getline(std::cin, input);
-		Con::Log("user entered selection", LOG_INFORMATIONAL);
-
-		if (input == "continue")
+		bool command = false;
+		while (!command)
 		{
-			Con::Log("launch bootstrap process completed with response : continue", LOG_INFORMATIONAL);
-			*result = 0;
-		}
-		else if (input == "reset")
-		{
-			Con::Log("launch bootstrap proceeding with operation : reset preferences", LOG_INFORMATIONAL);
-			//make choice choose save
-			chooseifPreserve:
-			std::cout << "would you like to save current preferences as a new file in a different location? \n Type Y/N " << std::endl;
 			std::cin >> input;
-			if (input == "Y" || input == "y")
+			Con::Log("user entered selection", LOG_INFORMATIONAL);
+			if (input == "continue")
 			{
-				std::cout << "user choice confirmed and acknowledged. enter new file name:" << std::endl;
-				Con::Log("user chose to save original preferences", LOG_INFORMATIONAL);
-
-				std::ifstream file(preferencesFileName);
-
-				if (!file.is_open())
+				Con::Log("launch bootstrap process completed with response : continue", LOG_INFORMATIONAL);
+				*result = 0;
+				command = true;
+			}
+			else if (input == "reset")
+			{
+				Con::Log("launch bootstrap proceeding with operation : reset preferences", LOG_INFORMATIONAL);
+				//make choice choose save
+			chooseifPreserve:
+				std::cout << "would you like to save current preferences as a new file in a different location? \n Type Y/N " << std::endl;
+				std::cin >> input;
+				if (input == "Y" || input == "y")
 				{
-					std::cerr << "unable to open original preferences file" << std::endl;
-					Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
+					std::cout << "user choice confirmed and acknowledged. enter new file name:" << std::endl;
+					Con::Log("user chose to save original preferences", LOG_INFORMATIONAL);
+
+					std::ifstream file(preferencesFileName);
+
+					if (!file.is_open())
+					{
+						std::cerr << "unable to open original preferences file" << std::endl;
+						Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
+					}
+					std::string newName;
+					std::cin >> newName;
+					Con::Log("user saved original file to path " + newName, LOG_INFORMATIONAL);
+					std::ofstream outFile(newName);
+					if (outFile.is_open())
+					{
+						outFile << file.rdbuf();
+						outFile.close();
+					}
+					else {
+						std::cerr << "Could not open and write to the file." << std::endl;
+						Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
+
+					}
+
 				}
-				std::string newName;
-				std::cin >> newName;
-				Con::Log("user saved original file to path " + newName, LOG_INFORMATIONAL);
-				std::ofstream outFile(newName);
+				else if (input == "N" || input == "n")
+				{
+					std::cout << "user selection confirmed and acknowledged." << std::endl;
+					Con::Log("user chose to discard preferences", LOG_INFORMATIONAL);
+
+				}
+				else
+				{
+					std::cout << "unknown input, please try again." << std::endl;
+					Con::Log("unknown input", LOG_INFORMATIONAL);
+					goto chooseifPreserve;
+				}
+
+				std::ofstream outFile(preferencesFileName);
 				if (outFile.is_open())
 				{
-					outFile << file.rdbuf();
+					outFile << GenerateFile();
 					outFile.close();
 				}
-				else {
-					std::cerr << "Could not open and write to the file." << std::endl;
-					Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
+				else
+				{
+					std::cerr << "Could not copy preferences to the main file." << std::endl;
+					Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
 
 				}
-
+				std::cout << "Preferences Reset Sucessfully" << std::endl;
+				std::cout << "Operation complete, returning to main..." << std::endl;
+				Con::Log("preferences reset successfully", LOG_INFORMATIONAL);
 			}
-			else if (input == "N" || input == "n")
+			else if (input == "load")
 			{
-				std::cout << "user selection confirmed and acknowledged." << std::endl;
-				Con::Log("user chose to discard preferences", LOG_INFORMATIONAL);
-
-			}
-			else
-			{
-				std::cout << "unknown input, please try again." << std::endl;
-				Con::Log("unknown input", LOG_INFORMATIONAL);
-				goto chooseifPreserve;
-			}
-
-			std::ofstream outFile(preferencesFileName);
-			if (outFile.is_open())
-			{
-				outFile << GenerateFile();
-				outFile.close();
-			}
-			else
-			{
-				std::cerr << "Could not copy preferences to the main file." << std::endl;
-				Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
-
-			}
-			std::cout << "Preferences Reset Sucessfully" << std::endl;
-			std::cout << "Operation complete, returning to main..." << std::endl;
-			Con::Log("preferences reset successfully", LOG_INFORMATIONAL);
-			goto choice;
-		}
-		else if (input == "load")
-		{
 			loadprocess:
-			Con::Log("launch bootstrap proceeding with operation : load preferences", LOG_INFORMATIONAL);
-			std::cout << "please enter the file path of the designated file" << std::endl;
-			std::string path;
-			std::cin >> path;
-			std::ifstream newFile(path);
-			
-			if (newFile.is_open()) {
-				std::cout << "new preferences found successfully" << std::endl;
-				Con::Log("launch bootstrap preferences found successfully at :" + path, LOG_INFORMATIONAL);
-			}
-			else
-			{
-				std::cerr << "unable to open new preferences file" << std::endl;
-				Con::Log("launch bootstrap preferences was not found with filepath : " + path, LOG_LOW_SEVERITY);
-				goto loadprocess;
-			}
-			chooseIfSave:
-			std::cout << "would you like to save current preferences as a new file in a different location? \n Type Y/N " << std::endl;
-			std::cin >> input;
-			if (input == "Y" || input == "y")
-			{
-				std::cout << "user choice confirmed and acknowledged. enter new file name:" << std::endl;
-				Con::Log("user chose to save original preferences" , LOG_INFORMATIONAL);
+				Con::Log("launch bootstrap proceeding with operation : load preferences", LOG_INFORMATIONAL);
+				std::cout << "please enter the file path of the designated file" << std::endl;
+				std::string path;
+				std::cin >> path;
+				std::ifstream newFile(path);
 
-				std::ifstream file(preferencesFileName);
-				
-				if (!file.is_open())
+				if (newFile.is_open()) {
+					std::cout << "new preferences found successfully" << std::endl;
+					Con::Log("launch bootstrap preferences found successfully at :" + path, LOG_INFORMATIONAL);
+				}
+				else
 				{
-					std::cerr << "unable to open original preferences file" << std::endl;
-					Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
-					goto chooseIfSave;
+					std::cerr << "unable to open new preferences file" << std::endl;
+					Con::Log("launch bootstrap preferences was not found with filepath : " + path, LOG_LOW_SEVERITY);
+					goto loadprocess;
+				}
+			chooseIfSave:
+				std::cout << "would you like to save current preferences as a new file in a different location? \n Type Y/N " << std::endl;
+				std::cin >> input;
+				if (input == "Y" || input == "y")
+				{
+					std::cout << "user choice confirmed and acknowledged. enter new file name:" << std::endl;
+					Con::Log("user chose to save original preferences", LOG_INFORMATIONAL);
+
+					std::ifstream file(preferencesFileName);
+
+					if (!file.is_open())
+					{
+						std::cerr << "unable to open original preferences file" << std::endl;
+						Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
+						goto chooseIfSave;
+
+					}
+					std::string newName;
+					std::cin >> newName;
+					Con::Log("user saved original file to path " + newName, LOG_INFORMATIONAL);
+					std::ofstream outFile(newName);
+					if (outFile.is_open())
+					{
+						outFile << file.rdbuf();
+						outFile.close();
+					}
+					else {
+						std::cerr << "Could not open and write to the file." << std::endl;
+						std::cerr << "Retrying..." << std::endl;
+						Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
+						goto chooseIfSave;
+
+					}
+
 
 				}
-				std::string newName;
-				std::cin >> newName;
-				Con::Log("user saved original file to path " + newName, LOG_INFORMATIONAL);
-				std::ofstream outFile(newName);
-				if (outFile.is_open()) 
+				else if (input == "N" || input == "n")
 				{
-					outFile << file.rdbuf();
+					std::cout << "user selection confirmed and acknowledged." << std::endl;
+					Con::Log("user chose to discard preferences", LOG_INFORMATIONAL);
+
+				}
+				else
+				{
+					std::cout << "unknown input, please try again." << std::endl;
+					Con::Log("unknown input", LOG_INFORMATIONAL);
+					goto chooseIfSave;
+				}
+				std::ofstream outFile(preferencesFileName);
+				if (outFile.is_open())
+				{
+					outFile << newFile.rdbuf();
 					outFile.close();
 				}
-				else {
-					std::cerr << "Could not open and write to the file." << std::endl;
-					std::cerr << "Retrying..." << std::endl;
-					Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
-					goto chooseIfSave;
+				else
+				{
+					std::cerr << "Could not copy preferences to the main file." << std::endl;
+					Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
 
 				}
-
-
 			}
-			else if (input == "N" || input == "n")
+			else if (input == "exit")
 			{
-				std::cout << "user selection confirmed and acknowledged." << std::endl;
-				Con::Log("user chose to discard preferences", LOG_INFORMATIONAL);
-
-			}
-			else
-			{
-				std::cout << "unknown input, please try again." << std::endl;
-				Con::Log("unknown input", LOG_INFORMATIONAL);
-				goto chooseIfSave;
-			}
-			std::ofstream outFile(preferencesFileName);
-			if (outFile.is_open())
-			{
-				outFile << newFile.rdbuf();
-				outFile.close();
-			}
-			else 
-			{
-				std::cerr << "Could not copy preferences to the main file." << std::endl;
-				Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
+				*result = 1;
+				Con::Log("launch bootstrap process terminated with response : abort launch", LOG_INFORMATIONAL);
+				command = true;
 
 			}
-		}
-		else if (input == "exit")
-		{
-			*result = 1;
-			Con::Log("launch bootstrap process terminated with response : abort launch", LOG_INFORMATIONAL);
-		}
-		else if (input == "modify")
-		{
-			Con::Log("launch bootstrap process proceeding with response : modify value", LOG_INFORMATIONAL);
-			std::cout << "List of available key-value pairs are as follows : " << std::endl;
-			for (const auto& [key, value] : data) {
-				// key and value are read-only references
-				std::cout << key << std::endl;
-				for (const auto& [keyinner, valueinner] : value) 
-				{
+			else if (input == "modify")
+			{
+				Con::Log("launch bootstrap process proceeding with response : modify value", LOG_INFORMATIONAL);
+				std::cout << "List of available key-value pairs are as follows : " << std::endl;
+				for (const auto& [key, value] : data) {
 					// key and value are read-only references
-					//this code makes each line of certain length
-					uint8_t strLength = 40 - keyinner.length();
-					if (strLength > 40)
+					std::cout << key << std::endl;
+					for (const auto& [keyinner, valueinner] : value)
 					{
-						strLength = 0;
-					}
-					std::string str(strLength, ' ');
-
-					std::cout << keyinner << str << valueinner.value << std::endl;
-				}
-			}
-			bool proceed = false;
-			std::map<std::string, std::map<std::string, Preference>> newprefs = data;
-			std::cout << "use \" help \" to see available commands" << std::endl;
-			std::string category = "uuddlrlrbaStart";
-
-			while (!proceed)
-			{
-				std::string choice;
-				std::getline(std::cin, choice);
-				if (choice == "help")
-				{
-					std::cout << "available commands:" << std::endl;
-					std::cout << "'save'				to save all changed entries" << std::endl; //done
-					std::cout << "'history'				to see all changed entries" << std::endl; 
-					std::cout << "'revert 00'			to discard changed entry at index" << std::endl; 
-					std::cout << "'restore'				to restore engine entries to defaults; leaves custom values unchanged" << std::endl;
-					std::cout << "'cat [category_name]'	to change scope to that category" << std::endl;
-					std::cout << "'exit'				to reset category or finish modifying values" << std::endl;
-					std::cout << "'listkv'				to list all key value pairs within that category" << std::endl;
-					std::cout << "'listcat'				to list all categories" << std::endl;
-					std::cout << "type the name of desired key to enter a new value" << std::endl;
-
-				}
-				else if (choice == "exit")
-				{
-					if (category == "uuddlrlrbaStart")
-					{
-						std::cout << "Warning : exiting does not save your modifications. call 'save' to do so now \n 'cancel' cancels this operation and \n 'continue' to go through with this operation" << std::endl;
-						std::string exitchoice;
-						std::cin >> exitchoice;
-						if (exitchoice == "save")
+						// key and value are read-only references
+						//this code makes each line of certain length
+						uint8_t strLength = 40 - keyinner.length();
+						if (strLength > 40)
 						{
-							std::cout << "saving key value pairs and exiting..." << std::endl;
-							data = newprefs;
-							proceed = true;
+							strLength = 0;
 						}
-						else if (exitchoice == "cancel")
-						{
-							std::cout << "returning to main modify tab..." << std::endl;
-							
-						}
-						else if (exitchoice == "continue")
-						{
-							std::cout << "exiting..." << std::endl;
-							proceed = true;
-						}
-					}
-					else
-					{
-						category = "uuddlrlrbaStart";
-					}
-				}
-				else if (choice == "save")
-				{
-					std::cout << "saving key value pairs..." << std::endl;
-					data = newprefs;
-				}
-				
-				else if (choice.compare(0, 3, "cat") == 0)
-				{
-					std::string catstring = choice;
-					while (catstring.at(0) != '[')
-					{
-						if (catstring.size() == 0)
-						{
-							std::cout << "error : specified category must be present and bracketed in '[' ']' characters" << std::endl;
-							Con::Log("missing category" + choice, LOG_LOW_SEVERITY);
-							break;
-						}
-						catstring.erase(0, 1);
-					}
+						std::string str(strLength, ' ');
 
-					if (newprefs.find(catstring) != newprefs.end())
-					{
-						category = catstring;
-						std::cout << "switched selected category" << std::endl;
-					}
-					else
-					{
-						std::cout << "no matching category found" << std::endl;
+						std::cout << keyinner << str << valueinner.value << std::endl;
 					}
 				}
-				else if (choice[0] == 'r' && choice[2] == 'v')
-				{
-					//revert
+				bool proceed = false;
+				std::map<std::string, std::map<std::string, Preference>> newprefs = data;
+				std::cout << "use \" help \" to see available commands" << std::endl;
+				std::string category = "uuddlrlrbaStart";
 
-				}
-				else if (choice == "listkv")
+				while (!proceed)
 				{
-					if (category != "uuddlrlrbaStart")
+					std::string choice;
+					std::cin;
+					std::getline(std::cin, choice);
+					Con::Log("user choice :" + choice, LOG_INFORMATIONAL);
+
+					if (choice == "help")
 					{
-						for (const auto& [keyinner, valueinner] : newprefs[category])
+						std::cout << "available commands:" << std::endl;
+						std::cout << "'save'				to save all changed entries" << std::endl; //done
+						std::cout << "'history'				to see all changed entries" << std::endl;
+						std::cout << "'revert 00'			to discard changed entry at index" << std::endl;
+						std::cout << "'restore'				to restore engine entries to defaults; leaves custom values unchanged" << std::endl;
+						std::cout << "'cat [category_name]'	to change scope to that category" << std::endl;
+						std::cout << "'exit'				to reset category or finish modifying values" << std::endl;
+						std::cout << "'listkv'				to list all key value pairs within that category" << std::endl;
+						std::cout << "'listcat'				to list all categories" << std::endl;
+						std::cout << "type the name of desired key to enter a new value" << std::endl;
+
+					}
+					else if (choice == "exit")
+					{
+						if (category == "uuddlrlrbaStart")
 						{
-							// key and value are read-only references
-							//this code makes each line of certain length
-							uint8_t strLength = 40 - keyinner.length();
-							if (strLength > 40)
+							std::cout << "Warning : exiting does not save your modifications. call 'save' to do so now \n 'cancel' cancels this operation and \n 'continue' to go through with this operation" << std::endl;
+							std::string exitchoice;
+							std::cin >> exitchoice;
+							if (exitchoice == "save")
 							{
-								strLength = 0;
+								std::cout << "saving key value pairs and exiting..." << std::endl;
+								data = newprefs;
+								proceed = true;
 							}
-							std::string str(strLength, ' ');
+							else if (exitchoice == "cancel")
+							{
+								std::cout << "returning to main modify tab..." << std::endl;
 
-							std::cout << keyinner << str << valueinner.value << std::endl;
+							}
+							else if (exitchoice == "continue")
+							{
+								std::cout << "exiting..." << std::endl;
+								proceed = true;
+							}
+						}
+						else
+						{
+							category = "uuddlrlrbaStart";
+						}
+					}
+					else if (choice == "save")
+					{
+						std::cout << "saving key value pairs..." << std::endl;
+						data = newprefs;
+					}
+
+					else if (choice.compare(0, 3, "cat") == 0)
+					{
+						std::string catstring = choice;
+						while (catstring.at(0) != '[')
+						{
+							if (catstring.size() == 0)
+							{
+								std::cout << "error : specified category must be present and bracketed in '[' ']' characters" << std::endl;
+								Con::Log("missing category" + choice, LOG_LOW_SEVERITY);
+								break;
+							}
+							catstring.erase(0, 1);
+						}
+
+						if (newprefs.find(catstring) != newprefs.end())
+						{
+							category = catstring;
+							std::cout << "switched selected category" << std::endl;
+						}
+						else
+						{
+							std::cout << "no matching category found" << std::endl;
+						}
+					}
+					else if (choice[0] == 'r' && choice[2] == 'v')
+					{
+						//revert
+
+					}
+					else if (choice == "listkv")
+					{
+						if (category != "uuddlrlrbaStart")
+						{
+							for (const auto& [keyinner, valueinner] : newprefs[category])
+							{
+								// key and value are read-only references
+								//this code makes each line of certain length
+								uint8_t strLength = 40 - keyinner.length();
+								if (strLength > 40)
+								{
+									strLength = 0;
+								}
+								std::string str(strLength, ' ');
+
+								std::cout << keyinner << str << valueinner.value << std::endl;
+							}
+						}
+						else
+						{
+							std::cout << " please select a category first! \nuse 'listcat' to see all categories and 'cat [category-name]' to select it" << std::endl;
+						}
+					}
+					else if (choice == "listcat")
+					{
+						for (const auto& [keyinner, valueinner] : newprefs)
+						{
+							std::cout << keyinner << std::endl;
+						}
+					}
+					else if (category != "uuddlrlrbaStart")
+					{
+						//trims whitespace
+						while (choice.at(choice.size() - 1) == ' ')
+						{
+							choice.erase(choice.size() - 1, 1);
+						}
+						if (newprefs[category].find(choice) != newprefs[category].end())
+						{
+							std::cout << "currently selected key : " << choice << "\t with current value :\t" << newprefs[category][choice].value << " under category : \"" << category << "\"" << '\n' << "enter new value :" << std::endl;
+							std::string newVal;
+							std::cin >> newVal;
+							newprefs[category][choice].value = newVal;
+							Con::Log("currently selected key : " + choice + "\t with current value :\t" + newprefs[category][choice].value + " under category : \"" + category + "\"" + '\n' + "changed to : " + newVal, LOG_INFORMATIONAL);
+
+							std::cout << "new value saved!" << std::endl;
+						}
+						else
+						{
+							std::cout << "unknown command : \"" << choice << "\" entered; use \" help \" to see available commands" << std::endl;
+							Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
 						}
 					}
 					else
-					{
-						std::cout << " please select a category first! \nuse 'listcat' to see all categories and 'cat [category-name]' to select it" << std::endl;
-					}
-				}
-				else if (choice == "listcat")
-				{
-					for (const auto& [keyinner, valueinner] : newprefs)
-					{
-						std::cout << keyinner << std::endl;
-					}
-				}
-				else if (category != "uuddlrlrbaStart")
-				{
-					//trims whitespace
-					while (choice.at(choice.size() - 1) == ' ')
-					{
-						choice.erase(choice.size() - 1, 1);
-					}
-					if (newprefs[category].find(choice) != newprefs[category].end())
-					{
-						std::cout << "currently selected key : " << choice << "\t with current value :\t" << newprefs[category][choice].value << " under category : \"" << category << "\"" << '\n' << "enter new value :" << std::endl;
-						std::string newVal;
-						std::cin >> newVal;
-						newprefs[category][choice].value = newVal;
-						std::cout << "new value saved!" << std::endl;
-					}
-					else 
 					{
 						std::cout << "unknown command : \"" << choice << "\" entered; use \" help \" to see available commands" << std::endl;
 						Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
 					}
+					choice = "";
 				}
-				else
-				{
-					std::cout << "unknown command : \""<< choice  <<"\" entered; use \" help \" to see available commands" << std::endl;
-					Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
-				}
-				choice = "";
+			}
+			else if (input == "addarg")
+			{
+
+			}
+			else if (input == "help")
+			{
+				std::cout << "'continue'	to continue launch with previous session's preferences " << std::endl;
+				std::cout << "'load'		to load different preferences from last session" << std::endl;
+				std::cout << "'modify'		to modify launch parameters" << std::endl;
+				std::cout << "'addarg'		to add special parameters" << std::endl;
+				std::cout << "'reset'		to reset all preferences" << std::endl;
+				std::cout << "'exit'		to abort launch of liteNgine :( " << std::endl;
+			}
+			else
+			{
+				Con::Log("launch bootstrap process failed with result : unidentified input , retrying...", LOG_LOW_SEVERITY);
+				std::cout << "|unknown input, please try again or use HELP_ME_PLEASE_AAAAA in order to bring up the 300 billion parameter local llm that comes prepackaged|" << std::endl;
+				Con::Log("retrying", LOG_INFORMATIONAL);
 			}
 		}
-		else if (input == "addarg")
-		{
 
-		}
-		else if (input == "")
-		{
-
-		}
-		else
-		{
-			Con::Log("launch bootstrap process failed with result : unidentified input , retrying...", LOG_LOW_SEVERITY);
-			std::cout << "|unknown input, please try again or use HELP_ME_PLEASE_AAAAA in order to bring up the 300 billion parameter local llm that comes prepackaged|" << std::endl;
-			Con::Log("retrying", LOG_INFORMATIONAL);
-			goto choice;
-		}
 	}
 	void Bootstrapper::LoadPrefs(std::string filename)
 	{
