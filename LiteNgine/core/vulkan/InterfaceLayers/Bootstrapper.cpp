@@ -495,9 +495,9 @@ namespace lte {
 		{
 			lines.insert(lines.begin() + key, value);
 		}
-		for(std::string substr : lines)
+		for (std::string substr : lines)
 		{
-			outputstring += substr + "\n";
+			outputstring += ";" + substr + "\n";
 		}
 		return outputstring;
 	}
