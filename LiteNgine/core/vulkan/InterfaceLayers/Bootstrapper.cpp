@@ -211,7 +211,6 @@ namespace lte {
 				while (!proceed)
 				{
 					std::string choice;
-					std::cin;
 					std::getline(std::cin, choice);
 					Con::Log("user choice :" + choice, LOG_INFORMATIONAL);
 
@@ -325,9 +324,15 @@ namespace lte {
 					}
 					else if (category != "uuddlrlrbaStart")
 					{
+						if (choice.length() == 0) {
+							continue;
+						}
 						//trims whitespace
 						while (choice.at(choice.size() - 1) == ' ')
 						{
+							if (choice.length() == 0) {
+								continue;
+							}
 							choice.erase(choice.size() - 1, 1);
 						}
 						if (newprefs[category].find(choice) != newprefs[category].end())
@@ -351,7 +356,6 @@ namespace lte {
 						std::cout << "unknown command : \"" << choice << "\" entered; use \" help \" to see available commands" << std::endl;
 						Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
 					}
-					choice = "";
 				}
 			}
 			else if (input == "addarg")
