@@ -5,13 +5,14 @@
 #include <tuple>
 #include <ctime>
 #include <iostream>
+#include "../InterfaceLayers/Bootstrapper.h"
 #define UDEF_SEVERITY		0 // 0
 #define LOG_LOW_SEVERITY	1 // 1
 #define LOG_MED_SEVERITY	2 // 01 
 #define LOG_HIGH_SEVERITY	3 // 11
 #define LOG_CRIT_SEVERITY	4 // 001
 #define LOG_FATAL_SEVERITY	5 // 101
-#define LOG_INFORMATIONAL	6 // 011
+#define LOG_INFORMATIONAL	6 // generic engine information
 #define LOG_NOTE			7 // 111
 
 #define LOG_VERBOSE			8 // 0001
@@ -45,12 +46,18 @@ namespace lte {
 		static void Display();
 		static void OutputFile();// log files are stored using time and build version
 		static void RenameFile(std::ifstream& data);
+
+		static void BootstrapDone();
 	private:
 		static std::string debugBoilerPlate;
 		static void AddLog(std::string data);
 		static std::string convertSeverity(uint8_t severity, std::string& descriptor);
 
 		static void convertTime(std::string& string, std::chrono::system_clock::time_point time);
+
+
+		static std::string newFilename;
+		static std::string oldLogContent;
 
 	};
 

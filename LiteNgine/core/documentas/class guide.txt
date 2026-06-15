@@ -11,3 +11,4 @@ bootstrap allows user to specify boot instructions and set some variables
 todo
 
 make a detector thing that runs before to check gpu capabilities
+implement boostrap

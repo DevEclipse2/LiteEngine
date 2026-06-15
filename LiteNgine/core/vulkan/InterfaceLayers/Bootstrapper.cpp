@@ -207,7 +207,8 @@ namespace lte {
 				std::map<std::string, std::map<std::string, Preference>> newprefs = data;
 				std::cout << "use \" help \" to see available commands" << std::endl;
 				std::string category = "uuddlrlrbaStart";
-
+				std::vector<std::tuple<std::string, std::string,Preference>> preferenceHistory ;
+				std::vector<Preference> preferenceoriginal;
 				while (!proceed)
 				{
 					std::string choice;
@@ -217,7 +218,7 @@ namespace lte {
 					if (choice == "help")
 					{
 						std::cout << "available commands:" << std::endl;
-						std::cout << "'save'				to save all changed entries" << std::endl; //done
+						std::cout << "'apply'				to apply all changed entries" << std::endl; //done
 						std::cout << "'history'				to see all changed entries" << std::endl;
 						std::cout << "'revert 00'			to discard changed entry at index" << std::endl;
 						std::cout << "'restore'				to restore engine entries to defaults; leaves custom values unchanged" << std::endl;
@@ -237,8 +238,14 @@ namespace lte {
 							std::cin >> exitchoice;
 							if (exitchoice == "save")
 							{
-								std::cout << "saving key value pairs and exiting..." << std::endl;
+								std::cout << "applying key value pairs and saving to hard drive..." << std::endl;
 								data = newprefs;
+								std::fstream outFile(preferencesFileName);
+								if (outFile.is_open())
+								{
+									outFile << SaveFile();
+									outFile.close();
+								}
 								proceed = true;
 							}
 							else if (exitchoice == "cancel")
@@ -251,18 +258,25 @@ namespace lte {
 								std::cout << "exiting..." << std::endl;
 								proceed = true;
 							}
+							else 
+							{
+								std::cout << "unrecognised input, returning to modify tab" << std::endl;
+							}
 						}
 						else
 						{
 							category = "uuddlrlrbaStart";
 						}
 					}
-					else if (choice == "save")
+					else if (choice == "apply")
 					{
-						std::cout << "saving key value pairs..." << std::endl;
+						std::cout << "applying key value pairs..." << std::endl;
 						data = newprefs;
 					}
+					else if (choice == "history")
+					{
 
+					}
 					else if (choice.compare(0, 3, "cat") == 0)
 					{
 						std::string catstring = choice;
@@ -342,7 +356,6 @@ namespace lte {
 							std::cin >> newVal;
 							newprefs[category][choice].value = newVal;
 							Con::Log("currently selected key : " + choice + "\t with current value :\t" + newprefs[category][choice].value + " under category : \"" + category + "\"" + '\n' + "changed to : " + newVal, LOG_INFORMATIONAL);
-
 							std::cout << "new value saved!" << std::endl;
 						}
 						else
@@ -446,9 +459,47 @@ namespace lte {
 			linecount++;
 		}
 	}
-	void Bootstrapper::SavePrefs(std::string fileName)
+	std::string Bootstrapper::SaveFile()
 	{
+		Con::Log("writing new preferences file to disk...", LOG_INFORMATIONAL);
+		std::string outputstring = "";
+		std::vector<std::string> lines;
+		std::vector<flattenedData> flat_list;
+		for (const auto& cat_pair : data) {
+			const std::string& category_name = cat_pair.first;
+			for (const auto& pref_pair : cat_pair.second) {
+				flat_list.push_back({ category_name, pref_pair.first, pref_pair.second });
+			}
+		}
 
+		std::sort(flat_list.begin(), flat_list.end(),
+			[](const flattenedData& a, const flattenedData& b) {
+				return a.preference.lineNum < b.preference.lineNum;
+			}
+		);
+
+		std::string current_category = "";
+		for (const auto& item : flat_list) {
+			// If the category changes, we print the category header.
+			// Because the list is sorted by line number, this automatically places
+			// the categories exactly where they belong in the sequence.
+			if (item.category != current_category) {
+				lines.emplace_back( "[" + item.category + "]");
+				current_category = item.category;
+			}
+			lines.emplace_back(item.key + " = " + item.preference.value);
+			// Output the actual preference
+		}
+		//inserts comments in between like it should
+		for (const auto& [key, value] : comments)
+		{
+			lines.insert(lines.begin() + key, value);
+		}
+		for(std::string substr : lines)
+		{
+			outputstring += substr + "\n";
+		}
+		return outputstring;
 	}
 	std::string Bootstrapper::GenerateFile()
 	{

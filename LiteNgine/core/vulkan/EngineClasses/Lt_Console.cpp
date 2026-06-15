@@ -6,6 +6,8 @@ namespace lte
 	bool Con::Ready = false;
     uint32_t Con::lastIndex = 0;
     std::string Con::debugBoilerPlate = "";
+    std::string Con::newFilename = "";
+    std::string Con::oldLogContent = "";
     const std::time_t Con::now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
 	void Con::Init() 
@@ -86,14 +88,15 @@ namespace lte
                 firstLine[i] = '-';
             }
         }
-        std::string fname = "log at " + firstLine + ".txt";
+        //duplicates in case of bootstrapper crash
+        newFilename = "log at " + firstLine + ".txt";
         std::stringstream buffer;
         buffer << data.rdbuf();
-        std::string fileContent = buffer.str();
+        std::string bufferdata = buffer.str();
         data.close();
-        std::ofstream outFile(fname);
+        std::ofstream outFile(newFilename);
         if (outFile.is_open()) {
-            outFile << fileContent;
+            outFile << bufferdata;
             outFile.close();
         }
         else {
@@ -109,7 +112,33 @@ namespace lte
         else {
             std::cerr << "Could not open the file." << std::endl;
         }
+    }
 
+    void Con::BootstrapDone()
+    {
+        std::ifstream file(newFilename);
+        
+        if (!file.is_open()) {
+            std::cerr << "Failed to open new log file" << std::endl;
+        }
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string bufferdata = buffer.str();
+        file.close();
+        std::string newpath = Bootstrapper::data["[debug]"]["logs_filepath"].value;
+        Log("loaded new path from preferences" + newpath, LOG_INFORMATIONAL);
+        std::ofstream outFile(newpath + newFilename);
+        if (outFile.is_open()) {
+            outFile << bufferdata;
+            outFile.close();
+            Log("successfully written to new address" + newpath + newFilename, LOG_INFORMATIONAL);
+
+        }
+        else {
+            std::cerr << "Could not open the file." << std::endl;
+            Log("failed to open from path" + newpath + newFilename, LOG_HIGH_SEVERITY);
+
+        }
     }
 
     void Con::AddLog(std::string data)

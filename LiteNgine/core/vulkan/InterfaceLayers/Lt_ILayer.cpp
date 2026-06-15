@@ -18,6 +18,7 @@ namespace lte {
 			Con::LogVBSrc("unknown on wake result, possible programming oversight", LOG_MED_SEVERITY, "please submit an issue on github", " interface layers / bootstrapper class");
 			break;
 		}
+		Con::BootstrapDone();
 		windowMgr.Startup();
 		Lt_WindowInfo info;
 			info.width = 800,
