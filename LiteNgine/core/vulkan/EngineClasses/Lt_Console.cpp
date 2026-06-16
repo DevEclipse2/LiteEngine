@@ -125,8 +125,21 @@ namespace lte
         buffer << file.rdbuf();
         std::string bufferdata = buffer.str();
         file.close();
-        std::string newpath = Bootstrapper::data["[debug]"]["logs_filepath"].value;
+        std::string newpath = Bootstrapper::data["[debug]"]["log_filepath"].value;
+        //check file path here
         Log("loaded new path from preferences" + newpath, LOG_INFORMATIONAL);
+        if (!std::filesystem::exists(newpath)) {
+            Con::Log("Directory fdoes not exist! attempting to create" + newpath, LOG_LOW_SEVERITY);
+
+            bool success = std::filesystem::create_directories(newpath);
+
+            if (success) {
+                Con::Log("Directory created " + newpath, LOG_INFORMATIONAL);
+            }
+            else {
+                Con::Log("failed to create Directory" + newpath, LOG_HIGH_SEVERITY);
+            }
+        }
         std::ofstream outFile(newpath + newFilename);
         if (outFile.is_open()) {
             outFile << bufferdata;
@@ -138,6 +151,20 @@ namespace lte
             std::cerr << "Could not open the file." << std::endl;
             Log("failed to open from path" + newpath + newFilename, LOG_HIGH_SEVERITY);
 
+        }
+
+        std::filesystem::path target_file = newFilename;
+        std::error_code ec;
+        bool deleted = std::filesystem::remove(target_file, ec);
+
+        if (ec) {
+            Con::Log("could not delete temporary file : " + ec.message(), LOG_HIGH_SEVERITY);
+        }
+        else if (deleted) {
+            Con::Log("temporary file deleted successfully" + ec.message(), LOG_INFORMATIONAL);
+        }
+        else {
+            Con::Log("temporary file cannot be found" + ec.message(), LOG_LOW_SEVERITY);
         }
     }
 

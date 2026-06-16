@@ -5,6 +5,7 @@
 #include <tuple>
 #include <ctime>
 #include <iostream>
+#include <filesystem>
 #include "../InterfaceLayers/Bootstrapper.h"
 #define UDEF_SEVERITY		0 // 0
 #define LOG_LOW_SEVERITY	1 // 1

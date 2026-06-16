@@ -484,20 +484,20 @@ namespace lte {
 			// Because the list is sorted by line number, this automatically places
 			// the categories exactly where they belong in the sequence.
 			if (item.category != current_category) {
-				lines.emplace_back( "[" + item.category + "]");
+				lines.emplace_back(item.category);
 				current_category = item.category;
 			}
-			lines.emplace_back(item.key + " = " + item.preference.value);
+			lines.emplace_back(item.key + " =" + item.preference.value);
 			// Output the actual preference
 		}
 		//inserts comments in between like it should
 		for (const auto& [key, value] : comments)
 		{
-			lines.insert(lines.begin() + key, value);
+			lines.insert(lines.begin() + key, ";" + value);
 		}
 		for (std::string substr : lines)
 		{
-			outputstring += ";" + substr + "\n";
+			outputstring += substr + "\n";
 		}
 		return outputstring;
 	}
@@ -524,7 +524,8 @@ namespace lte {
 		
 		Insert(newFile, "[addon]\nuse_addons = true\nsafety_level = 1\n; safety level 0 = official addons 1 = endorsed addons 2 = managed installed addons 3 = unknown import addons\nsafemode = false\nrecovery = false");
 
-		Insert(newFile, "[special]\n; if you need to specify anything you want, do it here");
+		Insert(newFile, "[special]\n; if you need to specify anything you want, do it here\n");
+		Insert(newFile, "custom_key = custom_value\n");
 
 
 		return newFile;
