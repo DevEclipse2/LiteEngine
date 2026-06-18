@@ -21,7 +21,8 @@ namespace lte
 		const aiScene* importedScene = importer.ReadFile(path,pFlags);
 		if (importedScene == nullptr) 
 		{
-			Con::LogVBSrc(importer.GetErrorString(), LOG_HIGH_SEVERITY, "Assimp loading of model failed", "internal engine class Lt_Importer");
+			std::string errstr = importer.GetErrorString();
+			Con::LogFailure(errstr + "Assimp loading of model failed from internal engine class Lt_Importer", HIGH_SEVERITY,TAG_ENGINE);
 			return 1;
 		}
 		return 0;

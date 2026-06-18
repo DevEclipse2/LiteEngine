@@ -20,7 +20,7 @@ int main()
     }
     catch (const std::exception& e){
         //crash
-        lte::Con::Log(e.what(), LOG_FATAL_SEVERITY);
+        lte::Con::LogError(e.what(), FATAL_SEVERITY, TAG_ENGINE);
         lte::Con::OutputFile();
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

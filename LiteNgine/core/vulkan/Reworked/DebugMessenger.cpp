@@ -13,22 +13,21 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
 	switch (severity) {
 	case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
 		//verbose
-		logSeverity = (uint8_t)LOG_VERBOSE;
+		lte::Con::Log("validation layer: type " + to_string(type) + " msg: " + pCallbackData->pMessage, TAG_VULKAN);
 		break;
 	case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-		//verbose
-		logSeverity = (uint8_t)LOG_INFO;
+		//info
+		lte::Con::Log("validation layer: type " + to_string(type) + " msg: " + pCallbackData->pMessage, TAG_VULKAN);
 		break;
 	case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-		//verbose
-		logSeverity = (uint8_t)LOG_WARN;
+		//warning
+		lte::Con::LogWarning("validation layer: type " + to_string(type) + " msg: " + pCallbackData->pMessage, TAG_VULKAN);
 		break;
 	case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-		//verbose
-		logSeverity = (uint8_t)LOG_ERR;
+		lte::Con::LogError("validation layer: type " + to_string(type) + " msg: " + pCallbackData->pMessage,UDEF_SEVERITY, TAG_VULKAN);
+
 		break;
 	}
-	lte::Con::Log("validation layer: type " + to_string(type) + " msg: " + pCallbackData->pMessage, logSeverity);
 	return vk::False;
 }
 

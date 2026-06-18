@@ -2,7 +2,7 @@
 
 namespace lte 
 {
-	std::vector<std::tuple<std::chrono::system_clock::time_point, std::string, uint8_t >> Con::logEntry = {};
+	std::vector<logEntry> Con::entries = {};
 	bool Con::Ready = false;
     uint32_t Con::lastIndex = 0;
     std::string Con::debugBoilerPlate = "";
@@ -42,15 +42,66 @@ namespace lte
 
     void Con::Display()
     {
-        if (logEntry.size() > 0 && lastIndex < (logEntry.size()-1))
+        if (entries.size() > 0 && lastIndex < (entries.size()-1))
         {
-            for (uint32_t i = lastIndex; i < logEntry.size(); i++) 
+            for (uint32_t i = lastIndex; i < entries.size(); i++)
             {
-                const auto& logentry = logEntry[i];
+                const auto& logentry = entries[i];
                 std::string outputline;
-                convertTime(outputline, std::get<0>(logentry));
-                std::string desc;
-                outputline += "  " + convertSeverity(std::get<2>(logentry), desc) + "    " + std::get<1>(logentry);
+                convertTime(outputline, logentry.time);
+                if (logentry.code != 0)
+                {
+                    switch (logentry.type) {
+                    case TYPE_ERROR:
+                        outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        break;
+                    case TYPE_FAILURE:
+                        outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        break;
+                    case TYPE_SUBOPTIMAL:
+                        outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        break;
+                    case TYPE_WARNING:
+                        outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        break;
+                    default:
+                        std::cerr << "unhandled exception : log type handling failed" << std::endl;
+                        LogError("failed to handle log type, please submit ticket" + logentry.type, HIGH_SEVERITY, TAG_ENGINE);
+                        outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        break;
+                    }
+                }
+                else
+                {
+                    switch (logentry.type) {
+                        case TYPE_ERROR:
+                            outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        break;
+                        case TYPE_EVENT:
+                            outputline += " event: " + convertTags(logentry.tags) + logentry.message;
+                            break;
+                        case TYPE_FAILURE:
+                            outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            break;
+                        case TYPE_INFORMATION:
+                            outputline += " info: " + convertTags(logentry.tags) + logentry.message;
+                            break;
+                        case TYPE_SUBOPTIMAL:
+                            outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            break;
+                        case TYPE_SUCCESS:
+                            outputline += " success: " + convertTags(logentry.tags) + logentry.message;
+                            break;
+                        case TYPE_WARNING:
+                            outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            break;
+                        default:
+                            std::cerr << "unhandled exception : log type handling failed" << std::endl;
+                            LogError("failed to handle log type, please submit ticket" + logentry.type, HIGH_SEVERITY, TAG_ENGINE);
+                            outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            break;
+                    }
+                }
                 //Time += ;
                 AddLog(outputline);
                 // convert to miliseconds
@@ -61,7 +112,7 @@ namespace lte
 
 
             }
-            lastIndex = logEntry.size();
+            lastIndex = entries.size();
         }
     }
 
@@ -127,30 +178,28 @@ namespace lte
         file.close();
         std::string newpath = Bootstrapper::data["[debug]"]["log_filepath"].value;
         //check file path here
-        Log("loaded new path from preferences" + newpath, LOG_INFORMATIONAL);
+        Log("loaded new path from preferences" + newpath, TAG_DEBUG | TAG_GENERIC);
         if (!std::filesystem::exists(newpath)) {
-            Con::Log("Directory fdoes not exist! attempting to create" + newpath, LOG_LOW_SEVERITY);
+            LogError("Directory does not exist! attempting to create :" + newpath ,LOW_SEVERITY,TAG_GENERIC|TAG_DEBUG);
 
             bool success = std::filesystem::create_directories(newpath);
 
             if (success) {
-                Con::Log("Directory created " + newpath, LOG_INFORMATIONAL);
+                LogSuccess("Directory created", TAG_GENERIC | TAG_DEBUG);
             }
             else {
-                Con::Log("failed to create Directory" + newpath, LOG_HIGH_SEVERITY);
+                LogFailure("failed to create Directory",HIGH_SEVERITY, TAG_GENERIC | TAG_DEBUG);
             }
         }
         std::ofstream outFile(newpath + newFilename);
         if (outFile.is_open()) {
             outFile << bufferdata;
             outFile.close();
-            Log("successfully written to new address" + newpath + newFilename, LOG_INFORMATIONAL);
-
+            LogSuccess("successfully written to new address : " + newpath + newFilename, TAG_GENERIC | TAG_DEBUG);
         }
         else {
             std::cerr << "Could not open the file." << std::endl;
-            Log("failed to open from path" + newpath + newFilename, LOG_HIGH_SEVERITY);
-
+            LogFailure("failed to open from path" + newpath + newFilename, CRIT_SEVERITY, TAG_GENERIC | TAG_DEBUG);
         }
 
         std::filesystem::path target_file = newFilename;
@@ -158,14 +207,19 @@ namespace lte
         bool deleted = std::filesystem::remove(target_file, ec);
 
         if (ec) {
-            Con::Log("could not delete temporary file : " + ec.message(), LOG_HIGH_SEVERITY);
+            LogFailure("could not delete temporary file : " + ec.message(), MED_SEVERITY, TAG_GENERIC | TAG_DEBUG);
         }
         else if (deleted) {
-            Con::Log("temporary file deleted successfully" + ec.message(), LOG_INFORMATIONAL);
+            LogSuccess("temporary file deleted successfully" + ec.message(), TAG_GENERIC | TAG_DEBUG);
         }
         else {
-            Con::Log("temporary file cannot be found" + ec.message(), LOG_LOW_SEVERITY);
+            LogError("temporary file cannot be found" + ec.message(), LOW_SEVERITY, TAG_GENERIC | TAG_DEBUG);
         }
+    }
+
+    void Con::loadErrorCodes()
+    {
+
     }
 
     void Con::AddLog(std::string data)
@@ -189,56 +243,82 @@ namespace lte
     //    debugBoilerPlate += timestamp + data + '\n';
     //}
 
-    std::string Con::convertSeverity(uint8_t severity, std::string& descriptor)
+    std::string Con::convertSeverity(uint8_t severity)
     {
         std::string output = "";
-        descriptor = " ";
-        switch (severity & 7)// bit mask
+        switch (severity)// bit mask
         {
         case UDEF_SEVERITY:
-            output += "severity: undefined ,";
-            descriptor += "the developer is too lazy to define how problematic the problem is/";
+            return "undefined, ";
+            //descriptor += "the developer is too lazy to define how problematic the problem is/";
             break;
-        case LOG_LOW_SEVERITY:
-            output += "severity: low ,";
-            descriptor += "not really important but should be viewed as a symptom; start looking here if you got a problem/";
+        case LOW_SEVERITY:
+            return "low     , ";
+            //descriptor += "not really important but should be viewed as a symptom; start looking here if you got a problem/";
             break;
-        case LOG_MED_SEVERITY:
-            output += "severity: medium ,";
-            descriptor += "you should look into this/";
+        case MED_SEVERITY:
+            return "medium  , ";
+            //descriptor += "you should look into this/";
             break;
-        case LOG_HIGH_SEVERITY:
-            output += "severity: high ,";
-            descriptor += "hey i mean what can i say the title speaks for itself/";
+        case HIGH_SEVERITY:
+            return "high    , ";
+            //descriptor += "hey i mean what can i say the title speaks for itself/";
             break;
-        case LOG_CRIT_SEVERITY:
-            output += "severity: critical ,";
-            descriptor += "a critical error indicates something wrong with the engine, not your code. unless you're me , the developer/";
+        case CRIT_SEVERITY:
+            return "critical, ";
+            //descriptor += "a critical error indicates something wrong with the engine, not your code. unless you're me , the developer/";
             break;
-        case LOG_FATAL_SEVERITY:
-            output += "fatal error ,";
-            descriptor += "very bad. the engine will probably crash/";
+        case FATAL_SEVERITY:
+            return "fatal  , ";
+            //descriptor += "very bad. the engine will probably crash/";
             break;
         }
-        switch (severity & 56)
+    }
+
+    std::string Con::convertTags(uint64_t tags)
+    {
+        std::string string = "";
+        if (tags & TAG_ADDON)
         {
-        case LOG_VERBOSE:
-            output += "vulkan verbose";
-            break;
-        case LOG_INFO:
-            output += "vulkan info";
-            break;
-        case LOG_WARN:
-            output += "vulkan warning";
-            break;
-        case LOG_ERR:
-            output += "vulkan error";
-            break;
-        case LOG_NOPT:
-            output += "vulkan suboptimal usage";
-            break;
+            string += "addons, ";
         }
-        return output;
+        if (tags & TAG_DEBUG)
+        {
+            string += "debug, ";
+        }
+        if (tags & TAG_ENGINE)
+        {
+            string += "engine, ";
+        }
+        if (tags & TAG_GENERIC)
+        {
+            string += "generic, ";
+        }
+        if (tags & TAG_GL)
+        {
+            string += "opengl, ";
+        }
+        if (tags & TAG_PERFORMANCE)
+        {
+            string += "performance, ";
+        }
+        if (tags & TAG_PROFILING)
+        {
+            string += "profiling, ";
+        }
+        if (tags & TAG_THREADMGR)
+        {
+            string += "multithreading, ";
+        }
+        if (tags & TAG_VULKAN)
+        {
+            string += "vulkan, ";
+        }
+        if (string.length() == 0)
+        {
+            string += "unspecified";
+        }
+        return string;
     }
 
     void Con::convertTime(std::string& string, std::chrono::system_clock::time_point time)
@@ -265,23 +345,136 @@ namespace lte
         string = oss.str();
     }
 
-	void Con::Log(std::string information, uint8_t severity)
+	void Con::Log(std::string message, uint64_t tags)
 	{
-		Con::logEntry.emplace_back(std::chrono::system_clock::now(), information, severity);
-        std::string description;
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_INFORMATION;
+        Con::entries.emplace_back(entry);
 	}
 
-    void Con::LogVB(std::string information, uint8_t severity, std::string notes, std::string documentation)
+    void Con::LogEvent(std::string message, uint64_t tags)
     {
-        std::string description;
-        convertSeverity(severity, description);
-        Con::logEntry.emplace_back(std::chrono::system_clock::now(), information + "\n" + description + "\n" + notes + "\n" + "to know more, visit documentation at" + documentation, severity);
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity  = UDEF_SEVERITY;
+        entry.tags      = tags;
+        entry.message   = message;
+        entry.type      = TYPE_EVENT;
+        Con::entries.emplace_back(entry);
     }
 
-    void Con::LogVBSrc(std::string information, uint8_t severity, std::string notes, std::string origin)
+    void Con::LogWarning(std::string message, uint64_t tags)
     {
-        std::string description;
-        convertSeverity(severity, description);
-        Con::logEntry.emplace_back(std::chrono::system_clock::now(), information + "\n" + description + "\n" + notes + "\n" + "error called from: " + origin, severity);
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_WARNING;
+        Con::entries.emplace_back(entry);
     }
+
+    void Con::LogSuccess(std::string message, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_SUCCESS;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogError(std::string message, uint8_t severity, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_ERROR;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogFailure(std::string message, uint8_t severity, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_FAILURE;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogSuboptimal(std::string message, uint8_t severity, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_SUBOPTIMAL;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogError(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_ERROR;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogWarning(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_WARNING;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogFailure(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_FAILURE;
+        Con::entries.emplace_back(entry);
+    }
+
+    void Con::LogSuboptimal(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_SUBOPTIMAL;
+        Con::entries.emplace_back(entry);
+    }
+    
 }

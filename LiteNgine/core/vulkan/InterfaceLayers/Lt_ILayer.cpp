@@ -8,14 +8,14 @@ namespace lte {
 		Bootstrapper::OnWake(&result);
 		switch (result) {
 		case 0:
-			Con::Log("program to continue execution", LOG_INFORMATIONAL);
+			Con::Log("program to continue execution", TAG_ENGINE);
 			break;
 		case 1:
-			Con::Log("requested program abort launch, terminating...", LOG_INFORMATIONAL);
+			Con::Log("requested program abort launch, terminating...", TAG_ENGINE);
 			End();
 			break;
 		default:
-			Con::LogVBSrc("unknown on wake result, possible programming oversight", LOG_MED_SEVERITY, "please submit an issue on github", " interface layers / bootstrapper class");
+			Con::LogError("unknown on wake result, possible programming oversight , please submit an issue on github,  interface layers / bootstrapper class", MED_SEVERITY, TAG_ENGINE);
 			break;
 		}
 		Con::BootstrapDone();
@@ -93,7 +93,7 @@ namespace lte {
 			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
-			Con::Log("main window resized", LOG_INFORMATIONAL);
+			Con::Log("main window resized", TAG_ENGINE);
 		}
 		//add any gui draw commands here
 		if (guiHandler.drawFrame(frames)) 

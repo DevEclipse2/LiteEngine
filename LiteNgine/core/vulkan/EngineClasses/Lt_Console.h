@@ -2,25 +2,59 @@
 #include <vector>
 #include <string>
 #include <chrono>
-#include <tuple>
 #include <ctime>
 #include <iostream>
 #include <filesystem>
+#include <map>
 #include "../InterfaceLayers/Bootstrapper.h"
-#define UDEF_SEVERITY		0 // 0
-#define LOG_LOW_SEVERITY	1 // 1
-#define LOG_MED_SEVERITY	2 // 01 
-#define LOG_HIGH_SEVERITY	3 // 11
-#define LOG_CRIT_SEVERITY	4 // 001
-#define LOG_FATAL_SEVERITY	5 // 101
-#define LOG_INFORMATIONAL	6 // generic engine information
-#define LOG_NOTE			7 // 111
 
-#define LOG_VERBOSE			8 // 0001
-#define LOG_INFO			16// 00001
-#define LOG_WARN			24// 00011
-#define LOG_ERR				32// 000001
-#define LOG_NOPT			40// 000101
+
+#define UDEF_SEVERITY		0 // undefined 
+#define LOW_SEVERITY		1 // has existing workaround / no reprecussions
+#define MED_SEVERITY		2 // might lead to reprecussions
+#define HIGH_SEVERITY		3 // very large reprecussions
+#define CRIT_SEVERITY		4 // will result in errors
+#define FATAL_SEVERITY		5 // will result in crash / unhandled exception
+#define NOTE				6 // something to keep track of
+
+
+
+#define TYPE_EVENT			1 // events and timestamps
+#define TYPE_WARNING		2 // 
+#define TYPE_ERROR			3 // 
+#define TYPE_INFORMATION	4 // 
+#define TYPE_FAILURE		5 // 
+#define TYPE_SUCCESS		6 // 
+#define TYPE_SUBOPTIMAL		7 // optimisation warning
+
+#define TAG_PROFILING		1   //
+#define TAG_GENERIC			2   //
+#define TAG_VULKAN			4   //
+#define TAG_GL				8   //
+#define TAG_DEBUG			16  // 
+#define TAG_ENGINE			32  // 
+#define TAG_ADDON			64	// 
+#define TAG_THREADMGR		128	// 
+#define TAG_PERFORMANCE		256 // 
+/*
+new severities
+low med high critical fatal information
+new types
+event, warning, error, generic, success, failure, suboptimal
+new tags
+profiling, performance, vulkan, enginecore, addon, threadmanager
+
+*/
+
+struct logEntry
+{
+	std::chrono::system_clock::time_point	time;
+	std::string								message;
+	uint8_t									severity;
+	uint8_t									type;
+	uint64_t								tags;
+	uint16_t								code;
+};
 
 
 #include <fstream>
@@ -31,18 +65,30 @@ namespace lte {
 		// yy,xx
 		//low med hi , warning , error , suboptimal usage
 										//time , info , severity
-		static std::vector<std::tuple< std::chrono::system_clock::time_point, std::string, uint8_t >> logEntry;
+		static std::vector<logEntry> entries;
+		static std::map<uint16_t, std::string> errorcodes;
 		static uint32_t lastIndex;
 		static std::vector<std::string>	ConsoleEntry;
 		static const std::time_t now;
 		static bool Ready;
-		static void Log(std::string information, uint8_t severity);
-		static void LogVB(std::string information, uint8_t severity, std::string notes, std::string documentation);
-		static void LogVBSrc(std::string information, uint8_t severity, std::string notes, std::string origin);
-		/*
-		static void LogWarn(std::string information, uint8_t severity);
-		static void LogErr(std::string information, uint8_t severity);
-		static void LogNOpt(std::string information, uint8_t severity);*/
+
+
+		static void Log				(std::string message				  , uint64_t tags);
+		static void LogEvent		(std::string message				  , uint64_t tags);
+		static void LogWarning		(std::string message				  , uint64_t tags);
+		static void LogSuccess		(std::string message				  , uint64_t tags);
+		static void LogError		(std::string message, uint8_t severity, uint64_t tags);
+		static void LogFailure		(std::string message, uint8_t severity, uint64_t tags);
+		static void LogSuboptimal	(std::string message, uint8_t severity, uint64_t tags);
+
+
+
+		static void LogError		(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+		static void LogWarning		(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+		static void LogFailure		(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+		static void LogSuboptimal	(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+
+
 		static void Init();
 		static void Display();
 		static void OutputFile();// log files are stored using time and build version
@@ -50,9 +96,13 @@ namespace lte {
 
 		static void BootstrapDone();
 	private:
+		static void loadErrorCodes();
+
+
 		static std::string debugBoilerPlate;
 		static void AddLog(std::string data);
-		static std::string convertSeverity(uint8_t severity, std::string& descriptor);
+		static std::string convertSeverity(uint8_t severity);
+		static std::string convertTags(uint64_t tags);
 
 		static void convertTime(std::string& string, std::chrono::system_clock::time_point time);
 

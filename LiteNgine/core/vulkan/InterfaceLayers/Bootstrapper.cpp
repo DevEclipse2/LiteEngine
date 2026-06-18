@@ -10,7 +10,7 @@ namespace lte {
 	void Bootstrapper::OnWake(uint8_t* result)
 	{
 		LoadPrefs(preferencesFileName);
-		Con::Log("begin launch bootstrap process", LOG_INFORMATIONAL);
+		Con::Log("begin launch bootstrap process", TAG_ENGINE);
 		std::string input;
 		
 		std::cout << "Welcome to LiteNgine \n you may specify launch parameters here or change preferences without launching the engine. \n you may type:" << std::endl;
@@ -24,16 +24,16 @@ namespace lte {
 		while (!command)
 		{
 			std::cin >> input;
-			Con::Log("user entered selection", LOG_INFORMATIONAL);
+			Con::Log("user entered selection", TAG_ENGINE);
 			if (input == "continue")
 			{
-				Con::Log("launch bootstrap process completed with response : continue", LOG_INFORMATIONAL);
+				Con::Log("launch bootstrap process completed with response : continue", TAG_ENGINE);
 				*result = 0;
 				command = true;
 			}
 			else if (input == "reset")
 			{
-				Con::Log("launch bootstrap proceeding with operation : reset preferences", LOG_INFORMATIONAL);
+				Con::Log("launch bootstrap proceeding with operation : reset preferences", TAG_ENGINE);
 				//make choice choose save
 			chooseifPreserve:
 				std::cout << "would you like to save current preferences as a new file in a different location? \n Type Y/N " << std::endl;
@@ -41,18 +41,18 @@ namespace lte {
 				if (input == "Y" || input == "y")
 				{
 					std::cout << "user choice confirmed and acknowledged. enter new file name:" << std::endl;
-					Con::Log("user chose to save original preferences", LOG_INFORMATIONAL);
+					Con::Log("user chose to save original preferences", TAG_ENGINE);
 
 					std::ifstream file(preferencesFileName);
 
 					if (!file.is_open())
 					{
 						std::cerr << "unable to open original preferences file" << std::endl;
-						Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
+						Con::LogError("failed to open original preferences file", LOW_SEVERITY,TAG_ENGINE);
 					}
 					std::string newName;
 					std::cin >> newName;
-					Con::Log("user saved original file to path " + newName, LOG_INFORMATIONAL);
+					Con::Log("user saved original file to path " + newName, TAG_ENGINE);
 					std::ofstream outFile(newName);
 					if (outFile.is_open())
 					{
@@ -61,7 +61,7 @@ namespace lte {
 					}
 					else {
 						std::cerr << "Could not open and write to the file." << std::endl;
-						Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
+						Con::LogError("failed to write new preferences to file", LOW_SEVERITY, TAG_ENGINE);
 
 					}
 
@@ -69,13 +69,13 @@ namespace lte {
 				else if (input == "N" || input == "n")
 				{
 					std::cout << "user selection confirmed and acknowledged." << std::endl;
-					Con::Log("user chose to discard preferences", LOG_INFORMATIONAL);
+					Con::Log("user chose to discard preferences", TAG_ENGINE);
 
 				}
 				else
 				{
 					std::cout << "unknown input, please try again." << std::endl;
-					Con::Log("unknown input", LOG_INFORMATIONAL);
+					Con::Log("unknown input", TAG_ENGINE);
 					goto chooseifPreserve;
 				}
 
@@ -88,17 +88,17 @@ namespace lte {
 				else
 				{
 					std::cerr << "Could not copy preferences to the main file." << std::endl;
-					Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
+					Con::LogError("failed to copy to main file", LOW_SEVERITY, TAG_ENGINE);
 
 				}
 				std::cout << "Preferences Reset Sucessfully" << std::endl;
 				std::cout << "Operation complete, returning to main..." << std::endl;
-				Con::Log("preferences reset successfully", LOG_INFORMATIONAL);
+				Con::Log("preferences reset successfully", TAG_ENGINE);
 			}
 			else if (input == "load")
 			{
 			loadprocess:
-				Con::Log("launch bootstrap proceeding with operation : load preferences", LOG_INFORMATIONAL);
+				Con::Log("launch bootstrap proceeding with operation : load preferences", TAG_ENGINE);
 				std::cout << "please enter the file path of the designated file" << std::endl;
 				std::string path;
 				std::cin >> path;
@@ -106,12 +106,12 @@ namespace lte {
 
 				if (newFile.is_open()) {
 					std::cout << "new preferences found successfully" << std::endl;
-					Con::Log("launch bootstrap preferences found successfully at :" + path, LOG_INFORMATIONAL);
+					Con::Log("launch bootstrap preferences found successfully at :" + path, TAG_ENGINE);
 				}
 				else
 				{
 					std::cerr << "unable to open new preferences file" << std::endl;
-					Con::Log("launch bootstrap preferences was not found with filepath : " + path, LOG_LOW_SEVERITY);
+					Con::LogError("launch bootstrap preferences was not found with filepath : " + path, LOW_SEVERITY, TAG_ENGINE);
 					goto loadprocess;
 				}
 			chooseIfSave:
@@ -120,20 +120,20 @@ namespace lte {
 				if (input == "Y" || input == "y")
 				{
 					std::cout << "user choice confirmed and acknowledged. enter new file name:" << std::endl;
-					Con::Log("user chose to save original preferences", LOG_INFORMATIONAL);
+					Con::Log("user chose to save original preferences", TAG_ENGINE);
 
 					std::ifstream file(preferencesFileName);
 
 					if (!file.is_open())
 					{
 						std::cerr << "unable to open original preferences file" << std::endl;
-						Con::Log("failed to open original preferences file", LOG_LOW_SEVERITY);
+						Con::LogError("failed to open original preferences file",LOW_SEVERITY, TAG_ENGINE);
 						goto chooseIfSave;
 
 					}
 					std::string newName;
 					std::cin >> newName;
-					Con::Log("user saved original file to path " + newName, LOG_INFORMATIONAL);
+					Con::Log("user saved original file to path " + newName, TAG_ENGINE);
 					std::ofstream outFile(newName);
 					if (outFile.is_open())
 					{
@@ -143,7 +143,7 @@ namespace lte {
 					else {
 						std::cerr << "Could not open and write to the file." << std::endl;
 						std::cerr << "Retrying..." << std::endl;
-						Con::Log("failed to write new preferences to file", LOG_LOW_SEVERITY);
+						Con::LogError("failed to write new preferences to file", LOW_SEVERITY, TAG_ENGINE);
 						goto chooseIfSave;
 
 					}
@@ -153,13 +153,13 @@ namespace lte {
 				else if (input == "N" || input == "n")
 				{
 					std::cout << "user selection confirmed and acknowledged." << std::endl;
-					Con::Log("user chose to discard preferences", LOG_INFORMATIONAL);
+					Con::Log("user chose to discard preferences", TAG_ENGINE);
 
 				}
 				else
 				{
 					std::cout << "unknown input, please try again." << std::endl;
-					Con::Log("unknown input", LOG_INFORMATIONAL);
+					Con::Log("unknown input", TAG_ENGINE);
 					goto chooseIfSave;
 				}
 				std::ofstream outFile(preferencesFileName);
@@ -171,20 +171,20 @@ namespace lte {
 				else
 				{
 					std::cerr << "Could not copy preferences to the main file." << std::endl;
-					Con::Log("failed to copy to main file", LOG_LOW_SEVERITY);
+					Con::LogError("failed to copy to main file", LOW_SEVERITY, TAG_ENGINE);
 
 				}
 			}
 			else if (input == "exit")
 			{
 				*result = 1;
-				Con::Log("launch bootstrap process terminated with response : abort launch", LOG_INFORMATIONAL);
+				Con::Log("launch bootstrap process terminated with response : abort launch", TAG_ENGINE);
 				command = true;
 
 			}
 			else if (input == "modify")
 			{
-				Con::Log("launch bootstrap process proceeding with response : modify value", LOG_INFORMATIONAL);
+				Con::Log("launch bootstrap process proceeding with response : modify value", TAG_ENGINE);
 				std::cout << "List of available key-value pairs are as follows : " << std::endl;
 				for (const auto& [key, value] : data) {
 					// key and value are read-only references
@@ -213,7 +213,7 @@ namespace lte {
 				{
 					std::string choice;
 					std::getline(std::cin, choice);
-					Con::Log("user choice :" + choice, LOG_INFORMATIONAL);
+					Con::Log("user choice :" + choice, TAG_ENGINE);
 
 					if (choice == "help")
 					{
@@ -285,7 +285,7 @@ namespace lte {
 							if (catstring.size() == 0)
 							{
 								std::cout << "error : specified category must be present and bracketed in '[' ']' characters" << std::endl;
-								Con::Log("missing category" + choice, LOG_LOW_SEVERITY);
+								Con::LogError("missing category" + choice, LOW_SEVERITY, TAG_ENGINE);
 								break;
 							}
 							catstring.erase(0, 1);
@@ -355,19 +355,19 @@ namespace lte {
 							std::string newVal;
 							std::cin >> newVal;
 							newprefs[category][choice].value = newVal;
-							Con::Log("currently selected key : " + choice + "\t with current value :\t" + newprefs[category][choice].value + " under category : \"" + category + "\"" + '\n' + "changed to : " + newVal, LOG_INFORMATIONAL);
+							Con::Log("currently selected key : " + choice + "\t with current value :\t" + newprefs[category][choice].value + " under category : \"" + category + "\"" + '\n' + "changed to : " + newVal, TAG_ENGINE);
 							std::cout << "new value saved!" << std::endl;
 						}
 						else
 						{
 							std::cout << "unknown command : \"" << choice << "\" entered; use \" help \" to see available commands" << std::endl;
-							Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
+							Con::LogError("unknown command entered : " + choice, LOW_SEVERITY, TAG_ENGINE);
 						}
 					}
 					else
 					{
 						std::cout << "unknown command : \"" << choice << "\" entered; use \" help \" to see available commands" << std::endl;
-						Con::Log("unknown command entered : " + choice, LOG_LOW_SEVERITY);
+						Con::LogError("unknown command entered : " + choice, LOW_SEVERITY, TAG_ENGINE);
 					}
 				}
 			}
@@ -386,9 +386,9 @@ namespace lte {
 			}
 			else
 			{
-				Con::Log("launch bootstrap process failed with result : unidentified input , retrying...", LOG_LOW_SEVERITY);
+				Con::LogError("launch bootstrap process failed with result : unidentified input , retrying...", LOW_SEVERITY, TAG_ENGINE);
 				std::cout << "|unknown input, please try again or use HELP_ME_PLEASE_AAAAA in order to bring up the 300 billion parameter local llm that comes prepackaged|" << std::endl;
-				Con::Log("retrying", LOG_INFORMATIONAL);
+				Con::Log("retrying", TAG_ENGINE);
 			}
 		}
 
@@ -400,7 +400,7 @@ namespace lte {
 		if (!file.is_open()) 
 		{
 			std::cout << "No Preferences file found,generating new file..." << std::endl;
-			Con::Log("no preference file found : generating new", LOG_LOW_SEVERITY);
+			Con::LogWarning("no preference file found : generating new", TAG_ENGINE	);
 			std::ofstream outFile(preferencesFileName);
 			if (outFile.is_open())
 			{
@@ -411,7 +411,7 @@ namespace lte {
 			if (!file.is_open())
 			{
 				std::cout << "unable to generate required file. please contact developer" << std::endl;
-				Con::Log("unable to generate or load preferences file", LOG_CRIT_SEVERITY);
+				Con::LogError("unable to generate or load preferences file", HIGH_SEVERITY, TAG_ENGINE);
 				std::ofstream outFile(preferencesFileName);
 				if (outFile.is_open())
 				{
@@ -461,7 +461,7 @@ namespace lte {
 	}
 	std::string Bootstrapper::SaveFile()
 	{
-		Con::Log("writing new preferences file to disk...", LOG_INFORMATIONAL);
+		Con::Log("writing new preferences file to disk...", TAG_ENGINE);
 		std::string outputstring = "";
 		std::vector<std::string> lines;
 		std::vector<flattenedData> flat_list;
