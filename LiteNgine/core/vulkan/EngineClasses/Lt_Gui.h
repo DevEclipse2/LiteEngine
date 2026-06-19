@@ -62,6 +62,8 @@ namespace lte
 		void InitGui(Lt_GuiCreationInfo& info);
 		std::vector<vk::raii::CommandBuffer> commandBuffers = {};
 		void Terminate();
+
+		
 	private:
 		VkDescriptorPool descriptorPoolHandle;
 		void createDescriptorPool();

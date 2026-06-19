@@ -62,6 +62,7 @@ namespace lte {
 		IMGUI_CHECKVERSION();
 		//IMGUI_DEBUG_LOG();
 		ImGui::CreateContext();
+
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -71,16 +72,21 @@ namespace lte {
 		io.DisplaySize.x = (float)creationInfo.width;
 		io.DisplaySize.y = (float)creationInfo.height;
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-
-		ImGui::GetStyle().FontScaleMain = 1.5f;
+		io.ConfigViewportsNoDecoration = false;
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 1.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+		style.FontScaleMain = 1.5f;
 		setStyle(2);
 
 		float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
 		bool InstallGlfwCallbacks = true;
 		ImGui_ImplGlfw_InitForVulkan(creationInfo.window, InstallGlfwCallbacks);
-		ImGuiStyle style = ImGui::GetStyle();
-		style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
-		style.FontScaleDpi = main_scale;        // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
+		ImGui::GetStyle().ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+		ImGui::GetStyle().FontScaleDpi = main_scale;        // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
 		io.ConfigDpiScaleFonts = true;          // [Experimental] Automatically overwrite style.FontScaleDpi in Begin() when Monitor DPI changes. This will scale fonts but _NOT_ scale sizes/padding for now.
 		io.ConfigDpiScaleViewports = true;      // [Experimental] Scale Dear ImGui and Platform Windows when Monitor DPI changes.
 
@@ -114,16 +120,27 @@ namespace lte {
 		init_info.DescriptorPool = descriptorPoolHandle;
 		//init_info.PipelineCache = NULL;
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = pipelineCreateInfo;
+		init_info.PipelineInfoMain.RenderPass = NULL;
+		init_info.PipelineInfoMain.Subpass = 0;
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		init_info.Queue = **(creationInfo.queue);
 		init_info.PipelineCache = *creationInfo.cache;
 		init_info.MinImageCount = creationInfo.minImgCount; //stuff
 		init_info.UseDynamicRendering = true;
 		init_info.ImageCount = creationInfo.minImgCount;
 		init_info.Allocator = NULL;
-		init_info.PipelineInfoMain.RenderPass = NULL;
-		init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_16_BIT;
+		
 		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
+
+		VkFormat colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+;
+
+		init_info.PipelineInfoForViewports.PipelineRenderingCreateInfo = pipelineCreateInfo;
+		init_info.PipelineInfoForViewports.RenderPass = NULL;
+		init_info.PipelineInfoForViewports.Subpass = 0;
+		init_info.PipelineInfoForViewports.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+		// 3. RenderPass must be null!
 		ImGui_ImplVulkan_Init(&init_info);
 
 
@@ -373,9 +390,8 @@ namespace lte {
 	bool Lt_Gui::drawFrame(char frameIndex)
 	{
 		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		// In your main loop, after ImGui::NewFrame()
-		ImGui::SetNextWindowBgAlpha(0.0f); // 0.0f = fully transparent, 1.0f = fully opaque
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -387,9 +403,10 @@ namespace lte {
 
 
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+		//ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
 		//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 1.0f, 0.0f, 0.0f));
-		ImGui::Begin("scene viewport",NULL,window_flags);
+		ImGui::Begin("scene viewport",NULL);
+		//ImGui::Begin("scene viewport",NULL,window_flags);
 		ImGui::Text("Hello, Vulkan!");
 		if (ImGui::Button("Click me!")) {
 			// Handle button click
@@ -414,7 +431,8 @@ namespace lte {
 		ImGui::End();*/
 
 		ImGui::EndFrame();
-		ImGui::UpdatePlatformWindows();
+		//ImGui::UpdatePlatformWindows();
+		
 		// Render to generate draw data
 		ImGui::Render();
 		firstFrame = false;
@@ -428,10 +446,13 @@ namespace lte {
 				updateBuffers();
 			} 
 		}
-
+			// Update OS windows and render them
+		//ImGui::RenderPlatformWindowsDefault();
+		
 		recordCommandBuffer(drawData, frameIndex);
 
-
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
 		
 		return false;
 	}
@@ -473,16 +494,16 @@ namespace lte {
 		commandBuffer.endRendering();
 		
 		commandBuffer.end();
-		//ImageDelegate::transition_image_layout(
-		//	ImageDelegate::ImagePool[fontImgIndex]->image,
-		//	vk::ImageLayout::eShaderReadOnlyOptimal,
-		//	vk::ImageLayout::ePresentSrcKHR,
-		//	vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
-		//	{},                                                     // dstAccessMask
-		//	vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
-		//	vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
-		//	vk::ImageAspectFlagBits::eColor, commandBuffer
-		//);
+		ImageDelegate::transition_image_layout(
+			ImageDelegate::ImagePool[fontImgIndex]->image,
+			vk::ImageLayout::eShaderReadOnlyOptimal,
+			vk::ImageLayout::ePresentSrcKHR,
+			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
+			{},                                                     // dstAccessMask
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
+			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::ImageAspectFlagBits::eColor, commandBuffer
+		);
 	}
 
 	void Lt_Gui::doDynamicRendering(vk::raii::CommandBuffer& commandBuffer, ImDrawData* data, char drawindex)
