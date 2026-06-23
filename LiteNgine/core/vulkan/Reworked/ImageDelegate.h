@@ -29,6 +29,14 @@ namespace lte
         
         
     };
+    struct GUI_Image
+    {
+        VkDescriptorSet DS;
+        // Need to keep track of these to properly cleanup
+        LtImage image;
+
+        GUI_Image() { memset(this, 0, sizeof(*this)); }
+    };
 
     class ImageDelegate
     {
@@ -45,6 +53,7 @@ namespace lte
             static void generateMipmaps(LtImage& ltImage, vk::Format imageFormat, vk::raii::PhysicalDevice& physicalDevice, singleTimeCommandInfo info);
             static void createSwapchainImageViews(LtSwapChain* swap, vk::raii::Device* device);
             void requestDelayedImageDestruction(uint32_t imageIndex, float wait);
+            static void createSampler(LtImage& image, vk::raii::Device& device);
 
             static void createColorResources(LtSwapChain* swapChain, LtImage& ColorRes, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::SampleCountFlagBits msaaSamples);
             static void createDepthResources(LtSwapChain* swapChain, LtImage& DepthRes, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::SampleCountFlagBits msaaSamples);

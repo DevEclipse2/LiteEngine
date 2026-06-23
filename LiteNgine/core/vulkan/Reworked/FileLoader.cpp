@@ -20,13 +20,16 @@ namespace lte {
     FileLoader::FileLoader()
     {
     }
+
+
+
     void FileLoader::createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device& device , vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo cmdInfo)
     {
 
         int width, height, channel = 0;
         uint32_t mipLevels = 0;
         stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
-        vk::DeviceSize imageSize = width * height * 4;
+        vk::DeviceSize imageSize = width * height * channel;
         mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
         if (!pixels) {
             throw std::runtime_error("failed to load texture image!");
@@ -41,7 +44,8 @@ namespace lte {
 
         stbi_image_free(pixels);
         ImageDelegate::createImage(ImageIndex,width, height,mipLevels,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physicalDevice);
-
+        ImageDelegate::createImageView(ImageIndex, vk::Format::eR8G8B8A8Srgb,vk::ImageAspectFlagBits::eColor,1,device);
+        ImageDelegate::createSampler(ImageIndex,device);
         /*transitionImageLayout(textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
         copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
         transitionImageLayout(textureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
@@ -171,4 +175,40 @@ namespace lte {
         }
         std::cout << "indexing complete! \n";
     }
+    bool FileLoader::ImGUIImg(std::string path, GUI_Image* img, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo cmdInfo)
+    {
+        int width, height, channel = 0;
+        uint32_t mipLevels = 0;
+        stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
+        vk::DeviceSize imageSize = width * height * 4;
+        mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+        if (!pixels) {
+            throw std::runtime_error("failed to load texture image!");
+            return false;
+        }
+        
+
+        ImageDelegate::createImage(img->image, width, height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal,vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
+        ImageDelegate::createImageView(img->image, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eDepth, 1, device);
+        ImageDelegate::createSampler(img->image, device);
+        // Create Image View Descriptor Set 
+        // (note: before 1.92.8 this also took a Sampler. See Wiki history)
+        img->DS = ImGui_ImplVulkan_AddTexture(*img->image.imageSampler,*img->image.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        
+        vk::raii::Buffer stagingBuffer = nullptr;
+        vk::raii::DeviceMemory stagingBufferMemory = nullptr;
+        Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, device, physicalDevice);
+
+        void* data = stagingBufferMemory.mapMemory(0, imageSize);
+        memcpy(data, pixels, imageSize);
+        stagingBufferMemory.unmapMemory();
+        stbi_image_free(pixels);
+
+        ImageDelegate::transitionImageLayout(img->image.image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels, cmdInfo);
+        Buffers::copyBufferToImage(stagingBuffer, img->image.image, width, height, cmdInfo);
+        
+        
+        return true;
+    }
+    
 }

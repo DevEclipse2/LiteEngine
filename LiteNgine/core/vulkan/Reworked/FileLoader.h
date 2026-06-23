@@ -4,6 +4,7 @@
 #include "ImageDelegate.h"
 #include "Buffers.h"
 #include "LtMesh.h"
+#include "../EngineClasses/Lt_Gui.h"
 //#include <string>
 namespace lte 
 {
@@ -28,6 +29,7 @@ namespace lte
 			static std::vector<uint32_t> IndiceSizes;
 			static std::vector<RenderSet> renderSets;
 
+			static bool ImGUIImg(std::string path, GUI_Image* img, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo cmdInfo);
 		private:
 			static std::vector<std::vector<Vertex>> vertexBuf;
 			static std::vector<std::vector<uint32_t>> indexBuf;

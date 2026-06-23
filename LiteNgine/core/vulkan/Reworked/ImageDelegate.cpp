@@ -51,6 +51,19 @@ namespace lte {
 
     }
 
+    void ImageDelegate::createSampler(LtImage& image, vk::raii::Device& device)
+    {
+        vk::SamplerCreateInfo samplerInfo{};
+        samplerInfo.magFilter = vk::Filter::eLinear;                    
+        samplerInfo.minFilter = vk::Filter::eLinear;                    
+        samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;        // Smooth transitions between mip levels
+        samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;  // Prevent texture wrapping
+        samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;  // Clean edge handling
+        samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;  // 3D consistency
+        samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;   // White border for clamped areas
+        image.imageSampler = vk::raii::Sampler(device, samplerInfo);                   // Create the GPU sampler object
+    }
+
     void ImageDelegate::requestImageDestruction(uint32_t& imageIndex)
     {
         if (imageIndex < ImagePool.size()) {
