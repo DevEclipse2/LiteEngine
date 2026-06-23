@@ -21,6 +21,7 @@ namespace lte {
             imageInfo.mipLevels = image.mipLevels;
             imageInfo.sharingMode = vk::SharingMode::eExclusive;
             imageInfo.samples = numSamples;
+           
         image.image = vk::raii::Image(device, imageInfo);
 
         vk::MemoryRequirements memRequirements = image.image.getMemoryRequirements();

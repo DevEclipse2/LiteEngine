@@ -52,7 +52,6 @@ namespace lte
 	public:
 
 		void Instantiate();
-		bool drawFrame(char frameIndex);
 		void updateBuffers();
 		void updateFrameBuffer(int width, int height);
 		bool firstFrame = true;
@@ -62,6 +61,10 @@ namespace lte
 		void InitGui(Lt_GuiCreationInfo& info);
 		std::vector<vk::raii::CommandBuffer> commandBuffers = {};
 		void Terminate();
+
+		void StartFrame();
+		void EndFrame();
+		bool RenderFrame(char frameIndex);
 
 		
 	private:

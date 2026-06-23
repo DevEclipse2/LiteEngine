@@ -117,6 +117,12 @@
     <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\Opengl\GLBackend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\Viewport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -203,9 +209,6 @@
     <ClInclude Include="core\vulkan\Reworked\TemporaryDraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\vulkan\Reworked\stbImagePacifier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -225,6 +228,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Opengl\GLBackend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\Viewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

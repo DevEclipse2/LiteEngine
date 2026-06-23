@@ -77,6 +77,10 @@ namespace lte {
 		guiHandler.Instantiate();			
 		guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 		guiHandler.updateBuffers();
+
+		viewport.Init();
+		//Viewport::Init(this);
+
 	}
 	void Lt_ILayer::Loop()
 	{
@@ -96,12 +100,15 @@ namespace lte {
 			Con::Log("main window resized", TAG_ENGINE);
 		}
 		//add any gui draw commands here
-		if (guiHandler.drawFrame(frames)) 
+		guiHandler.StartFrame();
+		viewport.SubmitGUICommands();
+		guiHandler.EndFrame();
+		if (guiHandler.RenderFrame(frames)) 
 		{
 			//update stuff			
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			guiHandler.updateBuffers();
-			guiHandler.drawFrame(frames);
+			guiHandler.RenderFrame(frames);
 		}
 		/*if(!backend.AddAdditionalCommands(guiHandler.commandBuffers[backend.frameIndex])) {
 			std::cerr << "cannot submit additional commands" << std::endl;

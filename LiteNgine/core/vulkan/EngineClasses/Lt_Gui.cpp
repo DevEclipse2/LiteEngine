@@ -158,6 +158,43 @@ namespace lte {
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 	}
+	void Lt_Gui::StartFrame()
+	{
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	}
+	void Lt_Gui::EndFrame()
+	{
+		ImGui::EndFrame();
+	}
+	bool Lt_Gui::RenderFrame(char frameIndex)
+	{
+		ImGui::Render();
+		firstFrame = false;
+
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData || drawData->CmdListsCount == 0) {
+			return true;
+		}
+		if (drawData && drawData->CmdListsCount > 0) {
+			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
+				updateBuffers();
+			}
+		}
+		// Update OS windows and render them
+		//ImGui::RenderPlatformWindowsDefault();
+
+		recordCommandBuffer(drawData, frameIndex);
+
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+
+		return false;
+	}
 	void Lt_Gui::createImages() 
 	{
 
@@ -387,75 +424,7 @@ namespace lte {
 		VkResult res = vkCreateDescriptorPool(**creationInfo.device, &PoolCreateInfo, NULL, &descriptorPoolHandle);
 		CheckVKResult(res);
 	}
-	bool Lt_Gui::drawFrame(char frameIndex)
-	{
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
-
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
-		/*	ImGui::SetNextWindowPos(viewport->WorkPos);
-			ImGui::SetNextWindowSize(viewport->WorkSize);*/
-			// Create your UI elements here
-			// For example:
-		//layoutMgr->beginDrawData();
-
-
-
-		//ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
-		//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 1.0f, 0.0f, 0.0f));
-		ImGui::Begin("scene viewport",NULL);
-		//ImGui::Begin("scene viewport",NULL,window_flags);
-		ImGui::Text("Hello, Vulkan!");
-		if (ImGui::Button("Click me!")) {
-			// Handle button click
-			std::cout << "srjitndkf\n";
-		}
-		ImGui::End();
-
-		/*ImGui::Begin("Performance: ", &showWindow2);
-		pDevice->getProfilingData(&fps, &Frametime, &verticeCount, &indiceCount, &modelCount);
-		std::string fpsStr = "Fps :" + std::to_string(fps);
-		ImGui::Text(fpsStr.c_str());
-		std::string str = "FrameTime : " + std::to_string(Frametime) + " miliseconds";
-		ImGui::Text(str.c_str());
-		str = "Vertices :" + std::to_string(verticeCount);
-		ImGui::Text(str.c_str());
-		str = "Indices :" + std::to_string(indiceCount);
-		ImGui::Text(str.c_str());
-		str = "models :" + std::to_string(modelCount);
-		ImGui::Text(str.c_str());
-		if (ImGui::Button("Close"))
-			showProfiler = false;
-		ImGui::End();*/
-
-		ImGui::EndFrame();
-		//ImGui::UpdatePlatformWindows();
-		
-		// Render to generate draw data
-		ImGui::Render();
-		firstFrame = false;
-
-		ImDrawData* drawData = ImGui::GetDrawData();
-		if (!drawData || drawData->CmdListsCount == 0) {
-			return true;
-		}
-		if (drawData && drawData->CmdListsCount > 0) {
-			if (drawData->TotalVtxCount > vertexCount || drawData->TotalIdxCount > indexCount) {
-				updateBuffers();
-			} 
-		}
-			// Update OS windows and render them
-		//ImGui::RenderPlatformWindowsDefault();
-		
-		recordCommandBuffer(drawData, frameIndex);
-
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		
-		return false;
-	}
+	
 
 	void Lt_Gui::recordCommandBuffer(ImDrawData* data, uint8_t index)
 	{

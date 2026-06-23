@@ -204,7 +204,9 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Vulkan.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Importer.cpp" />
+    <ClCompile Include="core\vulkan\Opengl\GLBackend.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
+    <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
@@ -213,7 +215,6 @@
     <ClInclude Include="core\engine\FileMgr.h" />
     <ClInclude Include="core\vulkan\App.h" />
     <ClInclude Include="core\vulkan\Reworked\DebugMessenger.h" />
-    <ClInclude Include="core\vulkan\Reworked\stbImagePacifier.h" />
     <ClInclude Include="dep\backends\imconfig.h" />
     <ClInclude Include="dep\backends\imgui.h" />
     <ClInclude Include="dep\backends\imgui_impl_glfw.h" />
@@ -242,7 +243,9 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Vulkan.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Importer.h" />
+    <ClInclude Include="core\vulkan\Opengl\GLBackend.h" />
     <ClInclude Include="ThreadMgr.h" />
+    <ClInclude Include="core\vulkan\Editor\Viewport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">

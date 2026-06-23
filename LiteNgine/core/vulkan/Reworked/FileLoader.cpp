@@ -26,7 +26,6 @@ namespace lte {
         int width, height, channel = 0;
         uint32_t mipLevels = 0;
         stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
-        //stbi_uc *pixels = stbi_load("textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         vk::DeviceSize imageSize = width * height * 4;
         mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
         if (!pixels) {
@@ -51,8 +50,7 @@ namespace lte {
         Buffers::copyBufferToImage(stagingBuffer, ImageIndex.image, ImageIndex.width, ImageIndex.height, cmdInfo);
         //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
         ImageDelegate::generateMipmaps(ImageIndex, vk::Format::eR8G8B8A8Srgb,physicalDevice,cmdInfo);
-        //ImageDelegate::transitionImageLayout(ImageIndex.image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, ImageIndex.mipLevels, cmdInfo);
-
+        
     }
 
     void FileLoader::TemporaryFileLoad(vk::raii::Device& device, vk::raii::PhysicalDevice& physDevice, singleTimeCommandInfo info) 
