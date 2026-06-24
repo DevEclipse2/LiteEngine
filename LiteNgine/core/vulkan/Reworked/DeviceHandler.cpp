@@ -81,6 +81,8 @@ namespace lte {
 			vk::PhysicalDeviceProperties deviceProperties = pd.getProperties();
 			vk::PhysicalDeviceFeatures deviceFeatures = pd.getFeatures();
 			vk::PhysicalDeviceMemoryProperties memprops = pd.getMemoryProperties();
+
+				
 			uint32_t score = 0;
 
 			// Discrete GPUs have a significant performance advantage
@@ -221,7 +223,7 @@ namespace lte {
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceVulkan11Features,
 			vk::PhysicalDeviceVulkan13Features,
-			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
+			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
 		> featureChain{};
 
 		featureChain.get<vk::PhysicalDeviceFeatures2>().features = deviceFeatures;
@@ -229,6 +231,9 @@ namespace lte {
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().synchronization2 = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering = VK_TRUE;
 		featureChain.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState = VK_TRUE;
+
+		//featureChain.get<vk::PhysicalDeviceMemoryProperties2>().memoryProperties = vkGetPhysicalDeviceMemoryProperties2(*physicalDevice, &memProps2);
+		
 		// create a Device
 		float queuePriority = 0.5f;
 		vk::DeviceQueueCreateInfo deviceQueueCreateInfo{};

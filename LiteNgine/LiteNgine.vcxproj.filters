@@ -123,6 +123,18 @@
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dep\imGuiNodes\crude_json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imGuiNodes\imgui_canvas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imGuiNodes\imgui_node_editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -236,11 +248,38 @@
     <ClInclude Include="core\vulkan\Editor\Viewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dep\imGuiNodes\crude_json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\imGuiNodes\imgui_bezier_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\imGuiNodes\imgui_canvas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\imGuiNodes\imgui_extra_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\imGuiNodes\imgui_node_editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
     <None Include="shaders\Particle.slang" />
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md" />
+    <None Include="dep\imGuiNodes\imgui_bezier_math.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="dep\imGuiNodes\imgui_extra_math.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="dep\imGuiNodes\imgui_node_editor_internal.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\documentas\engine formatting.txt" />

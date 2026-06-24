@@ -205,6 +205,10 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Importer.cpp" />
     <ClCompile Include="core\vulkan\Opengl\GLBackend.cpp" />
+    <ClCompile Include="dep\imGuiNodes\crude_json.cpp" />
+    <ClCompile Include="dep\imGuiNodes\imgui_canvas.cpp" />
+    <ClCompile Include="dep\imGuiNodes\imgui_node_editor.cpp" />
+    <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
   </ItemGroup>
@@ -244,6 +248,12 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Importer.h" />
     <ClInclude Include="core\vulkan\Opengl\GLBackend.h" />
+    <ClInclude Include="dep\imGuiNodes\crude_json.h" />
+    <ClInclude Include="dep\imGuiNodes\imgui_bezier_math.h" />
+    <ClInclude Include="dep\imGuiNodes\imgui_canvas.h" />
+    <ClInclude Include="dep\imGuiNodes\imgui_extra_math.h" />
+    <ClInclude Include="dep\imGuiNodes\imgui_node_editor.h" />
+    <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
   </ItemGroup>
@@ -252,6 +262,9 @@
       <SubType>
       </SubType>
     </None>
+    <None Include="dep\imGuiNodes\imgui_bezier_math.inl" />
+    <None Include="dep\imGuiNodes\imgui_extra_math.inl" />
+    <None Include="dep\imGuiNodes\imgui_node_editor_internal.inl" />
     <None Include="shaders\Particle.slang" />
     <None Include="shaders\shader.slang" />
   </ItemGroup>

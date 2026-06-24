@@ -12,7 +12,7 @@ namespace lte {
 		Viewport();
 		~Viewport();
 	private:
-		float f = 0;
+		float f = 1.0f;
 
 		GUI_Image image{};
 		uint32_t viewportImageIndex = 0;
