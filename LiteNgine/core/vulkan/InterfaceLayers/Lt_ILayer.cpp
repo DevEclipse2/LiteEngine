@@ -39,6 +39,10 @@ namespace lte {
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
 		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
 		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
+
+
+
+
 		fileLoader.TemporaryFileLoad(device, PhysicalDevice, cmdInfo);
 
 
@@ -78,6 +82,7 @@ namespace lte {
 		//theres a chance that it might override the original so im leaving this shit alone
 		GuiCreationInfo.colorImageViewIndex = &Lt_Vulkan::windows[mainWindowIndex].swapchain.colorImage;
 		GuiCreationInfo.pImageViews = &Lt_Vulkan::windows[mainWindowIndex].swapchain.imageViews;
+		Con::LogEvent("Spinning up User Interface...", TAG_ENGINE);
 		guiHandler.InitGui(GuiCreationInfo);
 		guiHandler.Instantiate();			
 		guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
@@ -133,14 +138,17 @@ namespace lte {
 	}
 	void Lt_ILayer::End() 
 	{
+		viewport.Terminate();
 		guiHandler.Terminate();
-		Con::OutputFile();
-		
+		ImageDelegate::Terminate();
 		/*
 		backend.Exit();
 		backend.window.DestroyWindow();*/
 	}
 	void Lt_ILayer::Cleanup()
 	{
+		vulkanHandler.devices[0].logicalDevice.waitIdle();
+		vulkanHandler.commandPool = nullptr;
+
 	}
 }

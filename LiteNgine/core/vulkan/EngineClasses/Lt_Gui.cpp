@@ -129,6 +129,7 @@ namespace lte {
 		init_info.UseDynamicRendering = true;
 		init_info.ImageCount = creationInfo.minImgCount;
 		init_info.Allocator = NULL;
+		init_info.MinAllocationSize = 1024*1024;
 		
 		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
 

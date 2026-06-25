@@ -13,7 +13,12 @@ namespace lte {
 			glfwPollEvents();
 			InterfaceLayer.Loop();
 		}
+		Con::LogEvent("engine shutdown-------------------------------------------", TAG_ENGINE);
 		InterfaceLayer.End();
+		Con::LogEvent("engine cleanup-------------------------------------------", TAG_ENGINE);
+		InterfaceLayer.Cleanup();
+		Con::OutputFile();
+
 		//vkDevice.Exit();
 	}
 }

@@ -46,6 +46,7 @@ namespace lte
             static void createImage(LtImage& image,uint32_t Width, uint32_t Height, uint32_t MipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice);
             ImageDelegate();
             ~ImageDelegate();
+            static void Terminate();
             static uint32_t requestImageCreation(LtImage& ltImage);
             static void requestImageDestruction(uint32_t& index);
             //static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);

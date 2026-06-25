@@ -118,6 +118,7 @@ namespace lte
 
     void Con::OutputFile()
     {
+        Display();
         //this clears latest.log
         std::ofstream outFile("latest_log.txt");
         if (outFile.is_open()) {

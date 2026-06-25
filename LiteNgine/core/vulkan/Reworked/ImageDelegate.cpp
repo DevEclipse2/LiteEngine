@@ -221,6 +221,10 @@ namespace lte {
         commandBuffer->pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
         CommandBuffers::endSingleTimeCommands(*commandBuffer,info.queue);
     }
+    void ImageDelegate::Terminate() 
+    {
+        ImagePool.clear();
+    }
 
     void ImageDelegate::generateMipmaps(LtImage& ltImage,vk::Format imageFormat, vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo info) 
     {
