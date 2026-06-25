@@ -135,6 +135,9 @@
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\NodeSys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -264,6 +267,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\NodeSys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

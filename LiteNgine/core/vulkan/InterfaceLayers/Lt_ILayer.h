@@ -6,6 +6,7 @@
 #include "../EngineClasses/Lt_Console.h"
 #include "Bootstrapper.h"
 #include "../Editor/Viewport.h"
+#include "../Editor/NodeSys.h"
 //this is where the main function comes to meet with the usable code
 namespace lte {
 	
@@ -30,8 +31,9 @@ namespace lte {
 		Lt_WindowTracker windowMgr{};
 		Lt_Gui guiHandler{};
 		Viewport viewport{};
+		NodeSystem nodeSystem{nullptr};
 		uint8_t frames = 0;
-
+		
 		bool mainResized = false;
 	};
 }

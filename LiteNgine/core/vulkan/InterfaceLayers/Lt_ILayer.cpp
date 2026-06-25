@@ -89,6 +89,7 @@ namespace lte {
 		guiHandler.updateBuffers();
 
 		viewport.Init();
+		nodeSystem = NodeSystem{viewport.m_Context};
 		//Viewport::Init(this);
 
 	}
@@ -112,6 +113,7 @@ namespace lte {
 		//add any gui draw commands here
 		guiHandler.StartFrame();
 		viewport.SubmitGUICommands();
+		nodeSystem.SubmitGUICommands();
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{
@@ -139,6 +141,7 @@ namespace lte {
 	void Lt_ILayer::End() 
 	{
 		viewport.Terminate();
+		nodeSystem.~NodeSystem();
 		guiHandler.Terminate();
 		ImageDelegate::Terminate();
 		/*
