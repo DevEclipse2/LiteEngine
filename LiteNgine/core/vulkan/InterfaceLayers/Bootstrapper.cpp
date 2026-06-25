@@ -1,6 +1,12 @@
 #include "Bootstrapper.h"
 namespace lte {
 
+	enum Result {
+		Continue,
+		Exit
+	};
+
+	
 	std::string Bootstrapper::preferencesFileName = "LiteNginePref.ini";
 	std::map<std::string, std::map< std::string, Preference>>  Bootstrapper::data;
 	std::map<uint16_t, std::string> Bootstrapper::comments;

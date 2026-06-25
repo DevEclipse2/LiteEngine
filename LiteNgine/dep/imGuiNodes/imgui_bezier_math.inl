@@ -226,7 +226,7 @@ inline ImCubicBezierSplitResultT<T> ImCubicBezierSplit(const T& p0, const T& p1,
             z3 * p0 - 3 * z2 * s1 * p1 + 3 * z1 * s2 * p2 - s3 * p3,
                           z2      * p1 - 2 * z1 * s1 * p2 + s2 * p3,
                                              z1      * p2 - s1 * p3,
-                                                                 p3,
+                                                                 p3
         }
     };
 }
@@ -239,10 +239,10 @@ inline ImCubicBezierSplitResultT<T> ImCubicBezierSplit(const ImCubicBezierPoints
 
 inline ImRect ImCubicBezierBoundingRect(const ImVec2& p0, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3)
 {
-    auto a = 3 * p3 - 9 * p2 + 9 * p1 - 3 * p0;
-    auto b = 6 * p0 - 12 * p1 + 6 * p2;
-    auto c = 3 * p1 - 3 * p0;
-    auto delta_squared = ImMul(b, b) - 4 * ImMul(a, c);
+    ImVec2 a = 3 * p3 - 9 * p2 + 9 * p1 - 3 * p0;
+    ImVec2 b = 6 * p0 - 12 * p1 + 6 * p2;
+    ImVec2 c = 3 * p1 - 3 * p0;
+    ImVec2 delta_squared = ImMul(b, b) - 4 * ImMul(a, c);
 
     auto tl = ImMin(p0, p3);
     auto rb = ImMax(p0, p3);

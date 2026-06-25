@@ -223,7 +223,7 @@ namespace lte {
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceVulkan11Features,
 			vk::PhysicalDeviceVulkan13Features,
-			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
+			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
 		> featureChain{};
 
 		featureChain.get<vk::PhysicalDeviceFeatures2>().features = deviceFeatures;

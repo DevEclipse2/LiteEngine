@@ -1,16 +1,21 @@
 #include "Lt_ILayer.h"
 namespace lte {
 
+	enum Result {
+		Continue,
+		Exit
+	};
+
 	void Lt_ILayer::Begin()
 	{
 		Con::Init();
 		uint8_t result = 0;
 		Bootstrapper::OnWake(&result);
 		switch (result) {
-		case 0:
+		case Continue:
 			Con::Log("program to continue execution", TAG_ENGINE);
 			break;
-		case 1:
+		case Exit:
 			Con::Log("requested program abort launch, terminating...", TAG_ENGINE);
 			End();
 			break;
