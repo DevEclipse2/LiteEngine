@@ -3,7 +3,9 @@
 #include "../Reworked/ImageDelegate.h"
 #include "../Reworked/LtSync.h"
 #include "../Reworked/DeviceHandler.h"
+#include "../Reworked/TemporaryDraw.h"
 #include "../EngineClasses/Lt_Vulkan.h"
+
 namespace lte {
 	class EditorViewport
 	{
@@ -17,15 +19,20 @@ namespace lte {
 	private:
 		ImVec2 size = ImVec2(800, 600);
 		uint8_t framesInFlight = 2;
-		std::vector<std::unique_ptr<LtImage>> images[2];
+		uint32_t frameNum = 0;
+		uint8_t swapFrame = 0;
+		std::vector<std::unique_ptr<LtImage>> images;
+		LtPipeline pipeline;
+		std::vector<vk::raii::CommandBuffer> commandBuffers;
 		LtImage colorImage{};
 		LtImage depthImage{};
 		void createImages();// depth color and 2 out images
 		void createPipeline();//idk something here
-		void SubmitCommands();//maybe reference simpledraw
-		void UpdateUniformBuffers();
+		void SubmitCommands(vk::raii::CommandBuffer& commandBuffer);//maybe reference simpledraw
+		void UpdateUniformBuffers( );
 		void recreateImages();
 		void createSyncSets();
+		void UpdateGui();
 	};
 }
 
