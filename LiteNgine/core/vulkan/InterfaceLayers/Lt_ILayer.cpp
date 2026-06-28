@@ -38,8 +38,9 @@ namespace lte {
 		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
 		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
-		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
-		fileLoader.TemporaryFileLoad(device, PhysicalDevice, cmdInfo);
+
+		/*singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
+		fileLoader.TemporaryFileLoad(device, PhysicalDevice, cmdInfo);*/
 
 
 		

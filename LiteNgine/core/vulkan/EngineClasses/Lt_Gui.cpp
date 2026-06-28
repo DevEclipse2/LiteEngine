@@ -461,8 +461,6 @@ namespace lte {
 		ImGui_ImplVulkan_RenderDrawData(data, *commandBuffer);
 
 		commandBuffer.endRendering();
-		
-		commandBuffer.end();
 		ImageDelegate::transition_image_layout(
 			ImageDelegate::ImagePool[fontImgIndex]->image,
 			vk::ImageLayout::eShaderReadOnlyOptimal,
@@ -473,6 +471,8 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
 			vk::ImageAspectFlagBits::eColor, commandBuffer
 		);
+		commandBuffer.end();
+		
 	}
 
 	void Lt_Gui::doDynamicRendering(vk::raii::CommandBuffer& commandBuffer, ImDrawData* data, char drawindex)
