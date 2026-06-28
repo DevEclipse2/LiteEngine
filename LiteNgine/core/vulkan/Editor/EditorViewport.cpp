@@ -12,6 +12,40 @@ namespace lte {
 		createImages();
 		createPipeline();
 		CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
+		singleTimeCommandInfo info{&Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue};
+		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, Lt_Vulkan::devices[0].physicalDevice,info);
+		rendersets = &FileLoader::renderSets;
+
+
+		deviceHandler.createTextureSampler(&sampler, PhysicalDevice, primary.device);
+		singleTimeCommandInfo cmdinfo{ &primary.device ,&commandPool , &primary.queue };
+
+		Buffers::createVertexBuffer(FileLoader::VertexesSize, FileLoader::VertexArray, &vertexBuffer, &vertexBufferMem, cmdinfo, PhysicalDevice);
+		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMem, cmdinfo, PhysicalDevice);
+
+		renderSets = FileLoader::renderSets;
+		//fix this later
+
+		MeshInfo.push_back(LtMeshInfo{});
+		MeshInfo.push_back(LtMeshInfo{});
+		//MeshInfo.push_back(LtMeshInfo{});
+		MeshInfo[0].position = { 0.0f, 0.0f, -1.0f };
+		MeshInfo[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
+		MeshInfo[0].scale = { 1.1f, 1.1f,1.1f };
+
+		MeshInfo[1].position = { -2.0f, 0.0f, -1.0f };
+		MeshInfo[1].rotation = { 0.0f, 0.0f, 0.0f };
+		MeshInfo[1].scale = { 0.45f, 0.45f, 0.45f };
+
+		/*MeshInfo[2].position = { 2.0f, 0.0f, -1.0f };
+		MeshInfo[2].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
+		MeshInfo[2].scale = { 0.85f, 0.85f, 0.85f };
+		MeshInfo.resize(renderSets.size());*/
+
+		Buffers::createUniformBuffers(&MeshInfo, framesInFlight, primary.device, PhysicalDevice);
+		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
+
+		//load models, create descriptor sets and rendersets and stuff
 	}
 	void EditorViewport::Recreate(ImVec2 Size, uint8_t FramesInFlight) {
 		framesInFlight = FramesInFlight;
@@ -32,7 +66,7 @@ namespace lte {
 		vk::Format depthFormat = PipelineDelegate::findDepthFormat(deviceSet.physicalDevice);
 		ImageDelegate::createImage(depthImage, size.x, size.y, 1, samples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 		ImageDelegate::createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1, deviceSet.logicalDevice);
-		images->clear();
+		images.clear();
 
 
 		//swap images
@@ -40,7 +74,7 @@ namespace lte {
 			LtImage swapImg{};
 			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 			ImageDelegate::createImageView(swapImg, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
-			images->emplace_back(std::move(swapImg));
+			images.emplace_back(std::move(swapImg));
 		}
 
 	}
@@ -195,10 +229,12 @@ namespace lte {
 			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,
 			depthAttachmentInfo.clearValue = clearDepth;
-
-
+			
+		VkExtent2D extent = VkExtent2D{ static_cast<unsigned int>(size.x),static_cast<unsigned int>(size.y) };
+			
 		vk::RenderingInfo renderingInfo = {};
-			renderingInfo.renderArea = { .offset = { 0, 0 }, .extent = swapChainImage->swapChainExtent },
+			renderingInfo.renderArea.offset = VkOffset2D{ 0,0 },
+			renderingInfo.renderArea.extent = extent,
 			renderingInfo.layerCount = 1,
 			renderingInfo.colorAttachmentCount = 1,
 			renderingInfo.pColorAttachments = &attachmentInfo,
@@ -206,8 +242,8 @@ namespace lte {
 
 		commandBuffer.beginRendering(renderingInfo);
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.pipeline);
-		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(swapChainImage->swapChainExtent.width), static_cast<float>(swapChainImage->swapChainExtent.height), 0.0f, 1.0f));
-		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainImage->swapChainExtent));
+		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, size.x, size.y, 0.0f, 1.0f));
+		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), extent));
 
 		commandBuffer.bindVertexBuffers(0, **vertexBuf, { 0 });
 		commandBuffer.bindIndexBuffer(**indexBuf, 0, vk::IndexType::eUint32);
@@ -219,20 +255,17 @@ namespace lte {
 			// Bind the descriptor set for this object
 			commandBuffer.bindDescriptorSets(
 				vk::PipelineBindPoint::eGraphics,
-				*pipeline->PipelineLayout,
+				*pipeline.PipelineLayout,
 				0,
-				*gameObject.descriptorSets[frameIndex],
+				*gameObject.descriptorSets[swapFrame],
 				nullptr);
-
 			// Draw the object
-
 			commandBuffer.drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, rendersets->at(objectid).IndiceArrayStartIndex, rendersets->at(objectid).vertexArrayStartIndex, 0);
-			
 			objectid++;
 		}
 		commandBuffer.endRendering();
 		ImageDelegate::transition_image_layout(
-			swapChainImage->swapChainImages[imageIndex],
+			*(images[swapFrame]->image),
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::ePresentSrcKHR,
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
@@ -249,6 +282,8 @@ namespace lte {
 	{
 		frameNum++;
 		auto& cmdBuf = commandBuffers[swapFrame];
+		UpdateUniformBuffers();
+		SubmitCommands(cmdBuf);
 		swapFrame++;
 	}
 }

@@ -26,6 +26,13 @@ namespace lte {
 		std::vector<vk::raii::CommandBuffer> commandBuffers;
 		LtImage colorImage{};
 		LtImage depthImage{};
+
+		std::vector<LtMeshInfo>* meshes;
+		vk::raii::Buffer* vertexBuf;
+		vk::raii::Buffer* indexBuf;
+		std::vector<RenderSet>* rendersets;
+
+
 		void createImages();// depth color and 2 out images
 		void createPipeline();//idk something here
 		void SubmitCommands(vk::raii::CommandBuffer& commandBuffer);//maybe reference simpledraw
