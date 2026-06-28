@@ -1,0 +1,13 @@
+todo list
+in no order of importance
+
+create viewport
+create asset loading
+add animation loading
+editor animation thing
+codegraphs
+assimp
+networking stuff maybe
+audio system
+physics system
+
