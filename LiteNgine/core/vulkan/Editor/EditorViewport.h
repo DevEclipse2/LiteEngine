@@ -30,8 +30,13 @@ namespace lte {
 		std::vector<LtMeshInfo>* meshes;
 		vk::raii::Buffer* vertexBuf;
 		vk::raii::Buffer* indexBuf;
-		std::vector<RenderSet>* rendersets;
+		std::vector<RenderSet> renderSets;
+		vk::raii::Sampler sampler;
 
+		vk::raii::Buffer vertexBuffer;
+		vk::raii::Buffer indexBuffer;
+		vk::raii::DeviceMemory vertexBufferMemory;
+		vk::raii::DeviceMemory indexBufferMemory;
 
 		void createImages();// depth color and 2 out images
 		void createPipeline();//idk something here

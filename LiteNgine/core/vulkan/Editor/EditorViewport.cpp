@@ -11,19 +11,17 @@ namespace lte {
 		size = Size;
 		createImages();
 		createPipeline();
+		inline auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
 		CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 		singleTimeCommandInfo info{&Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue};
-		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, Lt_Vulkan::devices[0].physicalDevice,info);
-		rendersets = &FileLoader::renderSets;
-
-
-		deviceHandler.createTextureSampler(&sampler, PhysicalDevice, primary.device);
-		singleTimeCommandInfo cmdinfo{ &primary.device ,&commandPool , &primary.queue };
-
-		Buffers::createVertexBuffer(FileLoader::VertexesSize, FileLoader::VertexArray, &vertexBuffer, &vertexBufferMem, cmdinfo, PhysicalDevice);
-		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMem, cmdinfo, PhysicalDevice);
-
+		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, physDev,info);
 		renderSets = FileLoader::renderSets;
+
+
+		DeviceHandler::createTextureSampler(&sampler, physDev, Lt_Vulkan::devices[0].logicalDevice);
+
+		Buffers::createVertexBuffer(FileLoader::VertexesSize, FileLoader::VertexArray, &vertexBuffer, &vertexBufferMemory, info, physDev);
+		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);
 		//fix this later
 
 		MeshInfo.push_back(LtMeshInfo{});
