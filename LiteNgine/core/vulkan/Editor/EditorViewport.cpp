@@ -35,13 +35,8 @@ namespace lte {
 		MeshInfo[1].rotation = { 0.0f, 0.0f, 0.0f };
 		MeshInfo[1].scale = { 0.45f, 0.45f, 0.45f };
 
-		/*MeshInfo[2].position = { 2.0f, 0.0f, -1.0f };
-		MeshInfo[2].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
-		MeshInfo[2].scale = { 0.85f, 0.85f, 0.85f };
-		MeshInfo.resize(renderSets.size());*/
-
-		Buffers::createUniformBuffers(&MeshInfo, framesInFlight, primary.device, PhysicalDevice);
-		deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
+		Buffers::createUniformBuffers(&MeshInfo, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
+		DeviceHandler::createDescriptorPool(&pool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
 
 		//load models, create descriptor sets and rendersets and stuff
 	}
