@@ -301,5 +301,6 @@
     <Text Include="core\vulkan\EngineClasses\importer.txt" />
     <Text Include="core\documentas\class guide.txt" />
     <Text Include="core\documentas\bootprefs.txt" />
+    <Text Include="core\documentas\todo.txt" />
   </ItemGroup>
 </Project>

@@ -41,10 +41,12 @@ namespace lte {
 
 		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
 		DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
+		DeviceHandler::createDescriptorSets(pipeline.descSetLayout,descriptorPool,sampler,meshes,framesInFlight,deviceSet.logicalDevice,renderSets);
+
 		descriptorSets.resize(framesInFlight);
 		for (int i = 0; i < FramesInFlight; i++) 
 		{
-			CreateImGuiDescriptionSets(descriptorSets[i],*images[i]);
+			descriptorSets[i] = ImGui_ImplVulkan_AddTexture(*images[i]->imageSampler, *images[i]->imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		
 		//load models, create descriptor sets and rendersets and stuff
@@ -69,21 +71,24 @@ namespace lte {
 		vk::Format depthFormat = PipelineDelegate::findDepthFormat(deviceSet.physicalDevice);
 		ImageDelegate::createImage(depthImage, size.x, size.y, 1, samples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 		ImageDelegate::createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1, deviceSet.logicalDevice);
+		
 		images.clear();
 
 
 		//swap images
 		for (int i = 0; i < framesInFlight; i++) {
 			LtImage swapImg{};
-			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
+			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 			ImageDelegate::createImageView(swapImg, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
+			ImageDelegate::createSampler(swapImg, deviceSet.logicalDevice);
+
 			images.emplace_back(std::make_unique<LtImage>(std::move(swapImg)));
 		}
 
 	}
 	void EditorViewport::createPipeline()
 	{
-		std::string shaderFilepath = "shaders/shader.slang";
+		std::string shaderFilepath = "shaders/slang.spv";
 		auto& deviceSet = Lt_Vulkan::devices[0];
 
 		vk::PipelineShaderStageCreateInfo vertShaderInfo{};
@@ -119,7 +124,7 @@ namespace lte {
 		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
 			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e16,
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
 			multisampling.sampleShadingEnable = vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.depthTestEnable = vk::True,
@@ -210,21 +215,21 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
 			vk::ImageAspectFlagBits::eDepth, commandBuffer);
 
-		vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.05f, 0.1f, 1.0f);
+		vk::ClearValue clearColor = vk::ClearColorValue(0.8f, 0.05f, 0.1f, 1.0f);
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-		attachmentInfo.imageView = *colorImage.imageView,
+			attachmentInfo.imageView = *colorImage.imageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			attachmentInfo.resolveImageView = *(images[swapFrame]->imageView),
+			//attachmentInfo.resolveImageView = *(images[swapFrame]->imageView),
 			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
 			attachmentInfo.clearValue = clearColor;
 
 		vk::RenderingAttachmentInfo depthAttachmentInfo{};
-		depthAttachmentInfo.imageView = *depthImage.imageView,
+			depthAttachmentInfo.imageView = *depthImage.imageView,
 			depthAttachmentInfo.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
 			depthAttachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			depthAttachmentInfo.storeOp = vk::AttachmentStoreOp::eDontCare,
@@ -245,8 +250,8 @@ namespace lte {
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, size.x, size.y, 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), extent));
 
-		commandBuffer.bindVertexBuffers(0, **vertexBuf, { 0 });
-		commandBuffer.bindIndexBuffer(**indexBuf, 0, vk::IndexType::eUint32);
+		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
+		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint32);
 
 		uint64_t objectid = 0;
 
@@ -260,14 +265,14 @@ namespace lte {
 				*gameObject.descriptorSets[swapFrame],
 				nullptr);
 			// Draw the object
-			commandBuffer.drawIndexed(renderSets[objectid].IndiceArraySize, 1, renderSets[objectid].IndiceArrayStartIndex, renderSets[objectid].vertexArrayStartIndex, 0);
+			//commandBuffer.drawIndexed(renderSets[objectid].IndiceArraySize, 1, renderSets[objectid].IndiceArrayStartIndex, renderSets[objectid].vertexArrayStartIndex, 0);
 			objectid++;
 		}
 		commandBuffer.endRendering();
 		ImageDelegate::transition_image_layout(
 			*(images[swapFrame]->image),
 			vk::ImageLayout::eColorAttachmentOptimal,
-			vk::ImageLayout::ePresentSrcKHR,
+			vk::ImageLayout::eShaderReadOnlyOptimal,
 			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
 			{},                                                     // dstAccessMask
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
@@ -319,89 +324,44 @@ namespace lte {
 
 	void EditorViewport::UpdateGui()
 	{
-		//auto fenceResult = device.waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
-		//if (fenceResult != vk::Result::eSuccess)
-		//{
-		//	throw std::runtime_error("failed to wait for fence!");
-		//}
-		//auto [result, imageIndex] = swapChain.acquireNextImage(UINT64_MAX, *presentCompleteSemaphores[frameIndex], nullptr);
-
-		//if (result == vk::Result::eErrorOutOfDateKHR)
-		//{
-		//	recreateSwapChain();
-		//	return;
-		//}
-		//if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
-		//{
-		//	assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
-		//	throw std::runtime_error("failed to acquire swap chain image!");
-		//}
-		//device.resetFences(*inFlightFences[frameIndex]);
-		//commandBuffers[frameIndex].reset();
-		//recordCommandBuffer(imageIndex);
-
-		//if (gui->drawFrame()) {
-		//	gui->updateBuffers();
-		//}
-		//gui->drawFrame();
-
-		//vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		//const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex], *pUiCommandBuffer->at(frameIndex) };
-
-		//const vk::SubmitInfo submitInfo{
-		//								1,
-		//								&*presentCompleteSemaphores[frameIndex],
-		//								&waitDestinationStageMask,
-		//								static_cast<uint32_t>(std::size(PackedBuffer)),
-		//								&*PackedBuffer,
-		//								1,
-		//								&*renderFinishedSemaphores[imageIndex] };
-		///*vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-		//const vk::SubmitInfo submitInfo{
-		//								1,
-		//								&*presentCompleteSemaphores[frameIndex],
-		//								&waitDestinationStageMask,
-		//								1,
-		//								&*commandBuffers[frameIndex],
-		//								1,
-		//								&*renderFinishedSemaphores[imageIndex] };*/
-		//queue.submit(submitInfo, *inFlightFences[frameIndex]);
-		////bruhhhhhhh
-		//const vk::PresentInfoKHR presentInfoKHR{ 1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex };
-
-		//if (framebufferResized)
-		//{
-		//	framebufferResized = false;
-		//	gui->firstFrame = true;
-		//	gui->updateFrameBuffer();
-		//	recreateSwapChain();
-		//	std::cout << "resize" << "\n";
-		//	return;
-		//}
-
-
-		//result = queue.presentKHR(presentInfoKHR); //error here 
-
-		//switch (result)
-		//{
-		//case vk::Result::eSuccess:
-		//	break;
-		//case vk::Result::eSuboptimalKHR:
-		//	framebufferResized = false;
-		//	recreateSwapChain();
-		//	std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n";
-		//	break;
-		//default:
-		//	framebufferResized = false;
-		//	recreateSwapChain();
-		//	std::cerr << "what the fuck" << "\n";
-		//	break;        // an unexpected result is returned!
-		//}
-
 		frameNum++;
 		auto& cmdBuf = commandBuffers[swapFrame];
+		uint64_t handleValue = (uint64_t)(VkCommandBuffer)*cmdBuf;
+
+		if (handleValue == 0xCDCDCDCDCDCDCDCD ||
+			handleValue == 0xDDDDDDDDDDDDDDDD ||
+			handleValue == 0xCCCCCCCCCCCCCCCC)
+		{
+			throw std::runtime_error("CAUGHT IT: The command buffer memory was deleted or uninitialized!");
+		}
 		UpdateUniformBuffers();
+
+		auto fenceResult = Lt_Vulkan::devices[0].logicalDevice.waitForFences(*syncSet.inFlightFences[swapFrame], vk::True, UINT64_MAX);
+		if (fenceResult != vk::Result::eSuccess)
+		{
+			throw std::runtime_error("failed to wait for fence!");
+		}
+		Lt_Vulkan::devices[0].logicalDevice.resetFences(*syncSet.inFlightFences[swapFrame]);
+		
+		cmdBuf.reset();
+		
+		ImGui::Begin("big VP (viewport)", NULL);
+		ImGui::Image(descriptorSets[swapFrame], ImVec2( size.x, size.y));
+		ImGui::End();
+		
 		SubmitCommands(cmdBuf);
+		
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		const vk::SubmitInfo submitInfo{
+										1,
+										//here
+										&*syncSet.presentCompleteSemaphores[swapFrame],
+										&waitDestinationStageMask,
+										1,
+										&*commandBuffers[swapFrame],
+										1,
+										&*syncSet.renderFinishedSemaphores[swapFrame] };
+		Lt_Vulkan::devices[0].queue.submit(submitInfo, *syncSet.inFlightFences[swapFrame]);
 		swapFrame++;
 		swapFrame %= framesInFlight;
 	}
@@ -410,12 +370,8 @@ namespace lte {
 	}
 	EditorViewport::~EditorViewport()
 	{
-	}
-	void EditorViewport::CreateImGuiDescriptionSets(VkDescriptorSet& ds,LtImage& image)
-	{
-		// Create Image View Descriptor Set 
-		// (note: before 1.92.8 this also took a Sampler. See Wiki history)
-		ds = ImGui_ImplVulkan_AddTexture(*image.imageSampler, *image.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+		for (int i = 0; i < framesInFlight; i++) {
+			ImGui_ImplVulkan_RemoveTexture(descriptorSets[i]);
+		}
 	}
 }

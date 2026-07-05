@@ -28,6 +28,8 @@ void CheckVKResult(VkResult err) {
 namespace lte {
 	void Lt_Gui::Instantiate()
 	{
+	
+		//Imgui_ImplVulkan();
 		/*createDescriptorPool();
 		createResources();*/
 	}
@@ -69,6 +71,8 @@ namespace lte {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+		io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+		io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 		io.DisplaySize.x = (float)creationInfo.width;
 		io.DisplaySize.y = (float)creationInfo.height;
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);

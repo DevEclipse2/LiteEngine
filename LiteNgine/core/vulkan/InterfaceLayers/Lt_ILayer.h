@@ -24,6 +24,7 @@ namespace lte {
 		void Loop();
 		void Resize();
 		uint32_t mainWindowIndex = 0;
+		uint32_t frameCount = 0;
 		Lt_Vulkan vulkanHandler{};
 		std::vector<std::function<void()>> UiUpdateFuncs;
 	private:

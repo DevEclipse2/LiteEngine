@@ -25,6 +25,7 @@ namespace lte {
 		uint8_t framesInFlight = 2;
 		uint32_t frameNum = 0;
 		uint8_t swapFrame = 0;
+		vk::raii::DescriptorPool descriptorPool = nullptr;
 		std::vector<std::unique_ptr<LtImage>> images;
 		std::vector<VkDescriptorSet> descriptorSets;
 		LtPipeline pipeline;
@@ -33,11 +34,8 @@ namespace lte {
 		LtImage depthImage{};
 
 		std::vector<LtMeshInfo> meshes;
-		vk::raii::Buffer* vertexBuf = nullptr;
-		vk::raii::Buffer* indexBuf = nullptr;
 		std::vector<RenderSet> renderSets;
 		vk::raii::Sampler sampler = nullptr;
-		vk::raii::DescriptorPool descriptorPool = nullptr;
 		vk::raii::Buffer vertexBuffer = nullptr;
 		vk::raii::Buffer indexBuffer = nullptr;
 		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
@@ -49,9 +47,7 @@ namespace lte {
 		void UpdateUniformBuffers( );
 		/*void recreateImages();
 		void createSyncSets();*/
-		
 		LtSyncSet syncSet{};
-		void CreateImGuiDescriptionSets(VkDescriptorSet& ds, LtImage& img);
 		//??????
 		float fps = 1.0f;
 		float prevtime;

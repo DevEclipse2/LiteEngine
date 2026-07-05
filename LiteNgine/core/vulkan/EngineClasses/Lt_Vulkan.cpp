@@ -101,12 +101,22 @@ namespace lte {
 			throw std::runtime_error("Required extension not supported: " + std::string(*unsupportedPropertyIt));
 		}
 
+		/*std::vector<vk::ValidationFeatureEnableEXT> enables = {
+	vk::ValidationFeatureEnableEXT::eGpuAssisted,
+	vk::ValidationFeatureEnableEXT::eGpuAssistedReserveBindingSlot
+		};
+
+		vk::ValidationFeaturesEXT features = {};
+		features.enabledValidationFeatureCount = static_cast<uint32_t>(enables.size());
+		features.pEnabledValidationFeatures = enables.data();*/
+
 		vk::InstanceCreateInfo createInfo{};
 		createInfo.pApplicationInfo = &appInfo;
 		createInfo.enabledLayerCount = static_cast<uint32_t>(requiredLayers.size());
 		createInfo.ppEnabledLayerNames = requiredLayers.data(),
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
 		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
+		//createInfo.pNext = &features;
 		instance = vk::raii::Instance(context, createInfo);
 	}
 	std::vector<const char*> Lt_Vulkan::getRequiredInstanceExtensions(bool enableValidationLayers)

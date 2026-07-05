@@ -40,12 +40,6 @@ namespace lte {
 		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
 		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
 
-
-
-
-		fileLoader.TemporaryFileLoad(device, PhysicalDevice, cmdInfo);
-
-
 		
 		Lt_WindowVK mainWindow{};
 		mainWindow.registerWindow(mainWindowIndex, windowMgr.mainId);
@@ -83,19 +77,23 @@ namespace lte {
 		GuiCreationInfo.colorImageViewIndex = &Lt_Vulkan::windows[mainWindowIndex].swapchain.colorImage;
 		GuiCreationInfo.pImageViews = &Lt_Vulkan::windows[mainWindowIndex].swapchain.imageViews;
 		Con::LogEvent("Spinning up User Interface...", TAG_ENGINE);
+		std::cout << "spinning up UI" << std::endl;
 		guiHandler.InitGui(GuiCreationInfo);
 		guiHandler.Instantiate();			
 		guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 		guiHandler.updateBuffers();
-
 		viewport.Init();
 		editorViewport.Init(ImVec2(800,600),2);
 		nodeSystem = NodeSystem{viewport.m_Context};
 		//Viewport::Init(this);
+		std::cout << "FirstFrame Rendering" << std::endl;
+		Con::LogEvent("Preparing to render first frame", TAG_ENGINE);
 
 	}
 	void Lt_ILayer::Loop()
 	{
+		std::cout << "Rendering frame " << frameCount << std::endl;
+		Con::LogEvent("new frame", TAG_ENGINE);
 		Con::Display();
 		//backend.Update();
 		
@@ -135,6 +133,7 @@ namespace lte {
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
 		/*backend.SubmitCommandBuffers();
 		backend.Draw();*/
+		frameCount++;
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;
 	}

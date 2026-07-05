@@ -1,3 +1,365 @@
-Sun Jul  5 15:12:10 2026
+Mon Jul  6 00:12:42 2026
 
 LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+00:12:42.508 info: engine, begin launch bootstrap process
+00:12:47.408 info: engine, user entered selection
+00:12:47.408 info: engine, launch bootstrap process completed with response : continue
+00:12:47.408 info: engine, program to continue execution
+00:12:47.408 info: debug, generic, loaded new path from preferences logs/
+00:12:47.410 success: debug, generic, successfully written to new address :  logs/log at Jul  6 00-11-17 2026.txt
+00:12:47.411 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+00:12:47.986 info: vulkan, validation layer: type { General } msg: --- WELCOME TO LITENGINE ---
+00:12:48.001 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll)
+00:12:48.001 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\graphics-hook64.dll)
+00:12:48.001 info: vulkan, validation layer: type { General } msg: vkCreateDevice layer callstack setup to:
+00:12:48.002 info: vulkan, validation layer: type { General } msg:    <Application>
+00:12:48.002 info: vulkan, validation layer: type { General } msg:      ||
+00:12:48.002 info: vulkan, validation layer: type { General } msg:    <Loader>
+00:12:48.002 info: vulkan, validation layer: type { General } msg:      ||
+00:12:48.002 info: vulkan, validation layer: type { General } msg:    VK_LAYER_OBS_HOOK
+00:12:48.003 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+00:12:48.003 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+00:12:48.003 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE
+00:12:48.003 info: vulkan, validation layer: type { General } msg:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+00:12:48.004 info: vulkan, validation layer: type { General } msg:            Library:  C:\ProgramData\obs-studio-hook\graphics-hook64.dll
+00:12:48.004 info: vulkan, validation layer: type { General } msg:      ||
+00:12:48.004 info: vulkan, validation layer: type { General } msg:    VK_LAYER_KHRONOS_validation
+00:12:48.004 info: vulkan, validation layer: type { General } msg:            Type: Explicit
+00:12:48.004 info: vulkan, validation layer: type { General } msg:            Enabled By: By the Application
+00:12:48.005 info: vulkan, validation layer: type { General } msg:            Manifest: C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.json
+00:12:48.005 info: vulkan, validation layer: type { General } msg:            Library:  C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll
+00:12:48.006 info: vulkan, validation layer: type { General } msg:      ||
+00:12:48.008 info: vulkan, validation layer: type { General } msg:    <Device>
+00:12:48.012 info: vulkan, validation layer: type { General } msg:        Using "Intel(R) UHD Graphics" with driver: "C:\windows\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_7bee8b32df4bfc59\igvk64.dll"
+00:12:48.155 event: engine, Spinning up User Interface...
+00:12:48.314 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCreateImageView(): pCreateInfo Using format (VK_FORMAT_R8G8B8A8_SRGB) with aspect flags (VK_IMAGE_ASPECT_DEPTH_BIT) but color image formats must have the VK_IMAGE_ASPECT_COLOR_BIT set.
+The Vulkan spec states: subresourceRange.aspectMask must be valid for the format the image was created with (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkImageViewCreateInfo-subresourceRange-09594)
+00:12:48.607 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdCopyBufferToImage(): pRegions[0] is trying to copy 4194304 bytes to/from the (VkBuffer 0x530000000053) which exceeds the VkBuffer total size of 3145728 bytes.
+Last texel coordinate of the image is at {x = 1023, y = 1023, z = 0, layer = 0}
+rowExtent = 4096, sliceExtent = 4194304, layerExtent = 4194304
+The final byte found is at bufferOffset (0) + texelOffset (4194300) + blockSize (4) (VK_FORMAT_R8G8B8A8_SRGB).
+The Vulkan spec states: srcBuffer must be large enough to contain all buffer locations that are accessed according to Buffer and Image Addressing, for each element of pRegions (https://docs.vulkan.org/spec/latest/chapters/copies.html#VUID-vkCmdCopyBufferToImage-pRegions-00171)
+00:12:49.027 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdCopyBufferToImage(): pRegions[0] is trying to copy 13177696 bytes to/from the (VkBuffer 0x5a000000005a) which exceeds the VkBuffer total size of 9883272 bytes.
+Last texel coordinate of the image is at {x = 2491, y = 1321, z = 0, layer = 0}
+rowExtent = 9968, sliceExtent = 13177696, layerExtent = 13177696
+The final byte found is at bufferOffset (0) + texelOffset (13177692) + blockSize (4) (VK_FORMAT_R8G8B8A8_SRGB).
+The Vulkan spec states: srcBuffer must be large enough to contain all buffer locations that are accessed according to Buffer and Image Addressing, for each element of pRegions (https://docs.vulkan.org/spec/latest/chapters/copies.html#VUID-vkCmdCopyBufferToImage-pRegions-00171)
+00:12:49.060 event: engine, Preparing to render first frame
+00:12:49.064 event: engine, new frame
+00:12:49.156 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.159 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x4f000000004f) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.169 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.171 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.173 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.175 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.182 event: engine, new frame
+00:12:49.191 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.193 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x510000000051) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.199 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.204 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.205 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.208 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.213 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.215 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.217 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.219 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.220 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.229 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:49.230 event: engine, new frame
+00:12:49.241 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.245 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x4f000000004f) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.247 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4d000000004d) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.251 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdDrawIndexed(): VkRenderingInfo::pColorAttachments[0].imageView was created with an image sample count (VK_SAMPLE_COUNT_16_BIT) which does not match the corresponding VkPipelineMultisampleStateCreateInfo::rasterizationSamples (VK_SAMPLE_COUNT_1_BIT).
+The Vulkan spec states: If the bound pipeline was created without a VkAttachmentSampleCountInfoAMD or VkAttachmentSampleCountInfoNV structure, and the multisampledRenderToSingleSampled feature is not enabled, and vkCmdBeginCustomResolveEXT has not yet been recorded in the render pass instance, and the current render pass instance was begun with vkCmdBeginRendering with a VkRenderingInfo::colorAttachmentCount parameter greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with a imageView not equal to VK_NULL_HANDLE must have been created with a sample count equal to the value of rasterizationSamples for the bound graphics pipeline (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-multisampledRenderToSingleSampled-07285)
+00:12:49.253 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.259 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.262 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:49.267 event: engine, new frame
+00:12:49.273 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.277 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x510000000051) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.278 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4e000000004e) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.280 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.282 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.282 event: engine, new frame
+00:12:49.293 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f52964a408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.297 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.298 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x4f000000004f) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.300 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4d000000004d) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.303 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.304 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.305 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x190000000019) is being signaled by VkQueue 0x12dd2975f908, but it may still be in use by VkSwapchainKHR 0x60000000006.
+Most recently acquired image indices: [0], 1, 2, 0, 0.
+(Brackets mark the last use of VkSemaphore 0x190000000019 in a presentation operation.)
+Swapchain image 0 was presented but was not re-acquired, so VkSemaphore 0x190000000019 may still be in use and cannot be safely reused with image index 0.
+Vulkan insight: See https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html for details on swapchain semaphore reuse. Examples of possible approaches:
+   a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
+   b) Consider the VK_KHR_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.306 event: engine, new frame
+00:12:49.313 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f529654408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.324 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.326 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x510000000051) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.328 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4e000000004e) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.333 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.336 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.338 event: engine, new frame
+00:12:49.351 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f529636408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.363 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.368 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x4f000000004f) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.372 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4d000000004d) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.374 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.380 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.391 event: engine, new frame
+00:12:49.396 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f52964a408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.400 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.403 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x510000000051) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.405 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4e000000004e) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.412 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.415 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.420 event: engine, new frame
+00:12:49.428 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f529654408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.432 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.433 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x4f000000004f) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.435 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4d000000004d) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.437 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.443 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.450 event: engine, new frame
+00:12:49.454 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f529636408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.457 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdBeginRendering(): pRenderingInfo->pColorAttachments[0].resolveMode (VK_RESOLVE_MODE_AVERAGE_BIT) is not VK_RESOLVE_MODE_NONE, resolveImageView must not be VK_NULL_HANDLE.
+The Vulkan spec states: If all of the following are true: imageView is not VK_NULL_HANDLE resolveMode is not VK_RESOLVE_MODE_NONE the pNext chain of VkRenderingInfo does not include a VkMultisampledRenderToSingleSampledInfoEXT structure with the multisampledRenderToSingleSampledEnable field equal to VK_TRUE resolveImageView must not be VK_NULL_HANDLE (https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VUID-VkRenderingAttachmentInfo-imageView-06862)
+00:12:49.459 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkQueueSubmit(): pSubmits[0].pWaitSemaphores[0] queue (VkQueue 0x12dd2975f908) is waiting on semaphore (VkSemaphore 0x510000000051) that has no way to be signaled.
+The Vulkan spec states: All elements of the pWaitSemaphores member of all elements of pSubmits created with a VkSemaphoreType of VK_SEMAPHORE_TYPE_BINARY must reference a semaphore signal operation that has been submitted for execution and any semaphore signal operations on which it depends must have also been submitted for execution (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pWaitSemaphores-03238)
+00:12:49.460 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4e000000004e) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.462 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdPipelineBarrier2(): was recorded, but vkBeginCommandBuffer() was not called prior to this command.
+The Vulkan spec states: commandBuffer must be in the recording state (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-vkCmdPipelineBarrier2-commandBuffer-recording)
+00:12:49.463 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkCmdPipelineBarrier2(): pDependencyInfo->pImageMemoryBarriers[0].image (VkImage 0x220000000022) cannot transition the layout of aspect=1, level=0, layer=0 from VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL when the previous known layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If layouts are not ignored, oldLayout must be VK_IMAGE_LAYOUT_UNDEFINED or the current layout of the image subresources affected by the barrier (https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VUID-VkImageMemoryBarrier2-oldLayout-01197)
+00:12:49.464 event: engine, new frame
+00:12:49.473 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f52964a408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.479 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x4d000000004d) is being signaled by VkQueue 0x12dd2975f908, but it was previously signaled by VkQueue 0x12dd2975f908 and has not since been waited on.
+The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
+00:12:49.481 event: engine, new frame
+00:12:49.490 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f529654408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.494 event: engine, new frame
+00:12:49.500 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f529636408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.508 event: engine, new frame
+00:12:49.515 error: undefined, 	vulkan, validation layer: type { Validation } msg: (Warning - This VUID has now been reported 10 times, which is the duplicate_message_limit value, this will be the last time reporting it).
+vkQueueSubmit(): pSubmits[0] command buffer VkCommandBuffer 0x12f52964a408 expects VkImage 0x340000000034 (subresource: aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://docs.vulkan.org/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+00:12:49.526 event: engine, new frame
+00:12:49.545 event: engine, new frame
+00:12:49.562 event: engine, new frame
+00:12:49.579 event: engine, new frame
+00:12:49.591 event: engine, new frame
+00:12:49.612 event: engine, new frame
+00:12:49.623 event: engine, new frame
+00:12:49.644 event: engine, new frame
+00:12:49.657 event: engine, new frame
+00:12:49.673 event: engine, new frame
+00:12:49.690 event: engine, new frame
+00:12:49.706 event: engine, new frame
+00:12:49.723 event: engine, new frame
+00:12:49.741 event: engine, new frame
+00:12:49.760 event: engine, new frame
+00:12:49.777 event: engine, new frame
+00:12:49.793 event: engine, new frame
+00:12:49.809 event: engine, new frame
+00:12:49.826 event: engine, new frame
+00:12:49.843 event: engine, new frame
+00:12:49.856 event: engine, new frame
+00:12:49.877 event: engine, new frame
+00:12:49.889 event: engine, new frame
+00:12:49.910 event: engine, new frame
+00:12:49.923 event: engine, new frame
+00:12:49.941 event: engine, new frame
+00:12:50.403 event: engine, new frame
+00:12:50.483 info: engine, main window resized
+00:12:50.489 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:50.489 event: engine, new frame
+00:12:50.494 event: engine, new frame
+00:12:50.516 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:50.524 event: engine, new frame
+00:12:50.527 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] images passed to present must be in layout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR but VkImage 0x970000000097 is in VK_IMAGE_LAYOUT_UNDEFINED.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:50.529 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] image at index 0 was not acquired from the swapchain.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:50.541 event: engine, new frame
+00:12:50.544 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkQueuePresentKHR(): pPresentInfo->pSwapchains[0] images passed to present must be in layout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR but VkImage 0x970000000097 is in VK_IMAGE_LAYOUT_UNDEFINED.
+The Vulkan spec states: Each element of pImageIndices must be the index of a presentable image acquired from the swapchain specified by the corresponding element of the pSwapchains array, and the presented image subresource must be in the VK_IMAGE_LAYOUT_PRESENT_SRC_KHR or VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR layout at the time the operation is executed on a VkDevice (https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-VkPresentInfoKHR-pImageIndices-01430)
+00:12:50.546 event: engine, new frame
+00:12:50.558 event: engine, new frame
+00:12:50.576 event: engine, new frame
+00:12:50.588 event: engine, new frame
+00:12:50.609 event: engine, new frame
+00:12:50.626 event: engine, new frame
+00:12:50.641 event: engine, new frame
+00:12:50.657 event: engine, new frame
+00:12:50.672 event: engine, new frame
+00:12:50.689 event: engine, new frame
+00:12:50.710 event: engine, new frame
+00:12:50.727 event: engine, new frame
+00:12:50.742 event: engine, new frame
+00:12:50.758 event: engine, new frame
+00:12:50.775 event: engine, new frame
+00:12:50.793 event: engine, new frame
+00:12:50.812 event: engine, new frame
+00:12:50.822 event: engine, new frame
+00:12:50.843 event: engine, new frame
+00:12:50.855 event: engine, new frame
+00:12:50.877 event: engine, new frame
+00:12:50.888 event: engine, new frame
+00:12:50.911 event: engine, new frame
+00:12:50.923 event: engine, new frame
+00:12:50.940 event: engine, new frame
+00:12:50.956 event: engine, new frame
+00:12:50.973 event: engine, new frame
+00:12:50.994 event: engine, new frame
+00:12:51.009 event: engine, new frame
+00:12:51.026 event: engine, new frame
+00:12:51.043 event: engine, new frame
+00:12:51.058 event: engine, new frame
+00:12:51.076 event: engine, new frame
+00:12:51.088 event: engine, new frame
+00:12:51.108 event: engine, new frame
+00:12:51.121 event: engine, new frame
+00:12:51.143 event: engine, new frame
+00:12:51.155 event: engine, new frame
+00:12:51.172 event: engine, new frame
+00:12:51.189 event: engine, new frame
+00:12:51.208 event: engine, new frame
+00:12:51.225 event: engine, new frame
+00:12:51.243 event: engine, new frame
+00:12:51.259 event: engine, new frame
+00:12:51.276 event: engine, new frame
+00:12:51.291 event: engine, new frame
+00:12:51.310 event: engine, new frame
+00:12:51.322 event: engine, new frame
+00:12:51.343 event: engine, new frame
+00:12:51.355 event: engine, new frame
+00:12:51.375 event: engine, new frame
+00:12:51.387 event: engine, new frame
+00:12:51.408 event: engine, new frame
+00:12:51.421 event: engine, new frame
+00:12:51.438 event: engine, new frame
+00:12:51.457 event: engine, new frame
+00:12:51.476 event: engine, new frame
+00:12:51.487 event: engine, new frame
+00:12:51.508 event: engine, new frame
+00:12:51.526 event: engine, new frame
+00:12:51.543 event: engine, new frame
+00:12:51.558 event: engine, new frame
+00:12:51.575 event: engine, new frame
+00:12:51.592 event: engine, new frame
+00:12:51.609 event: engine, new frame
+00:12:51.622 event: engine, new frame
+00:12:51.643 event: engine, new frame
+00:12:51.658 event: engine, new frame
+00:12:51.679 event: engine, new frame
+00:12:51.704 event: engine, new frame
+00:12:51.707 event: engine, new frame
+00:12:51.725 event: engine, new frame
+00:12:51.745 event: engine, new frame
+00:12:51.763 event: engine, new frame
+00:12:51.775 event: engine, new frame
+00:12:51.792 event: engine, new frame
+00:12:51.809 event: engine, new frame
+00:12:51.822 event: engine, new frame
+00:12:52.060 event: engine, new frame
+00:12:52.062 event: engine, engine shutdown-------------------------------------------
+00:12:52.074 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkFreeDescriptorSets(): pDescriptorSets[0] can't be called on VkDescriptorSet 0x380000000038 that is currently in use by VkCommandBuffer 0x12f52964a408.
+The Vulkan spec states: All submitted commands that refer to any element of pDescriptorSets must have completed execution (https://docs.vulkan.org/spec/latest/chapters/descriptorsets.html#VUID-vkFreeDescriptorSets-pDescriptorSets-00309)
+00:12:52.079 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyBuffer(): can't be called on VkBuffer 0x920000000092 that is currently in use by VkCommandBuffer 0x12f529654408.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+00:12:52.080 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyBuffer(): can't be called on VkBuffer 0x940000000094 that is currently in use by VkCommandBuffer 0x12f529654408.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+00:12:52.082 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyBuffer(): can't be called on VkBuffer 0x840000000084 that is currently in use by VkCommandBuffer 0x12f529636408.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+00:12:52.083 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyBuffer(): can't be called on VkBuffer 0x860000000086 that is currently in use by VkCommandBuffer 0x12f529636408.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+00:12:52.084 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyBuffer(): can't be called on VkBuffer 0x8e000000008e that is currently in use by VkCommandBuffer 0x12f52964a408.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+00:12:52.085 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyBuffer(): can't be called on VkBuffer 0x900000000090 that is currently in use by VkCommandBuffer 0x12f52964a408.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+00:12:52.086 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkFreeDescriptorSets(): pDescriptorSets[0] can't be called on VkDescriptorSet 0x810000000081 that is currently in use by VkCommandBuffer 0x12f52964a408.
+The Vulkan spec states: All submitted commands that refer to any element of pDescriptorSets must have completed execution (https://docs.vulkan.org/spec/latest/chapters/descriptorsets.html#VUID-vkFreeDescriptorSets-pDescriptorSets-00309)
+00:12:52.091 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkDestroyPipeline(): can't be called on VkPipeline 0x320000000032 that is currently in use by VkCommandBuffer 0x12f52964a408.
+The Vulkan spec states: All submitted commands that refer to pipeline must have completed execution (https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VUID-vkDestroyPipeline-pipeline-00765)
+00:12:52.094 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkFreeMemory(): can't be called on VkDeviceMemory 0x9e000000009e that is currently in use by VkImage 0x9d000000009d.
+The Vulkan spec states: All submitted commands that refer to memory (via images or buffers) must have completed execution (https://docs.vulkan.org/spec/latest/chapters/memory.html#VUID-vkFreeMemory-memory-00677)
+00:12:52.096 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkFreeMemory(): can't be called on VkDeviceMemory 0xa100000000a1 that is currently in use by VkImage 0xa000000000a0.
+The Vulkan spec states: All submitted commands that refer to memory (via images or buffers) must have completed execution (https://docs.vulkan.org/spec/latest/chapters/memory.html#VUID-vkFreeMemory-memory-00677)
+00:12:52.099 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkFreeMemory(): can't be called on VkDeviceMemory 0x230000000023 that is currently in use by VkImage 0x220000000022.
+The Vulkan spec states: All submitted commands that refer to memory (via images or buffers) must have completed execution (https://docs.vulkan.org/spec/latest/chapters/memory.html#VUID-vkFreeMemory-memory-00677)
+00:12:52.101 event: engine, engine cleanup-------------------------------------------
