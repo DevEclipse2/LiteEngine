@@ -89,6 +89,7 @@ namespace lte {
 		guiHandler.updateBuffers();
 
 		viewport.Init();
+		editorViewport.Init(ImVec2(800,600),2);
 		nodeSystem = NodeSystem{viewport.m_Context};
 		//Viewport::Init(this);
 
@@ -112,8 +113,11 @@ namespace lte {
 		}
 		//add any gui draw commands here
 		guiHandler.StartFrame();
+		
 		viewport.SubmitGUICommands();
 		nodeSystem.SubmitGUICommands();
+		editorViewport.UpdateGui();
+
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{

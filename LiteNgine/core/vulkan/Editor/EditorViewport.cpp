@@ -1,17 +1,21 @@
 #include "EditorViewport.h"
 namespace lte {
-	auto& deviceSet = Lt_Vulkan::devices[deviceID];
+	uint8_t deviceID = 0;
+	
 
 
 
 	
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
 	{
+		auto& deviceSet = Lt_Vulkan::devices[deviceID];
 		framesInFlight = FramesInFlight;
 		size = Size;
 		createImages();
+		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, deviceSet.logicalDevice);
 		createPipeline();
-		inline auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
+		LtSync::createSyncObjects(syncSet, framesInFlight, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
+		auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
 		CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 		singleTimeCommandInfo info{&Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue};
 		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, physDev,info);
@@ -24,30 +28,36 @@ namespace lte {
 		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);
 		//fix this later
 
-		MeshInfo.push_back(LtMeshInfo{});
-		MeshInfo.push_back(LtMeshInfo{});
+		meshes.push_back(LtMeshInfo{});
+		meshes.push_back(LtMeshInfo{});
 		//MeshInfo.push_back(LtMeshInfo{});
-		MeshInfo[0].position = { 0.0f, 0.0f, -1.0f };
-		MeshInfo[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
-		MeshInfo[0].scale = { 1.1f, 1.1f,1.1f };
+		meshes[0].position = { 0.0f, 0.0f, -1.0f };
+		meshes[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
+		meshes[0].scale = { 1.1f, 1.1f,1.1f };
 
-		MeshInfo[1].position = { -2.0f, 0.0f, -1.0f };
-		MeshInfo[1].rotation = { 0.0f, 0.0f, 0.0f };
-		MeshInfo[1].scale = { 0.45f, 0.45f, 0.45f };
+		meshes[1].position = { -2.0f, 0.0f, -1.0f };
+		meshes[1].rotation = { 0.0f, 0.0f, 0.0f };
+		meshes[1].scale = { 0.45f, 0.45f, 0.45f };
 
-		Buffers::createUniformBuffers(&MeshInfo, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
-		DeviceHandler::createDescriptorPool(&pool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
-
+		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
+		DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
+		descriptorSets.resize(framesInFlight);
+		for (int i = 0; i < FramesInFlight; i++) 
+		{
+			CreateImGuiDescriptionSets(descriptorSets[i],*images[i]);
+		}
+		
 		//load models, create descriptor sets and rendersets and stuff
 	}
 	void EditorViewport::Recreate(ImVec2 Size, uint8_t FramesInFlight) {
 		framesInFlight = FramesInFlight;
 		size = Size;
-		createImages();
+		createImages();		
 		createPipeline();
 	}
 	void EditorViewport::createImages() {
 
+		auto& deviceSet = Lt_Vulkan::devices[deviceID];
 		vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
 		int deviceID = 0;
 		//colorimage
@@ -67,19 +77,14 @@ namespace lte {
 			LtImage swapImg{};
 			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 			ImageDelegate::createImageView(swapImg, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
-			images.emplace_back(std::move(swapImg));
+			images.emplace_back(std::make_unique<LtImage>(std::move(swapImg)));
 		}
 
 	}
 	void EditorViewport::createPipeline()
 	{
 		std::string shaderFilepath = "shaders/shader.slang";
-		std::string vertShadername = "vertex";
-		std::string fragShadername = "fragment";
-
-
-		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, deviceSet.logicalDevice);
-
+		auto& deviceSet = Lt_Vulkan::devices[0];
 
 		vk::PipelineShaderStageCreateInfo vertShaderInfo{};
 		vk::PipelineShaderStageCreateInfo fragShaderInfo{};
@@ -88,11 +93,11 @@ namespace lte {
 		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
 			vertShaderStageInfo.module = module,
-			vertShaderStageInfo.pName = vertShadername.c_str();
+			vertShaderStageInfo.pName = "vertMain";
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
 		fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
 			fragShaderStageInfo.module = module,
-			fragShaderStageInfo.pName = fragShadername.c_str();
+			fragShaderStageInfo.pName = "fragMain";
 		//defines pipeline
 
 		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
@@ -140,7 +145,7 @@ namespace lte {
 		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 		vk::PipelineDynamicStateCreateInfo dynamicState{};
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
-			dynamicState.pDynamicStates = dynamicStates.data();
+		dynamicState.pDynamicStates = dynamicStates.data();
 
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -149,24 +154,26 @@ namespace lte {
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 		vk::Format depthFormat = PipelineDelegate::findDepthFormat(Lt_Vulkan::devices[deviceID].physicalDevice);
+		vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
 
 		vk::PipelineRenderingCreateInfoKHR pipelineCreateInfo{ };
 		pipelineCreateInfo.sType = vk::StructureType::ePipelineRenderingCreateInfoKHR;
 		pipelineCreateInfo.pNext = NULL;
 		pipelineCreateInfo.viewMask = 0;
 		pipelineCreateInfo.colorAttachmentCount = 1;
-		//pipelineCreateInfo.pColorAttachmentFormats = ;
+		pipelineCreateInfo.pColorAttachmentFormats = &colorFormat;
 		pipelineCreateInfo.depthAttachmentFormat = depthFormat;
 		pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
-		vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
 
-		vk::raii::PipelineLayout pipelineLayout = vk::raii::PipelineLayout(deviceSet.logicalDevice, pipelineLayoutInfo);
-
+		vk::raii::PipelineLayout pipelineLayout(deviceSet.logicalDevice, pipelineLayoutInfo); 
 
 		pipeline.createPipeline(std::size(shaderStages), shaderStages, &vertexInputInfo, &inputAssembly, &viewportState, &rasterizer, &multisampling, &colorBlending, &dynamicState, &depthStencil, pipelineLayout, 1,
 			&colorFormat, //colorformat
 			depthFormat, deviceSet.logicalDevice);
+
+
+
 	}
 
 	void EditorViewport::SubmitCommands(vk::raii::CommandBuffer& commandBuffer)
@@ -243,7 +250,7 @@ namespace lte {
 
 		uint64_t objectid = 0;
 
-		for (const auto& gameObject : *meshes)
+		for (const auto& gameObject : meshes)
 		{
 			// Bind the descriptor set for this object
 			commandBuffer.bindDescriptorSets(
@@ -253,7 +260,7 @@ namespace lte {
 				*gameObject.descriptorSets[swapFrame],
 				nullptr);
 			// Draw the object
-			commandBuffer.drawIndexed(rendersets->at(objectid).IndiceArraySize, 1, rendersets->at(objectid).IndiceArrayStartIndex, rendersets->at(objectid).vertexArrayStartIndex, 0);
+			commandBuffer.drawIndexed(renderSets[objectid].IndiceArraySize, 1, renderSets[objectid].IndiceArrayStartIndex, renderSets[objectid].vertexArrayStartIndex, 0);
 			objectid++;
 		}
 		commandBuffer.endRendering();
@@ -271,12 +278,144 @@ namespace lte {
 		commandBuffer.end();
 	}
 
+	void EditorViewport::UpdateUniformBuffers()
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		fps = 1 / (time - prevtime);
+		frameTime = (time - prevtime) * 1000;
+		UniformBufferObject ubo{};
+
+		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 proj = glm::perspective(glm::radians(45.0f),
+			static_cast<float>(size.x) / static_cast<float>(size.y),
+			0.1f, 20.0f);
+
+		ubo.proj[1][1] *= -1;
+		// Update uniform buffers for each object
+		for (auto& gameObject : meshes) {
+			// Apply continuous rotation to the object
+			const float rotationSpeed = 0.5f;                          // Rotation speed in radians per second
+			/*gameObject.rotation.y += rotationSpeed * (time - prevtime);*/
+
+			// Get the model matrix for this object
+			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
+
+			// Create and update the UBO
+			UniformBufferObject ubo{};
+			ubo.model = model,
+				ubo.view = view,
+				ubo.proj = proj;
+
+
+			// Copy the UBO data to the mapped memory
+			memcpy(gameObject.uniformBuffersMapped[swapFrame], &ubo, sizeof(ubo));
+		}
+		prevtime = time;
+	}
+
 	void EditorViewport::UpdateGui()
 	{
+		//auto fenceResult = device.waitForFences(*inFlightFences[frameIndex], vk::True, UINT64_MAX);
+		//if (fenceResult != vk::Result::eSuccess)
+		//{
+		//	throw std::runtime_error("failed to wait for fence!");
+		//}
+		//auto [result, imageIndex] = swapChain.acquireNextImage(UINT64_MAX, *presentCompleteSemaphores[frameIndex], nullptr);
+
+		//if (result == vk::Result::eErrorOutOfDateKHR)
+		//{
+		//	recreateSwapChain();
+		//	return;
+		//}
+		//if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+		//{
+		//	assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
+		//	throw std::runtime_error("failed to acquire swap chain image!");
+		//}
+		//device.resetFences(*inFlightFences[frameIndex]);
+		//commandBuffers[frameIndex].reset();
+		//recordCommandBuffer(imageIndex);
+
+		//if (gui->drawFrame()) {
+		//	gui->updateBuffers();
+		//}
+		//gui->drawFrame();
+
+		//vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		//const vk::CommandBuffer PackedBuffer[] = { *commandBuffers[frameIndex], *pUiCommandBuffer->at(frameIndex) };
+
+		//const vk::SubmitInfo submitInfo{
+		//								1,
+		//								&*presentCompleteSemaphores[frameIndex],
+		//								&waitDestinationStageMask,
+		//								static_cast<uint32_t>(std::size(PackedBuffer)),
+		//								&*PackedBuffer,
+		//								1,
+		//								&*renderFinishedSemaphores[imageIndex] };
+		///*vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		//const vk::SubmitInfo submitInfo{
+		//								1,
+		//								&*presentCompleteSemaphores[frameIndex],
+		//								&waitDestinationStageMask,
+		//								1,
+		//								&*commandBuffers[frameIndex],
+		//								1,
+		//								&*renderFinishedSemaphores[imageIndex] };*/
+		//queue.submit(submitInfo, *inFlightFences[frameIndex]);
+		////bruhhhhhhh
+		//const vk::PresentInfoKHR presentInfoKHR{ 1, &*renderFinishedSemaphores[imageIndex],1, &*swapChain,&imageIndex };
+
+		//if (framebufferResized)
+		//{
+		//	framebufferResized = false;
+		//	gui->firstFrame = true;
+		//	gui->updateFrameBuffer();
+		//	recreateSwapChain();
+		//	std::cout << "resize" << "\n";
+		//	return;
+		//}
+
+
+		//result = queue.presentKHR(presentInfoKHR); //error here 
+
+		//switch (result)
+		//{
+		//case vk::Result::eSuccess:
+		//	break;
+		//case vk::Result::eSuboptimalKHR:
+		//	framebufferResized = false;
+		//	recreateSwapChain();
+		//	std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n";
+		//	break;
+		//default:
+		//	framebufferResized = false;
+		//	recreateSwapChain();
+		//	std::cerr << "what the fuck" << "\n";
+		//	break;        // an unexpected result is returned!
+		//}
+
 		frameNum++;
 		auto& cmdBuf = commandBuffers[swapFrame];
 		UpdateUniformBuffers();
 		SubmitCommands(cmdBuf);
 		swapFrame++;
+		swapFrame %= framesInFlight;
+	}
+	EditorViewport::EditorViewport()
+	{
+	}
+	EditorViewport::~EditorViewport()
+	{
+	}
+	void EditorViewport::CreateImGuiDescriptionSets(VkDescriptorSet& ds,LtImage& image)
+	{
+		// Create Image View Descriptor Set 
+		// (note: before 1.92.8 this also took a Sampler. See Wiki history)
+		ds = ImGui_ImplVulkan_AddTexture(*image.imageSampler, *image.imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
 	}
 }
