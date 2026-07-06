@@ -5,32 +5,33 @@
 #include "../Reworked/DeviceHandler.h"
 #include "../Reworked/TemporaryDraw.h"
 #include "../EngineClasses/Lt_Vulkan.h"
+#include "../EngineClasses/Lt_Console.h"
 
 namespace lte {
 	class EditorViewport
 	{
 	public:
-		int FrameIndex = 0;
-		int FrameAvailableIndex = -1;
+
+		uint8_t swapFrame = 0;
 
 		//create swapchain, lag behind 1 frame
 		void Init(ImVec2 size, uint8_t FramesInFlight);
 		void Recreate(ImVec2 size , uint8_t FRamesInFlight);
 		void UpdateGui();
+		void RenderScene();
+		void FinishFrame();
 		EditorViewport();
 		~EditorViewport();
+		uint8_t framesInFlight = 2;
 
 	private:
 		ImVec2 size = ImVec2(800, 600);
-		uint8_t framesInFlight = 2;
 		uint32_t frameNum = 0;
-		uint8_t swapFrame = 0;
 		vk::raii::DescriptorPool descriptorPool = nullptr;
 		std::vector<std::unique_ptr<LtImage>> images;
 		std::vector<VkDescriptorSet> descriptorSets;
 		LtPipeline pipeline;
 		std::vector<vk::raii::CommandBuffer> commandBuffers;
-		LtImage colorImage{};
 		LtImage depthImage{};
 
 		std::vector<LtMeshInfo> meshes;
@@ -44,7 +45,7 @@ namespace lte {
 		void createImages();// depth color and 2 out images
 		void createPipeline();//idk something here
 		void SubmitCommands(vk::raii::CommandBuffer& commandBuffer);//maybe reference simpledraw
-		void UpdateUniformBuffers( );
+		void UpdateUniformBuffers();
 		/*void recreateImages();
 		void createSyncSets();*/
 		LtSyncSet syncSet{};

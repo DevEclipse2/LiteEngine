@@ -1,4 +1,5 @@
 #include "EditorViewport.h"
+#include <cmath>
 namespace lte {
 	uint8_t deviceID = 0;
 	
@@ -36,7 +37,7 @@ namespace lte {
 		meshes[0].scale = { 1.1f, 1.1f,1.1f };
 
 		meshes[1].position = { -2.0f, 0.0f, -1.0f };
-		meshes[1].rotation = { 0.0f, 0.0f, 0.0f };
+		meshes[1].rotation = { 0.0f, glm::radians(90.0f), 0.0f};
 		meshes[1].scale = { 0.45f, 0.45f, 0.45f };
 
 		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
@@ -48,7 +49,6 @@ namespace lte {
 		{
 			descriptorSets[i] = ImGui_ImplVulkan_AddTexture(*images[i]->imageSampler, *images[i]->imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
-		
 		//load models, create descriptor sets and rendersets and stuff
 	}
 	void EditorViewport::Recreate(ImVec2 Size, uint8_t FramesInFlight) {
@@ -64,8 +64,6 @@ namespace lte {
 		int deviceID = 0;
 		//colorimage
 		vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
-		ImageDelegate::createImage(colorImage, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
-		ImageDelegate::createImageView(colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
 
 		//depth image
 		vk::Format depthFormat = PipelineDelegate::findDepthFormat(deviceSet.physicalDevice);
@@ -81,7 +79,6 @@ namespace lte {
 			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 			ImageDelegate::createImageView(swapImg, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
 			ImageDelegate::createSampler(swapImg, deviceSet.logicalDevice);
-
 			images.emplace_back(std::make_unique<LtImage>(std::move(swapImg)));
 		}
 
@@ -194,16 +191,6 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // dstStage
 			vk::ImageAspectFlagBits::eColor, commandBuffer);
 		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
-		ImageDelegate::transition_image_layout(
-			*colorImage.image,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::eColorAttachmentOptimal,
-			vk::AccessFlagBits2::eColorAttachmentWrite,
-			vk::AccessFlagBits2::eColorAttachmentWrite,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::ImageAspectFlagBits::eColor, commandBuffer);
-		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
 
 		ImageDelegate::transition_image_layout(
 			*depthImage.image,
@@ -215,14 +202,19 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
 			vk::ImageAspectFlagBits::eDepth, commandBuffer);
 
-		vk::ClearValue clearColor = vk::ClearColorValue(0.8f, 0.05f, 0.1f, 1.0f);
+		static auto sTime = std::chrono::high_resolution_clock::now();
+
+		auto cTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(cTime - sTime).count();
+
+		vk::ClearValue clearColor = vk::ClearColorValue(0.8f, std::sin(time)* 0.5f + 0.5f, 0.1f, 1.0f);
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = *colorImage.imageView,
+			attachmentInfo.imageView = *(images[swapFrame]->imageView),
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			//attachmentInfo.resolveImageView = *(images[swapFrame]->imageView),
+			//attachmentInfo.resolveImageView = ,
 			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
@@ -265,7 +257,7 @@ namespace lte {
 				*gameObject.descriptorSets[swapFrame],
 				nullptr);
 			// Draw the object
-			//commandBuffer.drawIndexed(renderSets[objectid].IndiceArraySize, 1, renderSets[objectid].IndiceArrayStartIndex, renderSets[objectid].vertexArrayStartIndex, 0);
+			commandBuffer.drawIndexed(renderSets[objectid].IndiceArraySize, 1, renderSets[objectid].IndiceArrayStartIndex, renderSets[objectid].vertexArrayStartIndex, 0);
 			objectid++;
 		}
 		commandBuffer.endRendering();
@@ -273,10 +265,10 @@ namespace lte {
 			*(images[swapFrame]->image),
 			vk::ImageLayout::eColorAttachmentOptimal,
 			vk::ImageLayout::eShaderReadOnlyOptimal,
-			vk::AccessFlagBits2::eColorAttachmentWrite,             // srcAccessMask
-			{},                                                     // dstAccessMask
-			vk::PipelineStageFlagBits2::eColorAttachmentOutput,     // srcStage
-			vk::PipelineStageFlagBits2::eBottomOfPipe,              // dstStage
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::AccessFlagBits2::eShaderRead,                       // dstAccessMask: We will read this in a shader!
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits2::eFragmentShader,            // dstStage: The fragment shader (ImGui) is waiting for this!
 			vk::ImageAspectFlagBits::eColor,
 			commandBuffer
 		);
@@ -303,19 +295,16 @@ namespace lte {
 		for (auto& gameObject : meshes) {
 			// Apply continuous rotation to the object
 			const float rotationSpeed = 0.5f;                          // Rotation speed in radians per second
-			/*gameObject.rotation.y += rotationSpeed * (time - prevtime);*/
+			gameObject.rotation.y += rotationSpeed * (time - prevtime);
 
 			// Get the model matrix for this object
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
-
 			// Create and update the UBO
 			UniformBufferObject ubo{};
 			ubo.model = model,
 				ubo.view = view,
 				ubo.proj = proj;
-
-
 			// Copy the UBO data to the mapped memory
 			memcpy(gameObject.uniformBuffersMapped[swapFrame], &ubo, sizeof(ubo));
 		}
@@ -324,44 +313,55 @@ namespace lte {
 
 	void EditorViewport::UpdateGui()
 	{
+		ImGui::Begin("big VP (viewport)", NULL);
+		int TargetFrame = swapFrame - 1;
+		if (TargetFrame < 0) {
+			TargetFrame += framesInFlight;
+		}
+		ImGui::Text(("FPS" + std::to_string(fps)).c_str());
+		ImGui::Text(("frameTime" + std::to_string(frameTime)).c_str());
+		ImGui::Text(("frameID" + std::to_string(frameNum)).c_str());
+		ImGui::Text(("SwapFrame" + std::to_string(swapFrame)).c_str());
+		ImGui::Image(descriptorSets[swapFrame], ImVec2( size.x, size.y));
+		ImGui::End();
+	}
+	
+	void EditorViewport::RenderScene()
+	{
 		frameNum++;
 		auto& cmdBuf = commandBuffers[swapFrame];
 		uint64_t handleValue = (uint64_t)(VkCommandBuffer)*cmdBuf;
-
-		if (handleValue == 0xCDCDCDCDCDCDCDCD ||
-			handleValue == 0xDDDDDDDDDDDDDDDD ||
-			handleValue == 0xCCCCCCCCCCCCCCCC)
-		{
-			throw std::runtime_error("CAUGHT IT: The command buffer memory was deleted or uninitialized!");
-		}
 		UpdateUniformBuffers();
 
 		auto fenceResult = Lt_Vulkan::devices[0].logicalDevice.waitForFences(*syncSet.inFlightFences[swapFrame], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{
+			Con::LogError("failed to wait for fence", CRIT_SEVERITY, TAG_ENGINE | TAG_VULKAN);
 			throw std::runtime_error("failed to wait for fence!");
 		}
 		Lt_Vulkan::devices[0].logicalDevice.resetFences(*syncSet.inFlightFences[swapFrame]);
-		
+
 		cmdBuf.reset();
-		
-		ImGui::Begin("big VP (viewport)", NULL);
-		ImGui::Image(descriptorSets[swapFrame], ImVec2( size.x, size.y));
-		ImGui::End();
-		
 		SubmitCommands(cmdBuf);
-		
+		/*int frame = swapFrame - 1;
+		if (frame < 0) {
+			frame = framesInFlight + swapFrame;
+		}*/
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo{
-										1,
-										//here
-										&*syncSet.presentCompleteSemaphores[swapFrame],
-										&waitDestinationStageMask,
-										1,
-										&*commandBuffers[swapFrame],
-										1,
-										&*syncSet.renderFinishedSemaphores[swapFrame] };
+			1,
+			//here
+			&*syncSet.presentCompleteSemaphores[swapFrame],
+			&waitDestinationStageMask,
+			1,
+			&*commandBuffers[swapFrame],
+			1,
+			&*syncSet.renderFinishedSemaphores[swapFrame] };
+
 		Lt_Vulkan::devices[0].queue.submit(submitInfo, *syncSet.inFlightFences[swapFrame]);
+	}
+	void EditorViewport::FinishFrame()
+	{
 		swapFrame++;
 		swapFrame %= framesInFlight;
 	}

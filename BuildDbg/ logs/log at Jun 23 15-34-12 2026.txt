@@ -1,0 +1,13 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+15:34:12.491 info: engine, begin launch bootstrap process
+15:34:14.673 info: engine, user entered selection
+15:34:14.673 info: engine, launch bootstrap process completed with response : continue
+15:34:14.673 info: engine, program to continue execution
+15:34:14.674 info: debug, generic, loaded new path from preferences logs/
+15:34:14.674 error: low     , 	debug, generic, Directory does not exist! attempting to create : logs/
+15:34:14.675 failed: high    , 	debug, generic, failed to create Directory
+15:34:14.676 success: debug, generic, successfully written to new address :  logs/log at Jun 23 15-33-54 2026.txt
+15:34:14.676 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+15:34:14.907 info: vulkan, validation layer: type { General } msg: While debugging through RenderDoc, debug output through validation layers is suppressed.
+To show debug output look at the 'DebugOutputMute' capture option in RenderDoc's API, but be aware of false positives from the validation layers.

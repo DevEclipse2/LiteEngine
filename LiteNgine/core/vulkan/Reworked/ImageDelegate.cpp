@@ -1,4 +1,6 @@
 #include "ImageDelegate.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 namespace lte {
 
     std::vector<uint32_t> ImageDelegate::AvailableIndexes = {};
@@ -156,6 +158,116 @@ namespace lte {
         commandBuffer.pipelineBarrier2(dependencyInfo);
     }
 
+    void ImageDelegate::DumpImages(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, VkCommandPool commandPool,
+            VkQueue queue, VkImage image, uint32_t width, uint32_t height, const char* filename)
+    {
+        VkDeviceSize imageSize = width * height * 4; // Assuming 4 bytes per pixel (RGBA8 / BGRA8)
+
+        // 1. Create a host-visible staging buffer
+        VkBuffer buffer;
+        VkDeviceMemory bufferMemory;
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = imageSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        vkCreateBuffer(*device, &bufferInfo, nullptr, &buffer);
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(*device, buffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, physicalDevice);
+
+        vkAllocateMemory(*device, &allocInfo, nullptr, &bufferMemory);
+        vkBindBufferMemory(*device, buffer, bufferMemory, 0);
+
+        // 2. Begin single-use command buffer
+        VkCommandBufferAllocateInfo allocCmdInfo{};
+        allocCmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocCmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocCmdInfo.commandPool = commandPool;
+        allocCmdInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        vkAllocateCommandBuffers(*device, &allocCmdInfo, &commandBuffer);
+
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+        // 3. Transition image to TRANSFER_SRC
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // Assume it's ready for ImGui
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+            0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        // 4. Copy Image to Buffer
+        VkBufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = { 0, 0, 0 };
+        region.imageExtent = { width, height, 1 };
+
+        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+
+        // 5. Transition image back to SHADER_READ_ONLY_OPTIMAL
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        // 6. Submit and Wait
+        vkEndCommandBuffer(commandBuffer);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(queue); // Synchronous block (fine for debugging)
+
+        // 7. Map memory and save to file
+        void* data;
+        vkMapMemory(*device, bufferMemory, 0, imageSize, 0, &data);
+
+        // Note: If your image format is BGRA (like swapchain images), the colors will look swapped (Red and Blue flipped).
+        
+        stbi_write_png(filename, width, height, 4, data, width * 4);
+
+        vkUnmapMemory(*device, bufferMemory);
+
+        // 8. Cleanup
+        vkFreeCommandBuffers(*device, commandPool, 1, &commandBuffer);
+        vkDestroyBuffer(*device, buffer, nullptr);
+        vkFreeMemory(*device, bufferMemory, nullptr);
+    }
     void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage& DepthRes,vk::raii::Device& device ,vk::raii::PhysicalDevice& physicalDevice,vk::SampleCountFlagBits msaaSamples) 
     {
         vk::Format depthFormat = PipelineDelegate::findDepthFormat(physicalDevice);

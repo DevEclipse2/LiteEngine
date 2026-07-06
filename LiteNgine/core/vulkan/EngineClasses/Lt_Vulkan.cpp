@@ -257,7 +257,6 @@ namespace lte {
 	}
 	void Lt_WindowVK::submitBuffers(uint8_t frameIndex)
 	{
-		
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		std::vector<vk::CommandBuffer> commands = {};
 		commands.reserve(Commands.size());

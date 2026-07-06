@@ -52,8 +52,6 @@ namespace lte {
 		
 		backend.second();*/
 
-
-
 		Lt_GuiCreationInfo GuiCreationInfo{};
 		GuiCreationInfo.width = info.width;
 		GuiCreationInfo.height = info.height;
@@ -92,8 +90,7 @@ namespace lte {
 	}
 	void Lt_ILayer::Loop()
 	{
-		std::cout << "Rendering frame " << frameCount << std::endl;
-		Con::LogEvent("new frame", TAG_ENGINE);
+		
 		Con::Display();
 		//backend.Update();
 		
@@ -109,6 +106,9 @@ namespace lte {
 			mainResized = false;
 			Con::Log("main window resized", TAG_ENGINE);
 		}
+		
+		editorViewport.RenderScene();
+
 		//add any gui draw commands here
 		guiHandler.StartFrame();
 		
@@ -131,11 +131,18 @@ namespace lte {
 		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
 		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
+		if (frameCount == 20) {
+			auto& deviceSet = Lt_Vulkan::devices[0];
+
+			ImageDelegate::DumpImages(deviceSet.logicalDevice, deviceSet.physicalDevice, *Lt_Vulkan::commandPool, *deviceSet.queue, Lt_Vulkan::windows[mainWindowIndex].swapchain.swapChainImages[frames], Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height, "swapchain.png");
+		}
 		/*backend.SubmitCommandBuffers();
 		backend.Draw();*/
+		editorViewport.FinishFrame();
 		frameCount++;
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;
+		
 	}
 	void Lt_ILayer::Resize()
 	{

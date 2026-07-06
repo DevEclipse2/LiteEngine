@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <deque>
+
 namespace lte
 {
     class DeviceHandler;
@@ -73,6 +74,10 @@ namespace lte
             //static std::list<std::unique_ptr<LtImage>> ImagePool;
             static std::vector<std::unique_ptr<lte::LtImage>> ImagePool;
             //static std::deque<LtImage> ImagePool; // this is not the correct method
+
+
+            static void DumpImages(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, VkCommandPool commandPool,
+                VkQueue queue, VkImage image, uint32_t width, uint32_t height, const char* filename);
         private:
             static std::vector<uint32_t> AvailableIndexes;
 
