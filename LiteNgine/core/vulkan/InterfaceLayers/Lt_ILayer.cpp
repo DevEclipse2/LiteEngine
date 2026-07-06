@@ -131,13 +131,13 @@ namespace lte {
 		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
 		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
-		if (frameCount == 20) {
+		
+		/*if (frameCount == 20) {
 			auto& deviceSet = Lt_Vulkan::devices[0];
 
 			ImageDelegate::DumpImages(deviceSet.logicalDevice, deviceSet.physicalDevice, *Lt_Vulkan::commandPool, *deviceSet.queue, Lt_Vulkan::windows[mainWindowIndex].swapchain.swapChainImages[frames], Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height, "swapchain.png");
-		}
-		/*backend.SubmitCommandBuffers();
-		backend.Draw();*/
+		}*/
+		
 		editorViewport.FinishFrame();
 		frameCount++;
 		frames++;
