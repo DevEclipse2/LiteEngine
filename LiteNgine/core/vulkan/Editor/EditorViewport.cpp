@@ -391,7 +391,7 @@ namespace lte {
 		ImGui::End();
 	}
 	
-	void EditorViewport::RenderScene()
+	void EditorViewport::RenderScene(vk::raii::Semaphore& signalSemaphore)
 	{
 		
 		auto& cmdBuf = commandBuffers[swapFrame];
@@ -414,10 +414,10 @@ namespace lte {
 		}*/
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo{
-			0,
+			1,
 			//here
-			NULL,
-			NULL,
+			&*signalSemaphore,
+			&waitDestinationStageMask,
 			1,
 			&*commandBuffers[swapFrame],
 			1,

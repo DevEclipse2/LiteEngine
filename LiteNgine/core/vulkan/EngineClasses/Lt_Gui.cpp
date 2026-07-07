@@ -222,8 +222,6 @@ namespace lte {
 
 		recordCommandBuffer(drawData, frameIndex);
 
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
 
 		return false;
 	}
@@ -521,10 +519,9 @@ namespace lte {
 			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eLoad,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
-		//attachmentInfo.clearValue = clearColor;
+	//attachmentInfo.clearValue = clearColor;
 	// Note: In a real implementation, you would set imageView, imageLayout,
 	// loadOp, storeOp, and clearValue based on your swapchain image
-
 		vk::RenderingInfo renderingInfo{};
 		renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
 													   static_cast<uint32_t>(data->DisplaySize.y)} };

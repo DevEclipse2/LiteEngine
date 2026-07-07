@@ -18,11 +18,12 @@ namespace lte {
 		void Init(ImVec2 size, uint8_t FramesInFlight);
 		void Recreate(ImVec2 size , uint8_t FRamesInFlight);
 		void UpdateGui();
-		void RenderScene();
+		void RenderScene(vk::raii::Semaphore& semaphore);
 		void FinishFrame();
 		EditorViewport();
 		~EditorViewport();
 		uint8_t framesInFlight = 2;
+		LtSyncSet syncSet{};
 
 	private:
 		ImVec2 size = ImVec2(800, 600);
@@ -49,7 +50,6 @@ namespace lte {
 		void UpdateUniformBuffers();
 		/*void recreateImages();
 		void createSyncSets();*/
-		LtSyncSet syncSet{};
 		//??????
 		float fps = 1.0f;
 		float prevtime;

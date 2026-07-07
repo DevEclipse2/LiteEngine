@@ -38,7 +38,6 @@ namespace lte {
 		vulkanHandler.Init("LiteNgine Editor");
 		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
-		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
 		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
 
 		
@@ -92,7 +91,7 @@ namespace lte {
 	void Lt_ILayer::Loop()
 	{
 		Con::Display();
-		Con::LogEvent("NewFrame", TAG_ENGINE);
+		//Con::LogEvent("NewFrame", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].newFrame(frames);
 		Lt_Vulkan::windows[mainWindowIndex].resetBuffers();
 		
@@ -102,38 +101,38 @@ namespace lte {
 			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
-			Con::LogEvent("main window resized", TAG_ENGINE);
+			//Con::LogEvent("main window resized", TAG_ENGINE);
 		}
-		Con::Log("renderScene", TAG_ENGINE);
-		editorViewport.RenderScene();
-		Con::Log("guiStart", TAG_ENGINE);
+		//Con::Log("renderScene", TAG_ENGINE);
+		editorViewport.RenderScene(Lt_Vulkan::windows[mainWindowIndex].syncSet.presentCompleteSemaphores[frames]);
+		//Con::Log("guiStart", TAG_ENGINE);
 
 		//add any gui draw commands here
 		guiHandler.StartFrame();
-		Con::Log("viewport submit", TAG_ENGINE);
+		//Con::Log("viewport submit", TAG_ENGINE);
 
 		viewport.SubmitGUICommands();
-		Con::Log("nodesys submit", TAG_ENGINE);
+		//Con::Log("nodesys submit", TAG_ENGINE);
 
 		nodeSystem.SubmitGUICommands();
-		Con::Log("viewport submit", TAG_ENGINE);
+		//Con::Log("viewport submit", TAG_ENGINE);
 		editorViewport.UpdateGui();
 
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{
 			//update stuff	
-			Con::Log("Update frameBuffer", TAG_ENGINE);
+			//Con::Log("Update frameBuffer", TAG_ENGINE);
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			guiHandler.updateBuffers();
 			guiHandler.RenderFrame(frames);
 		}
-		Con::Log("prepareCommandBuffers", TAG_ENGINE);
+		//Con::Log("prepareCommandBuffers", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].prepCommand(frames);
 		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
-		Con::Log("submitCommandbuffer", TAG_ENGINE);
-		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
-		Con::Log("startRender", TAG_ENGINE);
+		//Con::Log("submitCommandbuffer", TAG_ENGINE);
+		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames,editorViewport.syncSet.renderFinishedSemaphores[editorViewport.swapFrame]);
+		//Con::Log("startRender", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
 		if (frameCount == 20) {
 			auto& deviceSet = Lt_Vulkan::devices[0];
@@ -142,6 +141,10 @@ namespace lte {
 		}
 		
 		editorViewport.FinishFrame();
+
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+
 		frameCount++;
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;

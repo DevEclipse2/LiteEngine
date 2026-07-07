@@ -189,6 +189,7 @@ namespace lte {
 
 		Lt_Vulkan::devices[deviceID].logicalDevice.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
+
 		//physical device is unlikely to change tbh
 		//deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
 		//this frees the commandbuffers
@@ -214,7 +215,6 @@ namespace lte {
 		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice, msaaSamples);
 		swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
-
 		/*deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(pipeline.descSetLayout, pool, sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
 
@@ -255,9 +255,9 @@ namespace lte {
 	{
 		Commands.clear();
 	}
-	void Lt_WindowVK::submitBuffers(uint8_t frameIndex)
+	void Lt_WindowVK::submitBuffers(uint8_t frameIndex, vk::raii::Semaphore& additionalSemaphore)
 	{
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eFragmentShader);
 		std::vector<vk::CommandBuffer> commands = {};
 		commands.reserve(Commands.size());
 		//for safety pursposes :shrug:
@@ -272,10 +272,12 @@ namespace lte {
 		//	The Vulkan spec states : Each element of the pCommandBuffers member of each element of pSubmits must be in the pending or executable state(https ://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pCommandBuffers-00070)
 		//		Objects : 1
 		//		[0] VkCommandBuffer 0x24b461d1cc8
+		vk::Semaphore waitSemaphore[] = { *syncSet.presentCompleteSemaphores[frameIndex] , additionalSemaphore};
+
 		const vk::SubmitInfo submitInfo{
-										1,
+										2,
 										//here
-										&*syncSet.presentCompleteSemaphores[frameIndex],
+										waitSemaphore,
 										&waitDestinationStageMask,
 										static_cast<uint32_t>(std::size(commands)),
 										&*commands.data(),

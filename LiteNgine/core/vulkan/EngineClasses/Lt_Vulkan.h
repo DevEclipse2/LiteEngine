@@ -67,7 +67,7 @@ namespace lte {
 		void newFrame(uint8_t index);
 		//these are called globally
 		void resetBuffers();
-		void submitBuffers(uint8_t index);
+		void submitBuffers(uint8_t index, vk::raii::Semaphore& semaphore);
 		void startRender(uint8_t index);
 		void prepCommand(uint8_t frame);
 		uint32_t availableIndex = 0;
