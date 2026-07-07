@@ -372,22 +372,26 @@ namespace lte {
 	void EditorViewport::UpdateGui()
 	{
 		ImGui::Begin("big VP (viewport)", NULL);
-		ImGui::Text(("FPS" + std::to_string(fps)).c_str());
-		ImGui::Text(("frameTime" + std::to_string(frameTime)).c_str());
-		ImGui::Text(("frameID" + std::to_string(Lt_ILayer::frameCount)).c_str());
-		ImGui::Text(("SwapFrame" + std::to_string(swapFrame)).c_str());
-		ImGui::InputInt("width", &newWidth);
-		ImGui::InputInt("height", &newHeight);
-		ImGui::SliderFloat("scale", &scale,0.1f,10.0f);
+		
+		ImGui::SameLine();
+			ImGui::SetNextItemWidth(200.0f);
+			ImGui::InputInt("width", &newWidth);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(200.0f);
+			ImGui::InputInt("height", &newHeight);
+			ImGui::SliderFloat("scale", &scale,0.1f,10.0f);
+			
 		if (ImGui::Button("Apply", ImVec2(120, 50)))
-		{
-				Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
-				Recreate(ImVec2(newWidth, newHeight), framesInFlight);
-		}
-		else
-		{
-			ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale) );
-		}
+			{
+					Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
+					Recreate(ImVec2(newWidth, newHeight), framesInFlight);
+			}
+			else
+			{
+				ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale) );
+			}
+		ImGui::SameLine();
+		ImGui::Text(("FPS " + std::to_string(fps) + "\n" + "frameTime " + std::to_string(frameTime)+ '\n' + "frameID " + std::to_string(Lt_ILayer::frameCount) + "\n" + "SwapFrame " + std::to_string(swapFrame)).c_str());
 		ImGui::End();
 	}
 	

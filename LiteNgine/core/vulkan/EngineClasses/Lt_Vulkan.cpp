@@ -30,10 +30,11 @@ namespace lte {
 	}
 	void Lt_Vulkan::Init(std::string name)
 	{
-		createInstance(name, true);
+		bool usevalidation = true;
+		createInstance(name, usevalidation);
 		//vulkan only needs 1 instance. Ever. Period.
 		//Period? you need a pad?
-		if (true) {
+		if (usevalidation) {
 			DebugMessenger::setupMessenger(instance);
 
 			vk::DebugUtilsMessengerCallbackDataEXT callbackData{};

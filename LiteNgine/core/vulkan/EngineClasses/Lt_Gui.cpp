@@ -127,6 +127,7 @@ namespace lte {
 		init_info.PipelineInfoMain.RenderPass = NULL;
 		init_info.PipelineInfoMain.Subpass = 0;
 		VkSampleCountFlagBits samplebits = VK_SAMPLE_COUNT_1_BIT;
+		
 		/*switch (Lt_Vulkan::devices[0].sampling) {
 		case vk::SampleCountFlagBits::e1:
 			samplebits = VK_SAMPLE_COUNT_1_BIT;

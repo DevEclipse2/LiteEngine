@@ -213,6 +213,7 @@
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp" />
     <ClCompile Include="core\vulkan\Editor\NodeSys.cpp" />
     <ClCompile Include="core\vulkan\Editor\EditorViewport.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Iridium.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
   </ItemGroup>
@@ -260,6 +261,7 @@
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h" />
     <ClInclude Include="core\vulkan\Editor\NodeSys.h" />
     <ClInclude Include="core\vulkan\Editor\EditorViewport.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Iridium.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
   </ItemGroup>
