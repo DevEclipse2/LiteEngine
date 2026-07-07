@@ -54,6 +54,10 @@ namespace lte {
 		float prevtime;
 		float frameTime;
 
+		int newHeight = 800;
+		int newWidth = 600;
+		int newFIF = 3;
+
 	};
 }
 

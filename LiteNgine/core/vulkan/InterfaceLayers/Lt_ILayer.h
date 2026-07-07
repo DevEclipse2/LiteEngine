@@ -24,9 +24,10 @@ namespace lte {
 		void Loop();
 		void Resize();
 		uint32_t mainWindowIndex = 0;
-		uint32_t frameCount = 0;
+		static uint32_t frameCount;
 		Lt_Vulkan vulkanHandler{};
 		std::vector<std::function<void()>> UiUpdateFuncs;
+
 	private:
 		//Lt_Window ltWindow{ 800, 600 ,"LiteEngine : Agstrum"};
 		FileLoader fileLoader{};

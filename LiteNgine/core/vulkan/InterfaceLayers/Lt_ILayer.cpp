@@ -1,6 +1,7 @@
 #include "Lt_ILayer.h"
 namespace lte {
 
+	uint32_t Lt_ILayer::frameCount = 0;
 	enum Result {
 		Continue,
 		Exit
@@ -75,22 +76,21 @@ namespace lte {
 		GuiCreationInfo.colorImageViewIndex = &Lt_Vulkan::windows[mainWindowIndex].swapchain.colorImage;
 		GuiCreationInfo.pImageViews = &Lt_Vulkan::windows[mainWindowIndex].swapchain.imageViews;
 		Con::LogEvent("Spinning up User Interface...", TAG_ENGINE);
-		std::cout << "spinning up UI" << std::endl;
 		guiHandler.InitGui(GuiCreationInfo);
 		guiHandler.Instantiate();			
-		guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
-		guiHandler.updateBuffers();
+		/*guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
+		guiHandler.updateBuffers();*/
+		Con::LogEvent("Init image viewport", TAG_ENGINE);
 		viewport.Init();
+		Con::LogEvent("Init editor viewport", TAG_ENGINE);
 		editorViewport.Init(ImVec2(800,600),2);
 		nodeSystem = NodeSystem{viewport.m_Context};
 		//Viewport::Init(this);
-		std::cout << "FirstFrame Rendering" << std::endl;
 		Con::LogEvent("Preparing to render first frame", TAG_ENGINE);
 
 	}
 	void Lt_ILayer::Loop()
 	{
-		
 		Con::Display();
 		//backend.Update();
 		
@@ -104,7 +104,7 @@ namespace lte {
 			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
-			Con::Log("main window resized", TAG_ENGINE);
+			Con::LogEvent("main window resized", TAG_ENGINE);
 		}
 		
 		editorViewport.RenderScene();
@@ -132,11 +132,11 @@ namespace lte {
 		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
 		
-		/*if (frameCount == 20) {
+		if (frameCount == 20) {
 			auto& deviceSet = Lt_Vulkan::devices[0];
 
 			ImageDelegate::DumpImages(deviceSet.logicalDevice, deviceSet.physicalDevice, *Lt_Vulkan::commandPool, *deviceSet.queue, Lt_Vulkan::windows[mainWindowIndex].swapchain.swapChainImages[frames], Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height, "swapchain.png");
-		}*/
+		}
 		
 		editorViewport.FinishFrame();
 		frameCount++;
@@ -146,10 +146,25 @@ namespace lte {
 	}
 	void Lt_ILayer::Resize()
 	{
+		Con::LogEvent("Resize called", TAG_ENGINE);
+		int width = 0, height = 0;
+		const auto& window = windowMgr.windowInfo[mainWindowIndex]->window.getGLFWWindow();
+		glfwGetFramebufferSize(window, &width, &height);
+
+		//this suspends the thread
+		//we should probably use a bypass
+		if (width == 0 || height == 0) {
+			Con::LogEvent("Minimize", TAG_ENGINE);
+		}
+		while (width == 0 || height == 0) {
+			glfwGetFramebufferSize(window, &width, &height);
+			glfwWaitEvents(); // Sleeps the thread until an event (like un-minimizing) occurs
+		}
 		mainResized = true;
 	}
 	void Lt_ILayer::End() 
 	{
+		Con::LogEvent("Engine Shutdown initiated", TAG_ENGINE);
 		viewport.Terminate();
 		nodeSystem.~NodeSystem();
 		guiHandler.Terminate();
@@ -160,6 +175,7 @@ namespace lte {
 	}
 	void Lt_ILayer::Cleanup()
 	{
+		Con::LogEvent("Engine Cleanup initiated", TAG_ENGINE);
 		vulkanHandler.devices[0].logicalDevice.waitIdle();
 		vulkanHandler.commandPool = nullptr;
 

@@ -4,6 +4,7 @@
 #include <tiny_obj_loader.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "../EngineClasses/Lt_Console.h"
 namespace lte {
     Vertex* FileLoader::VertexArray = nullptr;
     uint32_t FileLoader::VertexesSize = 0;
@@ -29,7 +30,10 @@ namespace lte {
         int width, height, channel = 0;
         uint32_t mipLevels = 0;
         stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
-        vk::DeviceSize imageSize = width * height * channel;
+
+        //add handling to inject alpha into all
+
+        vk::DeviceSize imageSize = width * height * 4;
         mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
         if (!pixels) {
             throw std::runtime_error("failed to load texture image!");
@@ -43,6 +47,8 @@ namespace lte {
         stagingBufferMemory.unmapMemory();
 
         stbi_image_free(pixels);
+        
+        ImageIndex.format = vk::Format::eR8G8B8A8Srgb;
         ImageDelegate::createImage(ImageIndex,width, height,mipLevels,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physicalDevice);
         ImageDelegate::createImageView(ImageIndex, vk::Format::eR8G8B8A8Srgb,vk::ImageAspectFlagBits::eColor,1,device);
         ImageDelegate::createSampler(ImageIndex,device);
@@ -189,7 +195,7 @@ namespace lte {
         
 
         ImageDelegate::createImage(img->image, width, height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal,vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
-        ImageDelegate::createImageView(img->image, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eDepth, 1, device);
+        ImageDelegate::createImageView(img->image, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, 1, device);
         ImageDelegate::createSampler(img->image, device);
         // Create Image View Descriptor Set 
         // (note: before 1.92.8 this also took a Sampler. See Wiki history)
@@ -203,7 +209,6 @@ namespace lte {
         memcpy(data, pixels, imageSize);
         stagingBufferMemory.unmapMemory();
         stbi_image_free(pixels);
-
         ImageDelegate::transitionImageLayout(img->image.image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels, cmdInfo);
         Buffers::copyBufferToImage(stagingBuffer, img->image.image, width, height, cmdInfo);
         

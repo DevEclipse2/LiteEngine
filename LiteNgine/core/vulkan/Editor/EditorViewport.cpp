@@ -1,31 +1,40 @@
 #include "EditorViewport.h"
 #include <cmath>
+#include "../InterfaceLayers/Lt_ILayer.h"
 namespace lte {
 	uint8_t deviceID = 0;
-	
-
-
-
-	
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
 	{
 		auto& deviceSet = Lt_Vulkan::devices[deviceID];
 		framesInFlight = FramesInFlight;
 		size = Size;
 		createImages();
+		Con::Log("create desc set layoud", TAG_ENGINE);
 		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, deviceSet.logicalDevice);
+		Con::Log("create pipeline", TAG_ENGINE);
+
 		createPipeline();
+		Con::Log("create synchronization", TAG_ENGINE);
+
 		LtSync::createSyncObjects(syncSet, framesInFlight, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 		auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
+		Con::Log("create command buffer", TAG_ENGINE);
+
 		CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 		singleTimeCommandInfo info{&Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue};
+		Con::Log("load files", TAG_ENGINE);
+
 		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, physDev,info);
 		renderSets = FileLoader::renderSets;
 
+		Con::Log("create sampler", TAG_ENGINE);
 
 		DeviceHandler::createTextureSampler(&sampler, physDev, Lt_Vulkan::devices[0].logicalDevice);
+		Con::Log("create vtx buffer", TAG_ENGINE);
 
 		Buffers::createVertexBuffer(FileLoader::VertexesSize, FileLoader::VertexArray, &vertexBuffer, &vertexBufferMemory, info, physDev);
+		Con::Log("create idx buffer", TAG_ENGINE);
+
 		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);
 		//fix this later
 
@@ -52,10 +61,46 @@ namespace lte {
 		//load models, create descriptor sets and rendersets and stuff
 	}
 	void EditorViewport::Recreate(ImVec2 Size, uint8_t FramesInFlight) {
+		Con::LogEvent("recreating scene Viewport with dimensions :" + std::to_string(Size.x) + "," + std::to_string(Size.y) + "with " + std::to_string(FramesInFlight) + " frames in flight", TAG_ENGINE | TAG_VULKAN);
+		
+		bool recreateAll = framesInFlight != FramesInFlight;
+
+		for (int i = 0; i < framesInFlight; i++) {
+			ImGui_ImplVulkan_RemoveTexture(descriptorSets[i]);
+		}
+		for (int i = 0; i < framesInFlight; i++) {
+			auto fenceResult = Lt_Vulkan::devices[0].logicalDevice.waitForFences(*syncSet.inFlightFences[swapFrame], vk::True, UINT64_MAX);
+			if (fenceResult != vk::Result::eSuccess)
+			{
+				Con::LogError("failed to wait for fence", CRIT_SEVERITY, TAG_ENGINE | TAG_VULKAN);
+				throw std::runtime_error("failed to wait for fence!");
+			}
+		}
 		framesInFlight = FramesInFlight;
+		
 		size = Size;
-		createImages();		
+		//change sizes, create images again, remove the imgui images
+		
+		createImages();
 		createPipeline();
+		if (recreateAll) 
+		{
+			
+			Lt_Vulkan::devices[0].logicalDevice.waitIdle();
+			LtSync::createSyncObjects(syncSet, framesInFlight, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
+			auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
+			CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
+			singleTimeCommandInfo info{ &Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue };
+			Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
+			DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
+			DeviceHandler::createDescriptorSets(pipeline.descSetLayout, descriptorPool, sampler, meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, renderSets);
+			descriptorSets.resize(framesInFlight);
+		}	
+		for (int i = 0; i < framesInFlight; i++)
+		{
+			descriptorSets[i] = ImGui_ImplVulkan_AddTexture(*images[i]->imageSampler, *images[i]->imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		
 	}
 	void EditorViewport::createImages() {
 
@@ -75,6 +120,7 @@ namespace lte {
 
 		//swap images
 		for (int i = 0; i < framesInFlight; i++) {
+			Con::Log("Making swap image" + std::to_string(i), TAG_ENGINE);
 			LtImage swapImg{};
 			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 			ImageDelegate::createImageView(swapImg, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
@@ -314,21 +360,30 @@ namespace lte {
 	void EditorViewport::UpdateGui()
 	{
 		ImGui::Begin("big VP (viewport)", NULL);
-		int TargetFrame = swapFrame - 1;
-		if (TargetFrame < 0) {
-			TargetFrame += framesInFlight;
-		}
 		ImGui::Text(("FPS" + std::to_string(fps)).c_str());
 		ImGui::Text(("frameTime" + std::to_string(frameTime)).c_str());
-		ImGui::Text(("frameID" + std::to_string(frameNum)).c_str());
+		ImGui::Text(("frameID" + std::to_string(Lt_ILayer::frameCount)).c_str());
 		ImGui::Text(("SwapFrame" + std::to_string(swapFrame)).c_str());
-		ImGui::Image(descriptorSets[swapFrame], ImVec2( size.x, size.y));
+		ImGui::InputInt("width", &newWidth);
+		ImGui::InputInt("height", &newHeight);
+		ImGui::InputInt("framesInFlight", &newFIF);
+		if (ImGui::Button("Apply", ImVec2(120, 50)))
+		{
+			if (newFIF > 1 && newFIF < 20) {
+				Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
+				Recreate(ImVec2(newWidth, newHeight), newFIF);
+			}
+		}
+		else 
+		{
+			ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x, size.y));
+		}
 		ImGui::End();
 	}
 	
 	void EditorViewport::RenderScene()
 	{
-		frameNum++;
+		
 		auto& cmdBuf = commandBuffers[swapFrame];
 		uint64_t handleValue = (uint64_t)(VkCommandBuffer)*cmdBuf;
 		UpdateUniformBuffers();
