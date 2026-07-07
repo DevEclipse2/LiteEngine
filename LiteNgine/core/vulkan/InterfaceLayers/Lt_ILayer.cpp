@@ -92,9 +92,7 @@ namespace lte {
 	void Lt_ILayer::Loop()
 	{
 		Con::Display();
-		//backend.Update();
-		
-		//leads to weird behaviour
+		Con::LogEvent("NewFrame", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].newFrame(frames);
 		Lt_Vulkan::windows[mainWindowIndex].resetBuffers();
 		
@@ -106,35 +104,40 @@ namespace lte {
 			mainResized = false;
 			Con::LogEvent("main window resized", TAG_ENGINE);
 		}
-		
+		Con::Log("renderScene", TAG_ENGINE);
 		editorViewport.RenderScene();
+		Con::Log("guiStart", TAG_ENGINE);
 
 		//add any gui draw commands here
 		guiHandler.StartFrame();
-		
+		Con::Log("viewport submit", TAG_ENGINE);
+
 		viewport.SubmitGUICommands();
+		Con::Log("nodesys submit", TAG_ENGINE);
+
 		nodeSystem.SubmitGUICommands();
+		Con::Log("viewport submit", TAG_ENGINE);
 		editorViewport.UpdateGui();
 
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{
-			//update stuff			
+			//update stuff	
+			Con::Log("Update frameBuffer", TAG_ENGINE);
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			guiHandler.updateBuffers();
 			guiHandler.RenderFrame(frames);
 		}
-		/*if(!backend.AddAdditionalCommands(guiHandler.commandBuffers[backend.frameIndex])) {
-			std::cerr << "cannot submit additional commands" << std::endl;
-		}*/
+		Con::Log("prepareCommandBuffers", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].prepCommand(frames);
 		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
+		Con::Log("submitCommandbuffer", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
+		Con::Log("startRender", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
-		
 		if (frameCount == 20) {
 			auto& deviceSet = Lt_Vulkan::devices[0];
-
+			Con::LogEvent("CaptureFrame", TAG_ENGINE);
 			ImageDelegate::DumpImages(deviceSet.logicalDevice, deviceSet.physicalDevice, *Lt_Vulkan::commandPool, *deviceSet.queue, Lt_Vulkan::windows[mainWindowIndex].swapchain.swapChainImages[frames], Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height, "swapchain.png");
 		}
 		

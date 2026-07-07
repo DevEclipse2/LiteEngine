@@ -105,10 +105,13 @@ namespace lte {
 	void EditorViewport::createImages() {
 
 		auto& deviceSet = Lt_Vulkan::devices[deviceID];
-		vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
+		vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e8;
 		int deviceID = 0;
 		//colorimage
 		vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
+
+		ImageDelegate::createImage(colorImage, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
+		ImageDelegate::createImageView(colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
 
 		//depth image
 		vk::Format depthFormat = PipelineDelegate::findDepthFormat(deviceSet.physicalDevice);
@@ -122,7 +125,7 @@ namespace lte {
 		for (int i = 0; i < framesInFlight; i++) {
 			Con::Log("Making swap image" + std::to_string(i), TAG_ENGINE);
 			LtImage swapImg{};
-			ImageDelegate::createImage(swapImg, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
+			ImageDelegate::createImage(swapImg, size.x, size.y, 1, vk::SampleCountFlagBits::e1, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 			ImageDelegate::createImageView(swapImg, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
 			ImageDelegate::createSampler(swapImg, deviceSet.logicalDevice);
 			images.emplace_back(std::make_unique<LtImage>(std::move(swapImg)));
@@ -167,7 +170,7 @@ namespace lte {
 		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
 			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e8,
 			multisampling.sampleShadingEnable = vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.depthTestEnable = vk::True,
@@ -237,6 +240,15 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // dstStage
 			vk::ImageAspectFlagBits::eColor, commandBuffer);
 		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
+		ImageDelegate::transition_image_layout(
+			*colorImage.image,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eColorAttachmentOptimal,
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::AccessFlagBits2::eColorAttachmentWrite,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+			vk::ImageAspectFlagBits::eColor, commandBuffer);
 
 		ImageDelegate::transition_image_layout(
 			*depthImage.image,
@@ -257,10 +269,10 @@ namespace lte {
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = *(images[swapFrame]->imageView),
+			attachmentInfo.imageView = *colorImage.imageView,
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			//attachmentInfo.resolveImageView = ,
+			attachmentInfo.resolveImageView = *(images[swapFrame]->imageView),
 			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
@@ -366,17 +378,15 @@ namespace lte {
 		ImGui::Text(("SwapFrame" + std::to_string(swapFrame)).c_str());
 		ImGui::InputInt("width", &newWidth);
 		ImGui::InputInt("height", &newHeight);
-		ImGui::InputInt("framesInFlight", &newFIF);
+		ImGui::SliderFloat("scale", &scale,0.1f,10.0f);
 		if (ImGui::Button("Apply", ImVec2(120, 50)))
 		{
-			if (newFIF > 1 && newFIF < 20) {
 				Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
-				Recreate(ImVec2(newWidth, newHeight), newFIF);
-			}
+				Recreate(ImVec2(newWidth, newHeight), framesInFlight);
 		}
-		else 
+		else
 		{
-			ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x, size.y));
+			ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale) );
 		}
 		ImGui::End();
 	}
@@ -404,15 +414,14 @@ namespace lte {
 		}*/
 		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 		const vk::SubmitInfo submitInfo{
-			1,
+			0,
 			//here
-			&*syncSet.presentCompleteSemaphores[swapFrame],
-			&waitDestinationStageMask,
+			NULL,
+			NULL,
 			1,
 			&*commandBuffers[swapFrame],
 			1,
-			&*syncSet.renderFinishedSemaphores[swapFrame] };
-
+			&*syncSet.renderFinishedSemaphores[swapFrame]};
 		Lt_Vulkan::devices[0].queue.submit(submitInfo, *syncSet.inFlightFences[swapFrame]);
 	}
 	void EditorViewport::FinishFrame()

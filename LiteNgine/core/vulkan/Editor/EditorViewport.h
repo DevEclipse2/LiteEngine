@@ -33,6 +33,7 @@ namespace lte {
 		LtPipeline pipeline;
 		std::vector<vk::raii::CommandBuffer> commandBuffers;
 		LtImage depthImage{};
+		LtImage colorImage{};
 
 		std::vector<LtMeshInfo> meshes;
 		std::vector<RenderSet> renderSets;
@@ -53,7 +54,7 @@ namespace lte {
 		float fps = 1.0f;
 		float prevtime;
 		float frameTime;
-
+		float scale = 1.0f;
 		int newHeight = 800;
 		int newWidth = 600;
 		int newFIF = 3;

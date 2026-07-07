@@ -1,7 +1,7 @@
 #include "Lt_Gui.h"
 
 
-
+#include "../EngineClasses/Lt_Vulkan.h"
 
 
 //known issues
@@ -126,7 +126,34 @@ namespace lte {
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = pipelineCreateInfo;
 		init_info.PipelineInfoMain.RenderPass = NULL;
 		init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits samplebits = VK_SAMPLE_COUNT_1_BIT;
+		/*switch (Lt_Vulkan::devices[0].sampling) {
+		case vk::SampleCountFlagBits::e1:
+			samplebits = VK_SAMPLE_COUNT_1_BIT;
+			break;
+		case vk::SampleCountFlagBits::e2:
+			samplebits = VK_SAMPLE_COUNT_2_BIT;
+			break;
+		case vk::SampleCountFlagBits::e4:
+			samplebits = VK_SAMPLE_COUNT_4_BIT;
+			break;
+		case vk::SampleCountFlagBits::e8:
+			samplebits = VK_SAMPLE_COUNT_8_BIT;
+			break;
+		case vk::SampleCountFlagBits::e16:
+			samplebits = VK_SAMPLE_COUNT_16_BIT;
+			break;
+		case vk::SampleCountFlagBits::e32:
+			samplebits = VK_SAMPLE_COUNT_32_BIT;
+			break;
+		case vk::SampleCountFlagBits::e64:
+			samplebits = VK_SAMPLE_COUNT_64_BIT;
+			break;
+		}*/
+
+
+
+		init_info.PipelineInfoMain.MSAASamples = samplebits;
 		init_info.Queue = **(creationInfo.queue);
 		init_info.PipelineCache = *creationInfo.cache;
 		init_info.MinImageCount = creationInfo.minImgCount; //stuff
@@ -143,7 +170,7 @@ namespace lte {
 		init_info.PipelineInfoForViewports.PipelineRenderingCreateInfo = pipelineCreateInfo;
 		init_info.PipelineInfoForViewports.RenderPass = NULL;
 		init_info.PipelineInfoForViewports.Subpass = 0;
-		init_info.PipelineInfoForViewports.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.PipelineInfoForViewports.MSAASamples = samplebits;
 
 		// 3. RenderPass must be null!
 		ImGui_ImplVulkan_Init(&init_info);

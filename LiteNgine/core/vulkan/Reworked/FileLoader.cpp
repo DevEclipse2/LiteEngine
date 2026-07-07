@@ -48,7 +48,6 @@ namespace lte {
 
         stbi_image_free(pixels);
         
-        ImageIndex.format = vk::Format::eR8G8B8A8Srgb;
         ImageDelegate::createImage(ImageIndex,width, height,mipLevels,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physicalDevice);
         ImageDelegate::createImageView(ImageIndex, vk::Format::eR8G8B8A8Srgb,vk::ImageAspectFlagBits::eColor,1,device);
         ImageDelegate::createSampler(ImageIndex,device);

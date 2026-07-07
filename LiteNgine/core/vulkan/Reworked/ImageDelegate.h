@@ -28,7 +28,6 @@ namespace lte
         uint32_t channel = 0;
         //LtImage();
         
-        
     };
     struct GUI_Image
     {
