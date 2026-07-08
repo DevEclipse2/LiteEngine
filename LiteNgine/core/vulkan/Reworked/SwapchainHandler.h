@@ -37,8 +37,8 @@ namespace lte
 			swapChainSurfaceFormat = SwapchainHandler::chooseSwapSurfaceFormat(availableFormats);
 
 			std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
-			//vk::PresentModeKHR              presentMode = SwapchainHandler::chooseSwapPresentMode(availablePresentModes);
-			vk::PresentModeKHR              presentMode = vk::PresentModeKHR::eImmediate;
+			vk::PresentModeKHR              presentMode = SwapchainHandler::chooseSwapPresentMode(availablePresentModes);
+			
 
 
 			if (!(surfaceCapabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eSampled)) {

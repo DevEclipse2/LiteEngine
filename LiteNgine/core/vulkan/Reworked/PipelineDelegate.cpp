@@ -43,7 +43,7 @@ namespace lte {
 		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
 			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e16,
 			multisampling.sampleShadingEnable = vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 			depthStencil.depthTestEnable = vk::True,
