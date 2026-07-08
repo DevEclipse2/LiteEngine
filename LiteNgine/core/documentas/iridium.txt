@@ -1,0 +1,6 @@
+below is a demo for how its gonna be formatted
+
+*beg frame #1234
+{name|event 20ms}
+% denotes profiler events
+*end frame #1234

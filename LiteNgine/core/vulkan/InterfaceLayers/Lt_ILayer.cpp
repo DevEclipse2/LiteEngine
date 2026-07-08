@@ -91,10 +91,13 @@ namespace lte {
 	void Lt_ILayer::Loop()
 	{
 		Con::Display();
+
 		//Con::LogEvent("NewFrame", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].newFrame(frames);
 		Lt_Vulkan::windows[mainWindowIndex].resetBuffers();
+
 		
+
 		if (mainResized) {
 			glfwGetWindowSize(windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex].ltMultiWindowIndex]->window.getGLFWWindow()
 			, &Lt_Vulkan::windows[mainWindowIndex].width, &Lt_Vulkan::windows[mainWindowIndex].height);
@@ -103,9 +106,12 @@ namespace lte {
 			mainResized = false;
 			//Con::LogEvent("main window resized", TAG_ENGINE);
 		}
+		
+
 		//Con::Log("renderScene", TAG_ENGINE);
 		editorViewport.RenderScene(Lt_Vulkan::windows[mainWindowIndex].syncSet.presentCompleteSemaphores[frames]);
 		//Con::Log("guiStart", TAG_ENGINE);
+		
 
 		//add any gui draw commands here
 		guiHandler.StartFrame();
@@ -145,6 +151,7 @@ namespace lte {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 
+		
 		frameCount++;
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;

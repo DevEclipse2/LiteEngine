@@ -4,6 +4,7 @@
 #else 
 #define noDbg true;
 #endif
+#include <chrono>
 namespace lte {
 	vk::raii::Instance Lt_Vulkan::instance = nullptr;
 	const std::vector<char const*> Lt_Vulkan::validationLayers = {
@@ -230,14 +231,20 @@ namespace lte {
 	}
 	void Lt_WindowVK::newFrame(uint8_t frameIndex)
 	{
+		auto t0 = std::chrono::high_resolution_clock::now();
+
 		auto fenceResult = Lt_Vulkan::devices[0].logicalDevice.waitForFences(*syncSet.inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{
 			throw std::runtime_error("failed to wait for fence!");
 		}
+		auto t1 = std::chrono::high_resolution_clock::now();
 
 		//here
 		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, *syncSet.presentCompleteSemaphores[frameIndex], nullptr);
+		auto t2 = std::chrono::high_resolution_clock::now();
+		std::cout << "waitfence: " << std::chrono::duration<float, std::milli>(t1 - t0).count() << "ms | "
+			<< "present semaphores: " << std::chrono::duration<float, std::milli>(t2 - t1).count() << "ms | \n";
 
 		//availableIndex = imageIndex;
 		if (result == vk::Result::eErrorOutOfDateKHR)
