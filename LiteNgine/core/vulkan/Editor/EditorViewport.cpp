@@ -1,6 +1,7 @@
 #include "EditorViewport.h"
 #include <cmath>
 #include "../InterfaceLayers/Lt_ILayer.h"
+#include <numbers>
 namespace lte {
 	uint8_t deviceID = 0;
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
@@ -337,8 +338,7 @@ namespace lte {
 		fps = 1 / (time - prevtime);
 		frameTime = (time - prevtime) * 1000;
 		UniformBufferObject ubo{};
-		glm::vec3 lookTarg = glm::vec3(x, y, z) + glm::vec3(viewx, viewy, viewz);
-		glm::mat4 view = glm::lookAt(glm::vec3(x, y, z),lookTarg, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 proj = glm::perspective(glm::radians(FOV),
 			static_cast<float>(size.x) / static_cast<float>(size.y),
 			0.1f, 20.0f);
@@ -346,10 +346,6 @@ namespace lte {
 		ubo.proj[1][1] *= -1;
 		// Update uniform buffers for each object
 		for (auto& gameObject : meshes) {
-			// Apply continuous rotation to the object
-			const float rotationSpeed = 0.5f;                          // Rotation speed in radians per second
-			gameObject.rotation.y += rotationSpeed * (time - prevtime);
-
 			// Get the model matrix for this object
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
@@ -375,24 +371,7 @@ namespace lte {
 			ImGui::SetNextItemWidth(200.0f);
 			ImGui::InputInt("height", &newHeight);
 			ImGui::SliderFloat("scale", &scale,0.1f,10.0f);
-			ImGui::SetNextItemWidth(100.0f);
-			ImGui::SliderFloat("X pos", &x, -10,10);
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(100.0f);
-			ImGui::SliderFloat("Y pos", &y , -10 ,10);
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(100.0f);
-			ImGui::SliderFloat("Z pos", &z, -10 ,10);
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(200.0f);
-			ImGui::SliderFloat("Rot X", &viewx, -10, 10);
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(200.0f);
-			ImGui::SliderFloat("Rot Y", &viewy, -10, 10);
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(200.0f);
-			ImGui::SliderFloat("Rot Z", &viewz, -10, 10);
-			ImGui::SliderFloat("FOV", &FOV, 30, 180);
+			
 		if (ImGui::Button("Apply", ImVec2(120, 50)))
 			{
 					Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
@@ -400,11 +379,87 @@ namespace lte {
 			}
 			else
 			{
-				ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale) );
+				ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale));
+
+				// 2. Handle Inputs Only When Hovering/Interacting With This Specific Window
+				ImGuiIO& io = ImGui::GetIO();
+
+				// Check if mouse is hovering over this viewport window
+				bool isHovered = ImGui::IsWindowHovered();
+
+				// Right-click initiated inside the viewport
+				if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					isDragging = true;
+					lastMousePos = io.MousePos;
+				}
+
+				// Right-click released
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+					isDragging = false;
+				}
+
+				// Handle mouse movement while dragging
+				if (isDragging) {
+					// Calculate how much the mouse moved since last frame
+					float xOffset = io.MousePos.x - lastMousePos.x;
+					float yOffset = lastMousePos.y - io.MousePos.y; // Inverted Y behavior
+
+					lastMousePos = io.MousePos;
+
+					// Feed the delta into your camera
+					camera.processMouseMovement(xOffset, yOffset,true);
+
+					// Lock the mouse cursor inside the ImGui window while dragging (Optional but helpful)
+					ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+				}
+
+				// 3. Handle WASD Keyboard Input while dragging the camera
+				if (isDragging) {
+					// We use ImGui's key down queries to remain context-aware
+					if (ImGui::IsKeyDown(ImGuiKey_W)) camera.processKeyboard(0, frameTime/1000);
+					if (ImGui::IsKeyDown(ImGuiKey_S)) camera.processKeyboard(1, frameTime/1000);
+					if (ImGui::IsKeyDown(ImGuiKey_A)) camera.processKeyboard(2, frameTime/1000);
+					if (ImGui::IsKeyDown(ImGuiKey_D)) camera.processKeyboard(3, frameTime/1000);
+				}
+			
 			}
+		
+
+		if (objectID == SelectedObject) 
+		{
+			meshes[objectID].position.x = x;
+			meshes[objectID].position.y = y;
+			meshes[objectID].position.z = z;
+			meshes[objectID].rotation.x = glm::radians(rotX);
+			meshes[objectID].rotation.y = glm::radians(rotY);
+			meshes[objectID].rotation.z = glm::radians(rotZ);
+		}
+		else if (objectID >= 0 && objectID < meshes.size()) {
+			x = meshes[objectID].position.x;
+			y = meshes[objectID].position.y;
+			z = meshes[objectID].position.z;
+			rotX = glm::degrees(meshes[objectID].rotation.x);
+			rotY = glm::degrees(meshes[objectID].rotation.y);
+			rotZ = glm::degrees(meshes[objectID].rotation.z);
+			SelectedObject = objectID;
+		}
 		ImGui::SameLine();
 		ImGui::Text(("FPS " + std::to_string(fps) + "\n" + "frameTime " + std::to_string(frameTime)+ '\n' + "frameID " + std::to_string(Lt_ILayer::frameCount) + "\n" + "SwapFrame " + std::to_string(swapFrame)).c_str());
 		ImGui::End();
+		ImGui::Begin("Object Menu");
+		ImGui::InputInt("ObjectNumber", &objectID);
+		ImGui::Text("Position");
+		ImGui::SameLine(); ImGui::SetNextItemWidth(100); ImGui::DragFloat("X##1",&x,0.05f);
+		ImGui::SameLine(); ImGui::SetNextItemWidth(100); ImGui::DragFloat("Y##1",&y,0.05f);
+		ImGui::SameLine(); ImGui::SetNextItemWidth(100); ImGui::DragFloat("Z##1",&z,0.05f);
+		ImGui::Text("Rotation");
+		ImGui::SameLine(); ImGui::SetNextItemWidth(100); ImGui::DragFloat("X##2",&rotX);
+		ImGui::SameLine(); ImGui::SetNextItemWidth(100); ImGui::DragFloat("Y##2",&rotY);
+		ImGui::SameLine(); ImGui::SetNextItemWidth(100); ImGui::DragFloat("Z##2",&rotZ);
+		ImGui::End();
+
+
+
 	}
 	
 	void EditorViewport::RenderScene(vk::raii::Semaphore& signalSemaphore)

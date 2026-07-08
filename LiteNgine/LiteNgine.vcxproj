@@ -216,6 +216,7 @@
     <ClCompile Include="core\engine\Iridium.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
+    <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
@@ -264,6 +265,7 @@
     <ClInclude Include="core\engine\Iridium.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
+    <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">

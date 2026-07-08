@@ -226,10 +226,6 @@ namespace lte {
 		//
 		//ImGui::Text("stuff", NULL);
 		//ImGui::End();
-		ImGui::Begin("Profiler", NULL);
-		ImGui::Text("idk", NULL);
-		ImGui::End();
-
 
 	}
 	void Viewport::Init()

@@ -144,6 +144,9 @@
     <ClCompile Include="core\engine\Iridium.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -282,6 +285,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\engine\Iridium.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\ViewportCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

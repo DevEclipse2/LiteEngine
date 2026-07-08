@@ -6,7 +6,7 @@
 #include "../Reworked/TemporaryDraw.h"
 #include "../EngineClasses/Lt_Vulkan.h"
 #include "../EngineClasses/Lt_Console.h"
-
+#include "ViewportCamera.h"
 namespace lte {
 	class EditorViewport
 	{
@@ -63,9 +63,16 @@ namespace lte {
 		float y = 0;
 		float z = 0;
 
-		float viewx, viewy, viewz = 0;
+		float rotX, rotY, rotZ = 0;
 		float FOV = 45;
 
+		ViewportCamera camera;
+		bool isDragging = false;
+		ImVec2 lastMousePos;
+
+
+		int objectID		= 0;
+		int SelectedObject	= -1;
 
 	};
 }

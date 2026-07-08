@@ -24,6 +24,8 @@ namespace lte {
         void processKeyboard(int direction, float deltaTime);
         void processMouseMovement(float xOffset, float yOffset, bool constrainPitch);
         glm::mat4 getViewMatrix() const;
+        ViewportCamera();
+        ~ViewportCamera();
 
     private:
         void updateCameraVectors();

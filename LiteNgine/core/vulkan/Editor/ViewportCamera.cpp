@@ -6,6 +6,10 @@ namespace lte{
         updateCameraVectors();
     }
 
+    ViewportCamera::~ViewportCamera()
+    {
+    }
+
     glm::mat4 ViewportCamera::getViewMatrix() const
     {
         return glm::lookAt(position, position + forward, up);
@@ -25,7 +29,7 @@ namespace lte{
     void ViewportCamera::processMouseMovement(float xOffset, float yOffset, bool constrainPitch)
     {
         xOffset *= mouseSensitivity;
-        yOffset *= mouseSensitivity;
+        yOffset *= -mouseSensitivity;
 
         yaw += xOffset;
         pitch += yOffset; // Adjust sign based on your preferred inversion
