@@ -8,6 +8,7 @@
 #include "../Editor/Viewport.h"
 #include "../Editor/NodeSys.h"
 #include "../Editor/EditorViewport.h"
+#include "../../engine/Iridium.h"
 //this is where the main function comes to meet with the usable code
 namespace lte {
 	

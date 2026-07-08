@@ -84,12 +84,14 @@ namespace lte {
 		Con::LogEvent("Init editor viewport", TAG_ENGINE);
 		editorViewport.Init(ImVec2(800,600),2);
 		nodeSystem = NodeSystem{viewport.m_Context};
-		//Viewport::Init(this);
+		IridiumCFG config;
+		Iridium::Init(config);
 		Con::LogEvent("Preparing to render first frame", TAG_ENGINE);
 
 	}
 	void Lt_ILayer::Loop()
 	{
+		Iridium::StartFrame(frameCount);
 		Con::Display();
 
 		//Con::LogEvent("NewFrame", TAG_ENGINE);
@@ -119,6 +121,8 @@ namespace lte {
 
 		viewport.SubmitGUICommands();
 		//Con::Log("nodesys submit", TAG_ENGINE);
+
+		Iridium::SubmitDrawCommands();
 
 		nodeSystem.SubmitGUICommands();
 		//Con::Log("viewport submit", TAG_ENGINE);
@@ -155,7 +159,7 @@ namespace lte {
 		frameCount++;
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;
-		
+		Iridium::EndFrame();
 	}
 	void Lt_ILayer::Resize()
 	{

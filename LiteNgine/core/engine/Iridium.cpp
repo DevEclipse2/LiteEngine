@@ -2,7 +2,7 @@
 #include "../vulkan/EngineClasses/Lt_Gui.h"
 #include "../vulkan/EngineClasses/Lt_Console.h"
 namespace lte {
-	bool Iridium::initalised = false;
+	bool Iridium::initialised = false;
 	bool Iridium::frameStarted = false;
 	uint32_t Iridium::frame = 0;
 	std::string outputpath = "";
@@ -33,7 +33,7 @@ namespace lte {
 	}
 	void Iridium::StartFrame(uint32_t id)
 	{
-		if (!initalised) {
+		if (!initialised) {
 			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
 			return;
 		}
@@ -46,10 +46,11 @@ namespace lte {
 			return;
 		}
 		frameStarted = true;
+		FrameStart = std::chrono::high_resolution_clock::now();
 	}
 	void Iridium::EndFrame()
 	{
-		if (!initalised) {
+		if (!initialised) {
 			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
 			return;
 		}
@@ -58,6 +59,12 @@ namespace lte {
 			return;
 		}
 		frameStarted = false;
+		FrameEnd = std::chrono::high_resolution_clock::now();
+		ImmFrameTime = (std::chrono::duration<float, std::milli>(FrameEnd - FrameStart).count());
+		frameTimes.emplace_back(ImmFrameTime);
+		ImmFps = 1000/ImmFrameTime;
+
+		framesPerSecond.emplace_back(ImmFps);
 	}
 	void Iridium::StartLogging()
 	{
@@ -67,15 +74,17 @@ namespace lte {
 	}
 	void Iridium::ResetLogging()
 	{
+		//reset tracked data
 	}
 	void Iridium::WriteToFile()
 	{
 	}
 	void Iridium::Init(IridiumCFG config_info)
 	{
-		if (initalised) {
+		if (initialised) {
 			Con::LogWarning("Iridum profiler has already been initialised, updating configuration...", TAG_ENGINE | TAG_PROFILING);
 		}
+		initialised = true;
 	}
 	void Iridium::IStartTime(const char* name)
 	{
@@ -95,7 +104,7 @@ namespace lte {
 	}
 	void Iridium::CheckExist(uint8_t command, const char* threadName, const char* name)
 	{
-		if (!initalised) {
+		if (!initialised) {
 			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
 			return;
 		}
@@ -126,7 +135,20 @@ namespace lte {
 	}
 	void Iridium::SubmitDrawCommands() 
 	{
-		//only this guy lives on the main thread	
+		//only this guy lives on the main thread
+		ImGui::Begin("Iridium Profiler");
+		ImGui::Text("performance metrics go here!");
+		ImGui::Text(("ImmediateData: \n Fps :" + std::to_string(ImmFps) + "| FrameTime: " + std::to_string(ImmFrameTime) + "ms").c_str());
+		if (ImGui::Button("Change Settings", ImVec2(120, 40)))
+		{
+
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Logging", ImVec2(120, 40)))
+		{
+			ResetLogging();
+		}	
+		ImGui::End();
 
 	}
 

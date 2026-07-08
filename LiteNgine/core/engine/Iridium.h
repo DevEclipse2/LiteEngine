@@ -66,8 +66,8 @@ namespace lte {
 		static float AvgFrameTime;
 		static float PercentLowFps;
 		static float PercentHighFps;
-		static std::chrono::steady_clock::time_point FrameStart;
-		static std::chrono::steady_clock::time_point FrameEnd;
+		inline static std::chrono::steady_clock::time_point FrameStart;
+		inline static std::chrono::steady_clock::time_point FrameEnd;
 
 		using RegisterFunc = std::function<void(const char*)>;
 
@@ -86,7 +86,7 @@ namespace lte {
 			void Register(); // registers to the redirector
 			void DumpData(); // fills the data into the main 
 		private:
-			static bool initalised;
+			static bool initialised;
 			static bool frameStarted;
 			static uint32_t frame;
 			static void CheckExist(uint8_t command,const char* thread, const char* name);
