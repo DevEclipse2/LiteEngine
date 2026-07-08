@@ -260,12 +260,7 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
 			vk::ImageAspectFlagBits::eDepth, commandBuffer);
 
-		static auto sTime = std::chrono::high_resolution_clock::now();
-
-		auto cTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(cTime - sTime).count();
-
-		vk::ClearValue clearColor = vk::ClearColorValue(0.8f, std::sin(time)* 0.5f + 0.5f, 0.1f, 1.0f);
+		vk::ClearValue clearColor = vk::ClearColorValue(0.8f, 0.0f, 0.1f, 0.0f);
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
@@ -342,9 +337,9 @@ namespace lte {
 		fps = 1 / (time - prevtime);
 		frameTime = (time - prevtime) * 1000;
 		UniformBufferObject ubo{};
-
-		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 proj = glm::perspective(glm::radians(45.0f),
+		glm::vec3 lookTarg = glm::vec3(x, y, z) + glm::vec3(viewx, viewy, viewz);
+		glm::mat4 view = glm::lookAt(glm::vec3(x, y, z),lookTarg, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 proj = glm::perspective(glm::radians(FOV),
 			static_cast<float>(size.x) / static_cast<float>(size.y),
 			0.1f, 20.0f);
 
@@ -380,7 +375,24 @@ namespace lte {
 			ImGui::SetNextItemWidth(200.0f);
 			ImGui::InputInt("height", &newHeight);
 			ImGui::SliderFloat("scale", &scale,0.1f,10.0f);
-			
+			ImGui::SetNextItemWidth(100.0f);
+			ImGui::SliderFloat("X pos", &x, -10,10);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.0f);
+			ImGui::SliderFloat("Y pos", &y , -10 ,10);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.0f);
+			ImGui::SliderFloat("Z pos", &z, -10 ,10);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(200.0f);
+			ImGui::SliderFloat("Rot X", &viewx, -10, 10);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(200.0f);
+			ImGui::SliderFloat("Rot Y", &viewy, -10, 10);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(200.0f);
+			ImGui::SliderFloat("Rot Z", &viewz, -10, 10);
+			ImGui::SliderFloat("FOV", &FOV, 30, 180);
 		if (ImGui::Button("Apply", ImVec2(120, 50)))
 			{
 					Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);

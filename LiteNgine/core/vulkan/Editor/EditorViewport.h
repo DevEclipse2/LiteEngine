@@ -59,6 +59,14 @@ namespace lte {
 		int newWidth = 600;
 		int newFIF = 3;
 
+		float x = 0;
+		float y = 0;
+		float z = 0;
+
+		float viewx, viewy, viewz = 0;
+		float FOV = 45;
+
+
 	};
 }
 
