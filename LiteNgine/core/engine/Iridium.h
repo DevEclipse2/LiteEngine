@@ -42,44 +42,44 @@ namespace lte {
 			std::vector<std::string> name;
 			// threadname | eventname
 			std::vector<float> times;
-			
+
 		};
-		public:
-			std::string outputpath;
-			static void StartTime(const char* threadName, const char* name);
-			static void EndTime(const char* threadName,const char* name);
-			static void AddNote(const char* threadName,const char* name);
-			static void StartFrame(uint32_t id);
-			static void EndFrame();
-			static void StartLogging();
-			static void EndLogging();
-			static void ResetLogging();
-			static void WriteToFile();
-			static void Init(IridiumCFG config_info);
-			static void SubmitDrawCommands();
-			static std::list<ProfFrame> CompiledprofilingFrames;
-			static std::vector<float> framesPerSecond;
-			static std::vector<float> frameTimes;
-			static float ImmFps;
-			static float ImmFrameTime;
-			static float AvgFps;
-			static float AvgFrameTime;
-			static float PercentLowFps;
-			static float PercentHighFps;
-			static std::chrono::steady_clock::time_point FrameStart;
-			static std::chrono::steady_clock::time_point FrameEnd;
+	public:
+		static std::string outputpath;
+		static void StartTime(const char* threadName, const char* name);
+		static void EndTime(const char* threadName, const char* name);
+		static void AddNote(const char* threadName, const char* name);
+		static void StartFrame(uint32_t id);
+		static void EndFrame();
+		static void StartLogging();
+		static void EndLogging();
+		static void ResetLogging();
+		static void WriteToFile();
+		static void Init(IridiumCFG config_info);
+		static void SubmitDrawCommands();
+		static std::list<ProfFrame> CompiledprofilingFrames;
+		static std::vector<float> framesPerSecond;
+		static std::vector<float> frameTimes;
+		static float ImmFps;
+		static float ImmFrameTime;
+		static float AvgFps;
+		static float AvgFrameTime;
+		static float PercentLowFps;
+		static float PercentHighFps;
+		static std::chrono::steady_clock::time_point FrameStart;
+		static std::chrono::steady_clock::time_point FrameEnd;
 
-			using RegisterFunc = std::function<void(const char*)>;
+		using RegisterFunc = std::function<void(const char*)>;
 
-			//main uses hash maps to redirect calls
-			std::unordered_map<std::string,RegisterFunc> redirector;
+		//main uses hash maps to redirect calls
+		static std::unordered_map<std::string, std::vector<RegisterFunc>> redirector;
+		static std::vector<std::unique_ptr<Iridium>> profilingThreads;
 
-
-			//non static, probably one iridium instance per thread
-			std::string assignedThreadName;
-			std::list<std::tuple<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>> event;
-			std::list<std::string> eventName;
-			std::list<ProfFrame> profilingFrames;
+		//non static, probably one iridium instance per thread
+		std::string assignedThreadName = "";
+		std::list<std::tuple<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>> event = {};
+		std::list<std::string> eventName = {};
+		std::list<ProfFrame> profilingFrames = {};
 			void IStartTime(const char* name);
 			void IEndTime( const char* name);
 			void IAddNote(const char* note);
@@ -89,6 +89,7 @@ namespace lte {
 			static bool initalised;
 			static bool frameStarted;
 			static uint32_t frame;
+			static void CheckExist(uint8_t command,const char* thread, const char* name);
 	};
 }
 //a frame is started, and on a separate thread,the profiler calculate average, writes to disk, and performs screen caps

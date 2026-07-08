@@ -43,11 +43,11 @@ namespace lte {
 		meshes.push_back(LtMeshInfo{});
 		//MeshInfo.push_back(LtMeshInfo{});
 		meshes[0].position = { 0.0f, 0.0f, -1.0f };
-		meshes[0].rotation = { glm::radians(90.0f), 0.0f, 0.0f };
+		meshes[0].rotation = { 0.0f, 0.0f, 0.0f };
 		meshes[0].scale = { 1.1f, 1.1f,1.1f };
 
 		meshes[1].position = { -2.0f, 0.0f, -1.0f };
-		meshes[1].rotation = { 0.0f, glm::radians(90.0f), 0.0f};
+		meshes[1].rotation = { glm::radians(90.0f) ,0.0f , 0.0f};
 		meshes[1].scale = { 0.45f, 0.45f, 0.45f };
 
 		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);

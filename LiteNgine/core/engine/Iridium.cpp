@@ -5,42 +5,31 @@ namespace lte {
 	bool Iridium::initalised = false;
 	bool Iridium::frameStarted = false;
 	uint32_t Iridium::frame = 0;
-
+	std::string outputpath = "";
+	float Iridium::ImmFps = 0;
+	float Iridium::ImmFrameTime = 0;
+	float Iridium::AvgFps = 0;
+	float Iridium::AvgFrameTime = 0;
+	float Iridium::PercentLowFps = 0;
+	float Iridium::PercentHighFps = 0;
+	std::list<Iridium::ProfFrame> Iridium::CompiledprofilingFrames = {};
+	std::vector<float> Iridium::framesPerSecond = {};
+	std::vector<float> Iridium::frameTimes = {};
+	std::unordered_map<std::string, std::vector<Iridium::RegisterFunc>> Iridium::redirector = {};
+	std::vector<std::unique_ptr<Iridium>> Iridium::profilingThreads = {};
 	void Iridium::StartTime(const char* threadName, const char* name)
 	{
-		if (!initalised) {
-			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
-			return;
-		}
-		if (!frameStarted) {
-			Con::LogError("Iridum profiler should be used in a frame!", MED_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
-			return;
-		}
 		//searches existing profilers to see if it exists, if not it creates a profiler
+		CheckExist(0, threadName, name);
 	}
 
 	void Iridium::EndTime(const char* threadName, const char* name)
 	{
-		if (!initalised) {
-			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
-			return;
-		}
-		if (!frameStarted) {
-			Con::LogError("Iridum profiler should be used in a frame!", MED_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
-			return;
-		}
+		CheckExist(1, threadName, name);
 	}
 	void Iridium::AddNote(const char* threadName, const char* name)
 	{
-		if (!initalised) {
-			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
-			return;
-		}
-		if (!frameStarted) {
-			Con::LogError("Iridum profiler should be used in a frame!", MED_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
-			return;
-		}
-
+		CheckExist(2, threadName, name);
 	}
 	void Iridium::StartFrame(uint32_t id)
 	{
@@ -56,6 +45,7 @@ namespace lte {
 			Con::LogError("Invalid frameID, submitted " + std::to_string(id) + " while profiler has completed frame " + std::to_string(frame), HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
 			return;
 		}
+		frameStarted = true;
 	}
 	void Iridium::EndFrame()
 	{
@@ -67,6 +57,7 @@ namespace lte {
 			Con::LogError("No Frame Has Been Started!", MED_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
 			return;
 		}
+		frameStarted = false;
 	}
 	void Iridium::StartLogging()
 	{
@@ -100,10 +91,45 @@ namespace lte {
 	}
 	void Iridium::DumpData()
 	{
+
+	}
+	void Iridium::CheckExist(uint8_t command, const char* threadName, const char* name)
+	{
+		if (!initalised) {
+			Con::LogError("Iridum profiler MUST be Initialised First!", HIGH_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
+			return;
+		}
+		if (!frameStarted) {
+			Con::LogError("Iridum profiler should be used in a frame!", MED_SEVERITY, TAG_ENGINE | TAG_PROFILING | TAG_USER);
+			return;
+		}
+		if (redirector.contains(threadName))
+		{
+			redirector[threadName][command](name);
+		}
+		else {
+			profilingThreads.emplace_back(std::make_unique<Iridium>(Iridium{}));
+			Iridium* targetIridium = profilingThreads[profilingThreads.size() - 1].get();
+
+			redirector[threadName].resize(3);
+			redirector[threadName][0] = [targetIridium](const char* arg) {
+				targetIridium->IStartTime(arg);
+				};
+			redirector[threadName][1] = [targetIridium](const char* arg) {
+				targetIridium->IEndTime(arg);
+				};
+			redirector[threadName][2] = [targetIridium](const char* arg) {
+				targetIridium->IAddNote(arg);
+				};
+			redirector[threadName][command](name);
+		}
 	}
 	void Iridium::SubmitDrawCommands() 
 	{
 		//only this guy lives on the main thread	
+
 	}
+
+	//
 
 }
