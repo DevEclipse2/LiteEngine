@@ -86,9 +86,6 @@ namespace lte {
 			Con::LogWarning("Iridum profiler has already been initialised, updating configuration...", TAG_ENGINE | TAG_PROFILING);
 		}
 	}
-	void Iridium::SubmitDrawCommands()
-	{
-	}
 	void Iridium::IStartTime(const char* name)
 	{
 	}

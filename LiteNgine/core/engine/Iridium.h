@@ -57,7 +57,7 @@ namespace lte {
 			static void WriteToFile();
 			static void Init(IridiumCFG config_info);
 			static void SubmitDrawCommands();
-			static std::list<ProfFrame> profilingFrames;
+			static std::list<ProfFrame> CompiledprofilingFrames;
 			static std::vector<float> framesPerSecond;
 			static std::vector<float> frameTimes;
 			static float ImmFps;
@@ -88,8 +88,7 @@ namespace lte {
 		private:
 			static bool initalised;
 			static bool frameStarted;
-			uint32_t id;
-
+			static uint32_t frame;
 	};
 }
 //a frame is started, and on a separate thread,the profiler calculate average, writes to disk, and performs screen caps
