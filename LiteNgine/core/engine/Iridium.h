@@ -39,6 +39,8 @@ namespace lte {
 
 	class Iridium
 	{
+		
+	public:
 		struct ProfFrame {
 			float totalTime = 0;
 			uint32_t id;
@@ -47,7 +49,6 @@ namespace lte {
 			std::vector<float> times;
 
 		};
-	public:
 		static std::string outputpath;
 		static std::mutex FrameAvgLock;
 		static void StartTime(const char* threadName, const char* name);
@@ -105,7 +106,7 @@ namespace lte {
 	};
 }
 //a frame is started, and on a separate thread,the profiler calculate average, writes to disk, and performs screen caps
-
+//
 
 //auto frameEnd = std::chrono::high_resolution_clock::now();
 //float vulkanTime = std::chrono::duration<float, std::milli>(frameEnd - vulkanStart).count();

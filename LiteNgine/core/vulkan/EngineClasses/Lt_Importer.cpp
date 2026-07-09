@@ -28,7 +28,7 @@ namespace lte
 		{
 			std::string errstr = importer.GetErrorString();
 			Con::LogFailure(errstr + "Assimp loading of model failed from internal engine class Lt_Importer", HIGH_SEVERITY,TAG_ENGINE);
-			return 1;
+			return Load_Fail_Generic;
 		}
 		return 0;
 

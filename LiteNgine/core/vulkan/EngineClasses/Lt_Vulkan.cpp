@@ -32,6 +32,19 @@ namespace lte {
 	void Lt_Vulkan::Init(std::string name)
 	{
 		bool usevalidation = true;
+		std::vector<char const*> requiredLayers;
+		if (usevalidation) {
+			requiredLayers.assign(validationLayers.begin(), validationLayers.end());
+		}
+		auto layerProperties = context.enumerateInstanceLayerProperties();
+		if (std::ranges::any_of(requiredLayers, [&layerProperties](auto const& requiredLayer) {
+			return std::ranges::none_of(layerProperties,
+				[requiredLayer](auto const& layerProperty)
+				{ return strcmp(layerProperty.layerName, requiredLayer) == 0; });
+			}))
+		{
+			usevalidation = false;
+		}
 		createInstance(name, usevalidation);
 		//vulkan only needs 1 instance. Ever. Period.
 		//Period? you need a pad?

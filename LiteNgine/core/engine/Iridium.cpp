@@ -15,7 +15,7 @@ namespace lte {
 	std::atomic<float> Iridium::AvgFrameTime = 0;
 	std::atomic<float> Iridium::PercentLowFps = 0;
 	std::atomic<float> Iridium::PercentHighFps = 0;
-	std::list<Iridium::ProfFrame> Iridium::CompiledprofilingFrames = {};
+	//std::list<Iridium::ProfFrame> Iridium::CompiledprofilingFrames = {};
 	std::vector<float> Iridium::framesPerSecond = {};
 	std::vector<float> Iridium::frameTimes = {};
 	std::unordered_map<std::string, std::vector<Iridium::RegisterFunc>> Iridium::redirector = {};
