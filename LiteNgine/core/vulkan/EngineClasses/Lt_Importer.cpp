@@ -4,6 +4,11 @@
 #define Load_Fail_UnsupportedFile	2
 #define Load_Fail_UnparsableFormat	3
 #define Load_Fail_CorruptedFile		4
+// Assimp headers
+#include <assimp/Importer.hpp>
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
 
 namespace lte 
 {

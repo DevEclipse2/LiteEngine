@@ -2,11 +2,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-// Assimp headers
-#include <assimp/Importer.hpp>
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
 
 #include "../Reworked/ltMesh.h"
 #include "../EngineClasses/Lt_Console.h"

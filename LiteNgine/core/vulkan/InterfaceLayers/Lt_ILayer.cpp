@@ -145,7 +145,6 @@ namespace lte {
 		}
 		
 		editorViewport.FinishFrame();
-
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 

@@ -63,7 +63,6 @@ namespace lte {
 		static void SubmitDrawCommands();
 		static void CalculateAverages();
 		static void Terminate();
-		static std::list<ProfFrame> CompiledprofilingFrames;
 		static std::vector<float> framesPerSecond;
 		static std::vector<float> frameTimes;
 		static float ImmFps;
@@ -75,7 +74,7 @@ namespace lte {
 		inline static std::chrono::steady_clock::time_point FrameStart;
 		inline static std::chrono::steady_clock::time_point FrameEnd;
 		inline static std::thread AvgFrameWorker;
-		using RegisterFunc = std::function<void(const char*)>;
+		using RegisterFunc = std::function<void(std::string)>;
 
 		//main uses hash maps to redirect calls
 		static std::unordered_map<std::string, std::vector<RegisterFunc>> redirector;
@@ -83,12 +82,13 @@ namespace lte {
 
 		//non static, probably one iridium instance per thread
 		std::string assignedThreadName = "";
+
 		std::list<std::tuple<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>> event = {};
 		std::list<std::string> eventName = {};
 		std::list<ProfFrame> profilingFrames = {};
-			void IStartTime(const char* name);
-			void IEndTime( const char* name);
-			void IAddNote(const char* note);
+			void IStartTime(std::string name);
+			void IEndTime(std::string name);
+			void IAddNote(std::string note);
 			void Register(); // registers to the redirector
 			void DumpData(); // fills the data into the main 
 
@@ -101,6 +101,7 @@ namespace lte {
 			static bool active;
 			static uint32_t frame;
 			static void CheckExist(uint8_t command,const char* thread, const char* name);
+			
 	};
 }
 //a frame is started, and on a separate thread,the profiler calculate average, writes to disk, and performs screen caps

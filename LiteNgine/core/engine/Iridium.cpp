@@ -71,8 +71,10 @@ namespace lte {
 		frameTimes.emplace_back(ImmFrameTime);
 		ImmFps = 1000/ImmFrameTime;
 		framesPerSecond.emplace_back(ImmFps);
-		// new thread to calculate fps
-		//use mutex to lock
+
+
+		//use mutex to open a new frame and grab all of the profiling threads
+
 	}
 	void Iridium::StartLogging()
 	{
@@ -103,15 +105,31 @@ namespace lte {
 
 		CurrentSettings = config_info;
 	}
-	void Iridium::IStartTime(const char* name)
+	void Iridium::IStartTime(std::string name)
 	{
+		eventName.emplace_back(name);
+		event.emplace_back(std::tuple<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>(std::chrono::high_resolution_clock::now(), std::chrono::high_resolution_clock::now()));
 	}
-	void Iridium::IEndTime(const char* name)
+	void Iridium::IEndTime(std::string name)
 	{
+		auto it = std::find(eventName.begin(), eventName.end(), name);
+		if (it != eventName.end()) {
+			int index = std::distance(eventName.begin(), it);
+			std::tuple<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>& val = *std::next(event.begin(), index);
+			std::get<1>(val) = std::chrono::high_resolution_clock::now();
+		}
+		else {
+			Con::LogFailure("Could not find event with name!", MED_SEVERITY, TAG_PROFILING | TAG_ENGINE);
+		}
 	}
-	void Iridium::IAddNote(const char* note)
+	void Iridium::IAddNote(std::string note)
 	{
+		eventName.emplace_back( "Note :" + note);
+		event.emplace_back(std::tuple<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>(std::chrono::high_resolution_clock::now(), std::chrono::high_resolution_clock::now()));
 	}
+
+	//new changes 
+		
 	void Iridium::Register()
 	{
 	}
@@ -138,13 +156,13 @@ namespace lte {
 			Iridium* targetIridium = profilingThreads[profilingThreads.size() - 1].get();
 
 			redirector[threadName].resize(3);
-			redirector[threadName][0] = [targetIridium](const char* arg) {
+			redirector[threadName][0] = [targetIridium](std::string arg) {
 				targetIridium->IStartTime(arg);
 				};
-			redirector[threadName][1] = [targetIridium](const char* arg) {
+			redirector[threadName][1] = [targetIridium](std::string arg) {
 				targetIridium->IEndTime(arg);
 				};
-			redirector[threadName][2] = [targetIridium](const char* arg) {
+			redirector[threadName][2] = [targetIridium](std::string arg) {
 				targetIridium->IAddNote(arg);
 				};
 			redirector[threadName][command](name);
