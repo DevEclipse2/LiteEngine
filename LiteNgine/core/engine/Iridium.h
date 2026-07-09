@@ -7,6 +7,8 @@
 #include <chrono>
 #include <unordered_map>
 #include <functional>
+#include <thread>
+#include <mutex>
 //the iridium profiler
 //its gud
 //image snapshot
@@ -29,6 +31,7 @@ namespace lte {
 		bool autoWriteToDisk = false;
 		float autoSaveTimer = 30.0f;
 		float UpdateRate = 1.0f; //how many seconds per update
+		float RetainTime = 10.0f; //how many seconds to retain as average
 		bool showImmediateFps = false;
 		bool useSynchronousWrite = false; // constantly writes to the file on a separate thread
 	};
@@ -46,6 +49,7 @@ namespace lte {
 		};
 	public:
 		static std::string outputpath;
+		static std::mutex FrameAvgLock;
 		static void StartTime(const char* threadName, const char* name);
 		static void EndTime(const char* threadName, const char* name);
 		static void AddNote(const char* threadName, const char* name);
@@ -57,18 +61,20 @@ namespace lte {
 		static void WriteToFile();
 		static void Init(IridiumCFG config_info);
 		static void SubmitDrawCommands();
+		static void CalculateAverages();
+		static void Terminate();
 		static std::list<ProfFrame> CompiledprofilingFrames;
 		static std::vector<float> framesPerSecond;
 		static std::vector<float> frameTimes;
 		static float ImmFps;
 		static float ImmFrameTime;
-		static float AvgFps;
-		static float AvgFrameTime;
-		static float PercentLowFps;
-		static float PercentHighFps;
+		static std::atomic<float> AvgFps;
+		static std::atomic<float> AvgFrameTime;
+		static std::atomic<float> PercentLowFps;
+		static std::atomic<float> PercentHighFps;
 		inline static std::chrono::steady_clock::time_point FrameStart;
 		inline static std::chrono::steady_clock::time_point FrameEnd;
-
+		inline static std::thread AvgFrameWorker;
 		using RegisterFunc = std::function<void(const char*)>;
 
 		//main uses hash maps to redirect calls
@@ -85,9 +91,14 @@ namespace lte {
 			void IAddNote(const char* note);
 			void Register(); // registers to the redirector
 			void DumpData(); // fills the data into the main 
+
+		static IridiumCFG CurrentSettings;
+		static IridiumCFG NewSettings;
 		private:
 			static bool initialised;
+			static bool OpenMenu; 
 			static bool frameStarted;
+			static bool active;
 			static uint32_t frame;
 			static void CheckExist(uint8_t command,const char* thread, const char* name);
 	};

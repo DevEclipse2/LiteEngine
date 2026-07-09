@@ -117,15 +117,9 @@ namespace lte {
 
 		//add any gui draw commands here
 		guiHandler.StartFrame();
-		//Con::Log("viewport submit", TAG_ENGINE);
-
-		viewport.SubmitGUICommands();
-		//Con::Log("nodesys submit", TAG_ENGINE);
-
 		Iridium::SubmitDrawCommands();
-
+		viewport.SubmitGUICommands();
 		nodeSystem.SubmitGUICommands();
-		//Con::Log("viewport submit", TAG_ENGINE);
 		editorViewport.UpdateGui();
 
 		guiHandler.EndFrame();
@@ -186,6 +180,7 @@ namespace lte {
 		nodeSystem.~NodeSystem();
 		guiHandler.Terminate();
 		ImageDelegate::Terminate();
+		Iridium::Terminate();
 		/*
 		backend.Exit();
 		backend.window.DestroyWindow();*/

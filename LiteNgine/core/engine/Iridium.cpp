@@ -1,22 +1,29 @@
 #include "Iridium.h"
 #include "../vulkan/EngineClasses/Lt_Gui.h"
 #include "../vulkan/EngineClasses/Lt_Console.h"
+#include <numeric>
 namespace lte {
 	bool Iridium::initialised = false;
 	bool Iridium::frameStarted = false;
+	std::mutex Iridium::FrameAvgLock;
+
 	uint32_t Iridium::frame = 0;
 	std::string outputpath = "";
 	float Iridium::ImmFps = 0;
 	float Iridium::ImmFrameTime = 0;
-	float Iridium::AvgFps = 0;
-	float Iridium::AvgFrameTime = 0;
-	float Iridium::PercentLowFps = 0;
-	float Iridium::PercentHighFps = 0;
+	std::atomic<float> Iridium::AvgFps = 0;
+	std::atomic<float> Iridium::AvgFrameTime = 0;
+	std::atomic<float> Iridium::PercentLowFps = 0;
+	std::atomic<float> Iridium::PercentHighFps = 0;
 	std::list<Iridium::ProfFrame> Iridium::CompiledprofilingFrames = {};
 	std::vector<float> Iridium::framesPerSecond = {};
 	std::vector<float> Iridium::frameTimes = {};
 	std::unordered_map<std::string, std::vector<Iridium::RegisterFunc>> Iridium::redirector = {};
 	std::vector<std::unique_ptr<Iridium>> Iridium::profilingThreads = {};
+	bool Iridium::OpenMenu = false;
+	IridiumCFG Iridium::CurrentSettings;
+	bool Iridium::active = false;
+	IridiumCFG Iridium::NewSettings;
 	void Iridium::StartTime(const char* threadName, const char* name)
 	{
 		//searches existing profilers to see if it exists, if not it creates a profiler
@@ -63,14 +70,17 @@ namespace lte {
 		ImmFrameTime = (std::chrono::duration<float, std::milli>(FrameEnd - FrameStart).count());
 		frameTimes.emplace_back(ImmFrameTime);
 		ImmFps = 1000/ImmFrameTime;
-
 		framesPerSecond.emplace_back(ImmFps);
+		// new thread to calculate fps
+		//use mutex to lock
 	}
 	void Iridium::StartLogging()
 	{
+		active = true;
 	}
 	void Iridium::EndLogging()
 	{
+		active = false;
 	}
 	void Iridium::ResetLogging()
 	{
@@ -82,9 +92,16 @@ namespace lte {
 	void Iridium::Init(IridiumCFG config_info)
 	{
 		if (initialised) {
-			Con::LogWarning("Iridum profiler has already been initialised, updating configuration...", TAG_ENGINE | TAG_PROFILING);
+			Con::LogWarning("Iridium profiler has already been initialised, updating configuration...", TAG_ENGINE | TAG_PROFILING);
 		}
-		initialised = true;
+		else {
+			initialised = true;
+			AvgFrameWorker = std::thread(&CalculateAverages);
+			Con::LogEvent("Iridium profiler has been initalised.",TAG_ENGINE|TAG_PROFILING);
+		}
+		//pause logging and apply using mutex
+
+		CurrentSettings = config_info;
 	}
 	void Iridium::IStartTime(const char* name)
 	{
@@ -138,18 +155,71 @@ namespace lte {
 		//only this guy lives on the main thread
 		ImGui::Begin("Iridium Profiler");
 		ImGui::Text("performance metrics go here!");
-		ImGui::Text(("ImmediateData: \n Fps :" + std::to_string(ImmFps) + "| FrameTime: " + std::to_string(ImmFrameTime) + "ms").c_str());
-		if (ImGui::Button("Change Settings", ImVec2(120, 40)))
+		
+		if (ImGui::Button("Start Logging", ImVec2(220, 40)))
 		{
-
+			StartLogging();
+		}ImGui::SameLine();
+		if (ImGui::Button("Stop Logging", ImVec2(220, 40)))
+		{
+			EndLogging();
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Clear Logging", ImVec2(120, 40)))
-		{
-			ResetLogging();
-		}	
-		ImGui::End();
+			ImGui::Text(("ImmediateData: \n Fps :" + std::to_string(ImmFps) + "| FrameTime: " + std::to_string(ImmFrameTime) + "ms").c_str());
+			ImGui::Text(("AverageData: \n Fps :" +	 std::to_string(AvgFps.load()) + "| FrameTime: " + std::to_string(AvgFrameTime.load()) + "ms").c_str());
+			if (ImGui::Button("Change Settings", ImVec2(320, 40)))
+			{
+				OpenMenu = !OpenMenu;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Clear Logging", ImVec2(320, 40)))
+			{
+				ResetLogging();
+			}
+			if (OpenMenu) {
+				if (ImGui::BeginChild("Logger Settings"))
+				{
+					ImGui::SetNextItemWidth(160);
+					ImGui::Checkbox("Show ConstantFps", &NewSettings.showImmediateFps);
+					if (ImGui::Button("Apply", ImVec2(120, 40)))
+					{
+						Init(NewSettings);
+					}
+				}
+				ImGui::EndChild();
+			}
+			ImGui::End();
+	}
 
+	void Iridium::CalculateAverages()
+	{
+		while (initialised) {
+			std::chrono::duration<float> float_seconds(CurrentSettings.UpdateRate);
+			std::this_thread::sleep_for(std::chrono::milliseconds(std::chrono::duration_cast<std::chrono::milliseconds>(float_seconds )));
+
+			float avg = 0.0f;
+			float avgFT = 0.0f;
+			{
+				// --- CRITICAL SECTION START ---
+				// std::lock_guard automatically locks the mutex, and unlocks it 
+				// when it goes out of scope at the closing brace.
+				std::lock_guard<std::mutex> lock(FrameAvgLock);
+				if (!frameTimes.empty()) {
+					float sum = std::accumulate(frameTimes.begin(), frameTimes.end(), 0.0f);
+					avgFT = sum / frameTimes.size();
+					avg = 1000.0f / avgFT; // Assuming times are in ms
+					frameTimes.clear(); // Reset for the next batch
+				}
+				// --- CRITICAL SECTION END (Mutex unlocks here) ---
+			}
+			AvgFps.store(avg);
+			AvgFrameTime.store(avgFT);
+		}
+	}
+
+	void Iridium::Terminate()
+	{
+		initialised = false;
+		if (AvgFrameWorker.joinable()) AvgFrameWorker.join();
 	}
 
 	//

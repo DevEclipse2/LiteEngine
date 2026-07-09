@@ -214,6 +214,8 @@
     <ClCompile Include="core\vulkan\Editor\NodeSys.cpp" />
     <ClCompile Include="core\vulkan\Editor\EditorViewport.cpp" />
     <ClCompile Include="core\engine\Iridium.cpp" />
+    <ClCompile Include="core\Game\Slate.cpp" />
+    <ClCompile Include="LayoutLoader.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
@@ -263,6 +265,8 @@
     <ClInclude Include="core\vulkan\Editor\NodeSys.h" />
     <ClInclude Include="core\vulkan\Editor\EditorViewport.h" />
     <ClInclude Include="core\engine\Iridium.h" />
+    <ClInclude Include="core\Game\Slate.h" />
+    <ClInclude Include="LayoutLoader.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />
