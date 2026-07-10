@@ -1,7 +1,10 @@
 # LiteNgine
 where is the nsfw?
+
 ok whatever
+
 LiteNgine has the capacity to NOT WANT TO WORK *properly* on anything but the crappy igpu of an i5 10210U and nothing i do can change that. 
+
 LiteNgine is called liteNgine because i'm no longer allowed to comment on geopolitics
 
 this engine currently had the capability to:
