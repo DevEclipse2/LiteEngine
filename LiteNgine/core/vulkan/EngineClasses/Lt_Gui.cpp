@@ -513,11 +513,9 @@ namespace lte {
 		vk::RenderingAttachmentInfo attachmentInfo = {};
 			attachmentInfo.sType = vk::StructureType::eRenderingAttachmentInfo;
 			attachmentInfo.pNext = NULL;
-			attachmentInfo.imageView = *ImageDelegate::ImagePool[*creationInfo.colorImageViewIndex]->imageView,
+			attachmentInfo.imageView = creationInfo.pImageViews->at(drawindex),
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			attachmentInfo.resolveImageView = creationInfo.pImageViews->at(drawindex),
-			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eNone,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eLoad,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
 	//attachmentInfo.clearValue = clearColor;

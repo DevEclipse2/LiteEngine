@@ -192,9 +192,9 @@ namespace lte {
 
 		swapchain.createSwapChain(PhysicalDevice ,device,surface,window, &minImageCount);
 		ImageDelegate::createSwapchainImageViews(&swapchain, &Lt_Vulkan::devices[deviceID].logicalDevice);
-		//LtImage colImg{};
+		LtImage colImg{};
 		LtImage depImg{};
-		//ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,vk::SampleCountFlagBits::e1);
 		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice,vk::SampleCountFlagBits::e1);
 		//swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
@@ -222,13 +222,13 @@ namespace lte {
 		assert(swapchain.swapChainImages.size() != 0);
 		swapchain.createSwapChain(PhysicalDevice, device, surface, Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window, &minImageCount);
 		ImageDelegate::createSwapchainImageViews(&swapchain, &device);
-		//ImageDelegate::requestImageDestruction(swapchain.colorImage);
+		ImageDelegate::requestImageDestruction(swapchain.colorImage);
 		ImageDelegate::requestImageDestruction(swapchain.depthImage);
-		//LtImage colImg{};
+		LtImage colImg{};
 		LtImage depImg{};
-		//ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice, msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice, vk::SampleCountFlagBits::e1);
 		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice, vk::SampleCountFlagBits::e1);
-		//swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
+		swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
 		/*deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(pipeline.descSetLayout, pool, sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
