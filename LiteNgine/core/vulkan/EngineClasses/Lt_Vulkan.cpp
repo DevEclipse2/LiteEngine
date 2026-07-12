@@ -192,11 +192,11 @@ namespace lte {
 
 		swapchain.createSwapChain(PhysicalDevice ,device,surface,window, &minImageCount);
 		ImageDelegate::createSwapchainImageViews(&swapchain, &Lt_Vulkan::devices[deviceID].logicalDevice);
-		LtImage colImg{};
+		//LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice,msaaSamples);
-		swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
+		//ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice,vk::SampleCountFlagBits::e1);
+		//swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
 		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout,device);
 	}
@@ -222,13 +222,13 @@ namespace lte {
 		assert(swapchain.swapChainImages.size() != 0);
 		swapchain.createSwapChain(PhysicalDevice, device, surface, Lt_WindowTracker::windowInfo[ltMultiWindowIndex]->window, &minImageCount);
 		ImageDelegate::createSwapchainImageViews(&swapchain, &device);
-		ImageDelegate::requestImageDestruction(swapchain.colorImage);
+		//ImageDelegate::requestImageDestruction(swapchain.colorImage);
 		ImageDelegate::requestImageDestruction(swapchain.depthImage);
-		LtImage colImg{};
+		//LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice, msaaSamples);
-		swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
+		//ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice, msaaSamples);
+		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice, vk::SampleCountFlagBits::e1);
+		//swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
 		/*deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(pipeline.descSetLayout, pool, sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
@@ -337,7 +337,7 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // dstStage
 			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);
 		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
-		ImageDelegate::transition_image_layout(
+		/*ImageDelegate::transition_image_layout(
 			*ImageDelegate::ImagePool[swapchain.colorImage]->image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eColorAttachmentOptimal,
@@ -345,7 +345,7 @@ namespace lte {
 			vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);
+			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);*/
 		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
 
 		ImageDelegate::transition_image_layout(
@@ -362,11 +362,9 @@ namespace lte {
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = *ImageDelegate::ImagePool[swapchain.colorImage]->imageView,
+			attachmentInfo.imageView = *swapchain.imageViews[frame],
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			attachmentInfo.resolveImageView = *swapchain.imageViews[frame],
-			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eNone,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
 			attachmentInfo.clearValue = clearColor;

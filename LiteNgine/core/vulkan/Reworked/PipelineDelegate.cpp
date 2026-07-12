@@ -43,7 +43,7 @@ namespace lte {
 		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
 			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e16,
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
 			multisampling.sampleShadingEnable = vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 			depthStencil.depthTestEnable = vk::True,
@@ -68,12 +68,12 @@ namespace lte {
 
 		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 		vk::PipelineDynamicStateCreateInfo dynamicState{};
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
 			dynamicState.pDynamicStates = dynamicStates.data();
 
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.setLayoutCount = 1,
+			pipelineLayoutInfo.setLayoutCount = 1,
 			pipelineLayoutInfo.pSetLayouts = &*layout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
