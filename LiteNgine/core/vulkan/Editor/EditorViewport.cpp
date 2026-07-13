@@ -379,6 +379,7 @@ namespace lte {
 			}
 			else
 			{
+				ImVec2 cursor = ImGui::GetCursorPos();
 				ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale));
 
 				// 2. Handle Inputs Only When Hovering/Interacting With This Specific Window
