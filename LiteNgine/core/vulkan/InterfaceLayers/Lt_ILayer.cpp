@@ -116,8 +116,22 @@ namespace lte {
 
 		//add any gui draw commands here
 		guiHandler.StartFrame();
+		ImGui::BeginMainMenuBar();
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("New")) { /* Handle New */ }
+			if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Handle Open */ }
+			ImGui::Separator();
+			if (ImGui::MenuItem("Exit", "Alt+F4")) { /* Handle Exit */ }
+
+			ImGui::EndMenu();
+		}
+		layoutloader.DrawMenu();
+		ImGui::EndMainMenuBar();
+
 		Iridium::SubmitDrawCommands();
 		viewport.SubmitGUICommands();
+		layoutloader.SubmitGUICommands();
 		editorViewport.UpdateGui();
 
 		guiHandler.EndFrame();
