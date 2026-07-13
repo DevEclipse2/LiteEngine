@@ -83,7 +83,6 @@ namespace lte {
 		viewport.Init();
 		Con::LogEvent("Init editor viewport", TAG_ENGINE);
 		editorViewport.Init(ImVec2(800,600),2);
-		nodeSystem = NodeSystem{viewport.m_Context};
 		IridiumCFG config;
 		Iridium::Init(config);
 		Con::LogEvent("Preparing to render first frame", TAG_ENGINE);
@@ -119,7 +118,6 @@ namespace lte {
 		guiHandler.StartFrame();
 		Iridium::SubmitDrawCommands();
 		viewport.SubmitGUICommands();
-		nodeSystem.SubmitGUICommands();
 		editorViewport.UpdateGui();
 
 		guiHandler.EndFrame();
@@ -176,7 +174,6 @@ namespace lte {
 	{
 		Con::LogEvent("Engine Shutdown initiated", TAG_ENGINE);
 		viewport.Terminate();
-		nodeSystem.~NodeSystem();
 		guiHandler.Terminate();
 		ImageDelegate::Terminate();
 		Iridium::Terminate();

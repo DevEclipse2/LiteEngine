@@ -6,7 +6,6 @@
 #include "../EngineClasses/Lt_Console.h"
 #include "Bootstrapper.h"
 #include "../Editor/Viewport.h"
-#include "../Editor/NodeSys.h"
 #include "../Editor/EditorViewport.h"
 #include "../../engine/Iridium.h"
 //this is where the main function comes to meet with the usable code
@@ -36,7 +35,6 @@ namespace lte {
 		Lt_Gui guiHandler{};
 		Viewport viewport{};
 		EditorViewport editorViewport{};
-		NodeSystem nodeSystem{nullptr};
 		uint8_t frames = 0;
 		
 		bool mainResized = false;
