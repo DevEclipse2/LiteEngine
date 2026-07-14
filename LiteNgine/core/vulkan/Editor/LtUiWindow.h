@@ -6,7 +6,7 @@ namespace lte {
 	{
 	public:
 		bool Enabled = true;
-		virtual void SubmitGUICommands();
+		virtual void SubmitGUICommands(){}
 		const char* name;
 	};
 }

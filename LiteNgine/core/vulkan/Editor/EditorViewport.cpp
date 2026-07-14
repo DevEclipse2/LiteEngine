@@ -366,21 +366,22 @@ namespace lte {
 		{
 			return;
 		}
-		ImGui::Begin("big VP (viewport)", NULL);
-		ImGui::BeginMenuBar();
-		if (ImGui::BeginMenu("Laouts"))
+		ImGui::Begin("big VP (viewport)", NULL, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+		if (ImGui::BeginMenuBar())
 		{
-			ImGui::Text("unfinished");
-			//in built layouts
+			if (ImGui::BeginMenu("resolution"))
+			{
+				ImGui::Text("unfinished");
+				//in built layouts
 
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) { /* load layout here */ }
-			//separator
-			//save as button
-			//revert button
-			ImGui::EndMenu();
+				if (ImGui::MenuItem("Undo", "CTRL+Z")) { /* load layout here */ }
+				//separator
+				//save as button
+				//revert button
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
 		}
-		ImGui::EndMenuBar();
-		ImGui::SameLine();
 			ImGui::SetNextItemWidth(200.0f);
 			ImGui::InputInt("width", &newWidth);
 			ImGui::SameLine();

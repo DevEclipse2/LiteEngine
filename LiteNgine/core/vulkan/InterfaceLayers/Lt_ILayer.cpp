@@ -84,6 +84,8 @@ namespace lte {
 		viewport.Init();
 		Con::LogEvent("Init editor viewport", TAG_ENGINE);
 		editorViewport.Init(ImVec2(800,600),2);
+		layoutloader.Init();
+		//unfinished
 		IridiumCFG config;
 		Iridium::Init(config);
 		Con::LogEvent("Preparing to render first frame", TAG_ENGINE);
@@ -117,19 +119,20 @@ namespace lte {
 
 		//add any gui draw commands here
 		guiHandler.StartFrame();
-		ImGui::BeginMainMenuBar();
-		if (ImGui::BeginMenu("File"))
+		if(ImGui::BeginMainMenuBar())
 		{
-			if (ImGui::MenuItem("New")) { /* Handle New */ }
-			if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Handle Open */ }
-			ImGui::Separator();
-			if (ImGui::MenuItem("Exit", "Alt+F4")) { /* Handle Exit */ }
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("New")) { /* Handle New */ }
+				if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Handle Open */ }
+				ImGui::Separator();
+				if (ImGui::MenuItem("Exit", "Alt+F4")) { /* Handle Exit */ }
 
-			ImGui::EndMenu();
+				ImGui::EndMenu();
+			}
+			layoutloader.DrawMenu();
+			ImGui::EndMainMenuBar();
 		}
-		layoutloader.DrawMenu();
-		ImGui::EndMainMenuBar();
-
 		Iridium::SubmitDrawCommands();
 		viewport.SubmitGUICommands();
 		layoutloader.SubmitGUICommands();
