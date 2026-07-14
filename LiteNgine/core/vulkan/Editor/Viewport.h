@@ -4,11 +4,12 @@
 #include "../EngineClasses/Lt_Vulkan.h"
 #include "../EngineClasses/Lt_Console.h"
 #include "../../../dep/imGuiNodes/imgui_node_editor.h"
+#include "LtUiWindow.h"
 namespace lte {
-	class Viewport
+	class Viewport : LtUiWindow
 	{
 	public:
-		void SubmitGUICommands();
+		void SubmitGUICommands() override;
 		void Init();
 		void Terminate();
 		Viewport();

@@ -17,3 +17,6 @@ log reading system
 profiler
 separated render thread and game thread
 post processing shader time
+
+preference loading into preference class
+layout loading

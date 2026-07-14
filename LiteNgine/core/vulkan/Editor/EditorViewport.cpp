@@ -360,10 +360,26 @@ namespace lte {
 		prevtime = time;
 	}
 
-	void EditorViewport::UpdateGui()
+	void EditorViewport::SubmitGUICommands() 
 	{
+		if (!Enabled) 
+		{
+			return;
+		}
 		ImGui::Begin("big VP (viewport)", NULL);
-		
+		ImGui::BeginMenuBar();
+		if (ImGui::BeginMenu("Laouts"))
+		{
+			ImGui::Text("unfinished");
+			//in built layouts
+
+			if (ImGui::MenuItem("Undo", "CTRL+Z")) { /* load layout here */ }
+			//separator
+			//save as button
+			//revert button
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
 		ImGui::SameLine();
 			ImGui::SetNextItemWidth(200.0f);
 			ImGui::InputInt("width", &newWidth);
@@ -373,57 +389,57 @@ namespace lte {
 			ImGui::SliderFloat("scale", &scale,0.1f,10.0f);
 			
 		if (ImGui::Button("Apply", ImVec2(120, 50)))
-			{
-					Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
-					Recreate(ImVec2(newWidth, newHeight), framesInFlight);
+		{
+				Con::LogEvent("Recreating Viewport", TAG_ENGINE | TAG_VULKAN);
+				Recreate(ImVec2(newWidth, newHeight), framesInFlight);
+		}
+		else
+		{
+			ImVec2 cursor = ImGui::GetCursorPos();
+			ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale));
+
+			// 2. Handle Inputs Only When Hovering/Interacting With This Specific Window
+			ImGuiIO& io = ImGui::GetIO();
+
+			// Check if mouse is hovering over this viewport window
+			bool isHovered = ImGui::IsWindowHovered();
+
+			// Right-click initiated inside the viewport
+			if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+				isDragging = true;
+				lastMousePos = io.MousePos;
 			}
-			else
-			{
-				ImVec2 cursor = ImGui::GetCursorPos();
-				ImGui::Image(descriptorSets[swapFrame], ImVec2(size.x * scale, size.y * scale));
 
-				// 2. Handle Inputs Only When Hovering/Interacting With This Specific Window
-				ImGuiIO& io = ImGui::GetIO();
+			// Right-click released
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+				isDragging = false;
+			}
 
-				// Check if mouse is hovering over this viewport window
-				bool isHovered = ImGui::IsWindowHovered();
+			// Handle mouse movement while dragging
+			if (isDragging) {
+				// Calculate how much the mouse moved since last frame
+				float xOffset = io.MousePos.x - lastMousePos.x;
+				float yOffset = lastMousePos.y - io.MousePos.y; // Inverted Y behavior
 
-				// Right-click initiated inside the viewport
-				if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-					isDragging = true;
-					lastMousePos = io.MousePos;
-				}
+				lastMousePos = io.MousePos;
 
-				// Right-click released
-				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-					isDragging = false;
-				}
+				// Feed the delta into your camera
+				camera.processMouseMovement(xOffset, yOffset,true);
 
-				// Handle mouse movement while dragging
-				if (isDragging) {
-					// Calculate how much the mouse moved since last frame
-					float xOffset = io.MousePos.x - lastMousePos.x;
-					float yOffset = lastMousePos.y - io.MousePos.y; // Inverted Y behavior
+				// Lock the mouse cursor inside the ImGui window while dragging (Optional but helpful)
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+			}
 
-					lastMousePos = io.MousePos;
-
-					// Feed the delta into your camera
-					camera.processMouseMovement(xOffset, yOffset,true);
-
-					// Lock the mouse cursor inside the ImGui window while dragging (Optional but helpful)
-					ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-				}
-
-				// 3. Handle WASD Keyboard Input while dragging the camera
-				if (isDragging) {
-					// We use ImGui's key down queries to remain context-aware
-					if (ImGui::IsKeyDown(ImGuiKey_W)) camera.processKeyboard(0, frameTime/1000);
-					if (ImGui::IsKeyDown(ImGuiKey_S)) camera.processKeyboard(1, frameTime/1000);
-					if (ImGui::IsKeyDown(ImGuiKey_A)) camera.processKeyboard(2, frameTime/1000);
-					if (ImGui::IsKeyDown(ImGuiKey_D)) camera.processKeyboard(3, frameTime/1000);
-				}
+			// 3. Handle WASD Keyboard Input while dragging the camera
+			if (isDragging) {
+				// We use ImGui's key down queries to remain context-aware
+				if (ImGui::IsKeyDown(ImGuiKey_W)) camera.processKeyboard(0, frameTime/1000);
+				if (ImGui::IsKeyDown(ImGuiKey_S)) camera.processKeyboard(1, frameTime/1000);
+				if (ImGui::IsKeyDown(ImGuiKey_A)) camera.processKeyboard(2, frameTime/1000);
+				if (ImGui::IsKeyDown(ImGuiKey_D)) camera.processKeyboard(3, frameTime/1000);
+			}
 			
-			}
+		}
 		
 
 		if (objectID == SelectedObject) 

@@ -7,8 +7,9 @@
 #include "../EngineClasses/Lt_Vulkan.h"
 #include "../EngineClasses/Lt_Console.h"
 #include "ViewportCamera.h"
+#include "LtUiWindow.h"
 namespace lte {
-	class EditorViewport
+	class EditorViewport : LtUiWindow
 	{
 	public:
 
@@ -17,7 +18,7 @@ namespace lte {
 		//create swapchain, lag behind 1 frame
 		void Init(ImVec2 size, uint8_t FramesInFlight);
 		void Recreate(ImVec2 size , uint8_t FRamesInFlight);
-		void UpdateGui();
+		void SubmitGUICommands() override;
 		void RenderScene(vk::raii::Semaphore& semaphore);
 		void FinishFrame();
 		EditorViewport();

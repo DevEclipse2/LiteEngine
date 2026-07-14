@@ -1,6 +1,5 @@
 #include "Viewport.h"
 #include "../EngineClasses/Lt_Gui.h"
-
 namespace lte {
 
 
@@ -33,6 +32,9 @@ namespace lte {
     }
 	void Viewport::SubmitGUICommands()
 	{
+        if (!Enabled) {
+            return;
+        }
 
 		ImGui::Begin("Viewport",NULL);
 		ImGui::Text("Free camera", NULL);

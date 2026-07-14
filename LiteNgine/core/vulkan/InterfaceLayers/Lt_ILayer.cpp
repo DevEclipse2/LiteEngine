@@ -1,4 +1,5 @@
 #include "Lt_ILayer.h"
+#include "../EngineClasses/Preferences.h"
 namespace lte {
 
 	uint32_t Lt_ILayer::frameCount = 0;
@@ -27,8 +28,8 @@ namespace lte {
 		Con::BootstrapDone();
 		windowMgr.Startup();
 		Lt_WindowInfo info;
-			info.width = 800,
-			info.height = 600;
+			info.width = Preferences::Graphics::Width;
+			info.height = Preferences::Graphics::Height;
 			info.displayName = "LiteNgine editor";
 			info.internalName = "MainWindow";
 			info.resizePointers.emplace_back([this]() {
@@ -132,7 +133,7 @@ namespace lte {
 		Iridium::SubmitDrawCommands();
 		viewport.SubmitGUICommands();
 		layoutloader.SubmitGUICommands();
-		editorViewport.UpdateGui();
+		editorViewport.SubmitGUICommands();
 
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 

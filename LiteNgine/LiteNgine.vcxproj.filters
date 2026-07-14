@@ -135,9 +135,6 @@
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\vulkan\Editor\NodeSys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\Editor\EditorViewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,7 +147,10 @@
     <ClCompile Include="core\Game\Slate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LayoutLoader.cpp">
+    <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\engine\Lt_PipelineNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -284,9 +284,6 @@
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\vulkan\Editor\NodeSys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\vulkan\Editor\EditorViewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -299,7 +296,16 @@
     <ClInclude Include="core\Game\Slate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LayoutLoader.h">
+    <ClInclude Include="core\vulkan\Editor\LayoutLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\Lt_PipelineNodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\LtUiWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Preferences.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
