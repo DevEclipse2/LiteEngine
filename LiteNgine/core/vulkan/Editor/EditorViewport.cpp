@@ -1,6 +1,7 @@
 #include "EditorViewport.h"
 #include <cmath>
 #include "../InterfaceLayers/Lt_ILayer.h"
+#include "../EngineClasses/Lt_Importer.h"
 #include <numbers>
 namespace lte {
 	uint8_t deviceID = 0;
@@ -25,6 +26,8 @@ namespace lte {
 		singleTimeCommandInfo info{&Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue};
 		Con::Log("load files", TAG_ENGINE);
 
+
+		Lt_Importer::Load("models/skeletalTest.fbx", 0);
 		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, physDev,info);
 		renderSets = FileLoader::renderSets;
 

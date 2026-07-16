@@ -81,9 +81,6 @@
     <ClCompile Include="core\vulkan\Reworked\SwapchainHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\vulkan\Reworked\LtMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\Reworked\FileLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

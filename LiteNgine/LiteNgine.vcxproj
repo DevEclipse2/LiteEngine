@@ -195,7 +195,6 @@
     <ClCompile Include="core\vulkan\Reworked\ImageDelegate.cpp" />
     <ClCompile Include="core\vulkan\Reworked\DeviceHandler.cpp" />
     <ClCompile Include="core\vulkan\Reworked\SwapchainHandler.cpp" />
-    <ClCompile Include="core\vulkan\Reworked\LtMesh.cpp" />
     <ClCompile Include="core\vulkan\Reworked\FileLoader.cpp" />
     <ClCompile Include="core\vulkan\InterfaceLayers\Lt_ILayer.cpp" />
     <ClCompile Include="core\vulkan\Reworked\LtSync.cpp" />
