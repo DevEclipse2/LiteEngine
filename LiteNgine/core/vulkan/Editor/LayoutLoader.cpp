@@ -87,28 +87,33 @@ namespace lte
 
 	void LayoutLoader::DrawMenu()
 	{
-		// Note: Assuming this is called inside an active BeginMenuBar() block
 		if (ImGui::BeginMenu("Layouts"))
 		{
-			if (ImGui::BeginMenu("Main"))
+			// Search Button
+			if (ImGui::MenuItem("Search Layouts...")) {
+				bOpenSearchPopup = true;
+				memset(searchBuffer, 0, sizeof(searchBuffer)); // Clear old search
+			}
+
+			ImGui::Separator();
+
+			// Custom Layouts
+			if (ImGui::BeginMenu("Load Custom"))
 			{
 				for (size_t i = 0; i < Layouts.size(); ++i) {
-					if (!Layouts[i].isCustom) {
-						if (ImGui::MenuItem(Layouts[i].name.c_str())) {
-							LoadLayout(i);
-						}
+					if (Layouts[i].isCustom) {
+						if (ImGui::MenuItem(Layouts[i].name.c_str())) { LoadLayout(i); }
 					}
 				}
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Custom"))
+			// Revert to bakcups
+			if (ImGui::BeginMenu("Revert to Main Backup"))
 			{
 				for (size_t i = 0; i < Layouts.size(); ++i) {
-					if (Layouts[i].isCustom) {
-						if (ImGui::MenuItem(Layouts[i].name.c_str())) {
-							LoadLayout(i);
-						}
+					if (!Layouts[i].isCustom) {
+						if (ImGui::MenuItem(Layouts[i].name.c_str())) { LoadLayout(i); }
 					}
 				}
 				ImGui::EndMenu();
@@ -116,10 +121,10 @@ namespace lte
 
 			ImGui::Separator();
 
-			//add popup
-			if (ImGui::MenuItem("Save Current as New Custom Layout"))
-			{
-				CreateNewLayout("My_Custom_Layout");
+			// Save As Button
+			if (ImGui::MenuItem("Save As New Layout...")) {
+				bOpenSaveAsPopup = true;
+				memset(saveAsBuffer, 0, sizeof(saveAsBuffer)); // Clear text field
 			}
 
 			ImGui::EndMenu();
@@ -132,7 +137,9 @@ namespace lte
 		//check exist
 		if (!std::filesystem::exists("main"))   std::filesystem::create_directory("main");
 		if (!std::filesystem::exists("custom")) std::filesystem::create_directory("custom");
-
+		if (!fs::exists("autosave")) fs::create_directory("autosave");
+		ImGuiIO& io = ImGui::GetIO();
+		io.IniFilename = "autosave/current_session.ini";
 		//scan the files
 		ScanDirectories();
 
@@ -164,6 +171,82 @@ namespace lte
 
 		scanFolder("main", false);
 		scanFolder("custom", true);
+	}
+
+
+	void LayoutLoader::DrawPopups()
+	{
+		// Handle opening the popups based on the flags set in DrawMenu()
+		if (bOpenSaveAsPopup) {
+			ImGui::OpenPopup("Save Layout As");
+			bOpenSaveAsPopup = false;
+		}
+
+		if (bOpenSearchPopup) {
+			ImGui::OpenPopup("Search Layouts");
+			bOpenSearchPopup = false;
+		}
+
+		// --- SAVE AS MODAL ---
+		if (ImGui::BeginPopupModal("Save Layout As", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("Enter a name for the new layout:");
+			ImGui::SetNextItemWidth(250.0f);
+
+			// Use ImGuiInputTextFlags_EnterReturnsTrue to allow hitting 'Enter' to save
+			bool hitEnter = ImGui::InputText("##Name", saveAsBuffer, sizeof(saveAsBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+
+			if (ImGui::Button("Save", ImVec2(120, 0)) || hitEnter) {
+				CreateNewLayout(saveAsBuffer);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		// --- SEARCH MODAL ---
+		if (ImGui::BeginPopupModal("Search Layouts", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("Search:");
+			ImGui::SetNextItemWidth(300.0f);
+			ImGui::InputText("##SearchBox", searchBuffer, sizeof(searchBuffer));
+
+			ImGui::Separator();
+
+			// Create a scrollable region for the search results
+			ImGui::BeginChild("SearchResults", ImVec2(300, 200), true);
+
+			std::string searchStr(searchBuffer);
+			// Convert search to lowercase for case-insensitive matching
+			std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
+
+			for (size_t i = 0; i < Layouts.size(); ++i)
+			{
+				std::string layoutNameLower = Layouts[i].name;
+				std::transform(layoutNameLower.begin(), layoutNameLower.end(), layoutNameLower.begin(), ::tolower);
+
+				// If search is empty, or the name contains the search string
+				if (searchStr.empty() || layoutNameLower.find(searchStr) != std::string::npos)
+				{
+					// Tag it visually so the user knows if it's Custom or Main
+					std::string displayStr = Layouts[i].name + (Layouts[i].isCustom ? " (Custom)" : " (Main)");
+
+					if (ImGui::Selectable(displayStr.c_str())) {
+						LoadLayout(i);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			ImGui::EndChild();
+
+			if (ImGui::Button("Close", ImVec2(300, 0))) {
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 
 	void LayoutLoader::ParseEnabledWindows(Lt_UiLayout& layout)

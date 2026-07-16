@@ -84,7 +84,7 @@ namespace lte {
 		viewport.Init();
 		Con::LogEvent("Init editor viewport", TAG_ENGINE);
 		editorViewport.Init(ImVec2(800,600),2);
-		layoutloader.Init();
+		//layoutloader.Init();
 		//unfinished
 		IridiumCFG config;
 		Iridium::Init(config);
@@ -130,9 +130,11 @@ namespace lte {
 
 				ImGui::EndMenu();
 			}
-			layoutloader.DrawMenu();
+			//layoutloader.DrawMenu();
 			ImGui::EndMainMenuBar();
 		}
+		//layoutloader.DrawPopups();
+
 		Iridium::SubmitDrawCommands();
 		viewport.SubmitGUICommands();
 		layoutloader.SubmitGUICommands();
