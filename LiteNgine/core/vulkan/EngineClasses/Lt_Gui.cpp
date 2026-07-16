@@ -77,7 +77,7 @@ namespace lte {
 		io.DisplaySize.y = (float)creationInfo.height;
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		io.ConfigViewportsNoDecoration = false;
-		io.IniFilename = NULL;
+		io.IniFilename = "autosave/current_session.ini";
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

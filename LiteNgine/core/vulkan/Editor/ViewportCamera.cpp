@@ -32,7 +32,7 @@ namespace lte{
         yOffset *= -mouseSensitivity;
 
         yaw += xOffset;
-        pitch += yOffset; // Adjust sign based on your preferred inversion
+        pitch += yOffset;
 
         if (constrainPitch) {
             pitch = std::clamp(pitch, -89.0f, 89.0f);

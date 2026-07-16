@@ -138,8 +138,7 @@ namespace lte
 		if (!std::filesystem::exists("main"))   std::filesystem::create_directory("main");
 		if (!std::filesystem::exists("custom")) std::filesystem::create_directory("custom");
 		if (!fs::exists("autosave")) fs::create_directory("autosave");
-		ImGuiIO& io = ImGui::GetIO();
-		io.IniFilename = "autosave/current_session.ini";
+		
 		//scan the files
 		ScanDirectories();
 

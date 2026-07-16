@@ -25,6 +25,7 @@ namespace lte {
 			Con::LogError("unknown on wake result, possible programming oversight , please submit an issue on github,  interface layers / bootstrapper class", MED_SEVERITY, TAG_ENGINE);
 			break;
 		}
+		Bootstrapper::DumpPreferences();
 		Con::BootstrapDone();
 		windowMgr.Startup();
 		Lt_WindowInfo info;
@@ -84,7 +85,7 @@ namespace lte {
 		viewport.Init();
 		Con::LogEvent("Init editor viewport", TAG_ENGINE);
 		editorViewport.Init(ImVec2(800,600),2);
-		//layoutloader.Init();
+		layoutloader.Init();
 		//unfinished
 		IridiumCFG config;
 		Iridium::Init(config);
@@ -108,16 +109,10 @@ namespace lte {
 			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
-			//Con::LogEvent("main window resized", TAG_ENGINE);
+			Con::LogEvent("main window resized", TAG_ENGINE);
 		}
 		
-
-		//Con::Log("renderScene", TAG_ENGINE);
 		editorViewport.RenderScene(Lt_Vulkan::windows[mainWindowIndex].syncSet.presentCompleteSemaphores[frames]);
-		//Con::Log("guiStart", TAG_ENGINE);
-		
-
-		//add any gui draw commands here
 		guiHandler.StartFrame();
 		if(ImGui::BeginMainMenuBar())
 		{
@@ -143,8 +138,6 @@ namespace lte {
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{
-			//update stuff	
-			//Con::Log("Update frameBuffer", TAG_ENGINE);
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			guiHandler.updateBuffers();
 			guiHandler.RenderFrame(frames);
