@@ -30,29 +30,57 @@ namespace lte
 		return 0;
 
 	}
-	void parse_single_bone(int bone_index, const aiBone* pBone)
+	int Lt_Importer::get_bone_id(const aiBone* pBone)
 	{
-		//printf("      Bone %d: '%s' num vertices affected by this bone: %d\n", bone_index, pBone->mName.C_Str(), pBone->mNumWeights);
+		{
+			int bone_id = 0;
+			std::string bone_name(pBone->mName.C_Str());
+
+			if (bone_name_to_index_map.find(bone_name) == bone_name_to_index_map.end()) {
+				// Allocate an index for a new bone
+				bone_id = (int)bone_name_to_index_map.size();
+				bone_name_to_index_map[bone_name] = bone_id;
+			}
+			else {
+				bone_id = bone_name_to_index_map[bone_name];
+			}
+
+			return bone_id;
+		}
+	}
+	void Lt_Importer::parse_single_bone(int mesh_index, const aiBone* pBone)
+	{
+		printf("      Bone '%s': num vertices affected by this bone: %d\n", pBone->mName.C_Str(), pBone->mNumWeights);
+
+		int bone_id = get_bone_id(pBone);
+		printf("bone id %d\n", bone_id);
 
 		for (unsigned int i = 0; i < pBone->mNumWeights; i++) {
 			if (i == 0) printf("\n");
 			const aiVertexWeight& vw = pBone->mWeights[i];
-			//printf("       %d: vertex id %d weight %.2f\n", i, vw.mVertexId, vw.mWeight);
+
+			uint32_t global_vertex_id = mesh_base_vertex[mesh_index] + vw.mVertexId;
+			printf("Vertex id %d ", global_vertex_id);
+
+			assert(global_vertex_id < vertex_to_bones.size());
+			vertex_to_bones[global_vertex_id].AddBoneData(bone_id, vw.mWeight);
 		}
 
-		//printf("\n");
+		printf("\n");
 	}
 
-
-	void parse_mesh_bones(const aiMesh* pMesh)
+	void Lt_Importer::parse_mesh_bones(int mesh_index,const aiMesh* pMesh)
 	{
 		for (unsigned int i = 0; i < pMesh->mNumBones; i++) {
-			parse_single_bone(i, pMesh->mBones[i]);
+			parse_single_bone(mesh_index, pMesh->mBones[i]);
 		}
 	}
+	
 
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene , Lt_Scene& scene)
 	{
+		printf("*******************************************************\n");
+		printf("Parsing %d meshes\n\n", pScene->mNumMeshes);
 		int totalVertices = 0,totalIndices = 0,totalBones = 0;
 
 		for (unsigned int i = 0; i < pScene->mNumMeshes; i++) {
@@ -66,7 +94,7 @@ namespace lte
 			totalBones += num_bones;
 
 			if (pMesh->HasBones()) {
-				parse_mesh_bones(pMesh);
+				parse_mesh_bones(i,pMesh);
 			}
 
 			//printf("\n");
