@@ -30,51 +30,6 @@ namespace lte
 		return 0;
 
 	}
-	int Lt_Importer::get_bone_id(const aiBone* pBone)
-	{
-		{
-			int bone_id = 0;
-			std::string bone_name(pBone->mName.C_Str());
-
-			if (bone_name_to_index_map.find(bone_name) == bone_name_to_index_map.end()) {
-				// Allocate an index for a new bone
-				bone_id = (int)bone_name_to_index_map.size();
-				bone_name_to_index_map[bone_name] = bone_id;
-			}
-			else {
-				bone_id = bone_name_to_index_map[bone_name];
-			}
-
-			return bone_id;
-		}
-	}
-	void Lt_Importer::parse_single_bone(int mesh_index, const aiBone* pBone)
-	{
-		printf("      Bone '%s': num vertices affected by this bone: %d\n", pBone->mName.C_Str(), pBone->mNumWeights);
-
-		int bone_id = get_bone_id(pBone);
-		printf("bone id %d\n", bone_id);
-
-		for (unsigned int i = 0; i < pBone->mNumWeights; i++) {
-			if (i == 0) printf("\n");
-			const aiVertexWeight& vw = pBone->mWeights[i];
-
-			uint32_t global_vertex_id = mesh_base_vertex[mesh_index] + vw.mVertexId;
-			printf("Vertex id %d ", global_vertex_id);
-
-			assert(global_vertex_id < vertex_to_bones.size());
-			vertex_to_bones[global_vertex_id].AddBoneData(bone_id, vw.mWeight);
-		}
-
-		printf("\n");
-	}
-
-	void Lt_Importer::parse_mesh_bones(int mesh_index,const aiMesh* pMesh)
-	{
-		for (unsigned int i = 0; i < pMesh->mNumBones; i++) {
-			parse_single_bone(mesh_index, pMesh->mBones[i]);
-		}
-	}
 	
 
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene , Lt_Scene& scene)
@@ -93,9 +48,6 @@ namespace lte
 			totalIndices += num_indices;
 			totalBones += num_bones;
 
-			if (pMesh->HasBones()) {
-				parse_mesh_bones(i,pMesh);
-			}
 
 			//printf("\n");
 		}
