@@ -17,6 +17,13 @@ namespace lte {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
 	};
+	struct UniformBufferObject {
+		alignas(16) glm::mat4 model;
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+		alignas(16) glm::mat4 boneTransforms[MAX_BONES] ;
+		
+	};
 	enum class MeshType 
 	{
 		Static,
@@ -48,7 +55,58 @@ namespace lte {
 			return model;
 		}
 	};
-	
+	struct PreprocessBone {
+		uint32_t id;
+		std::vector<float> weights;
+
+		void LoadVertex(std::vector<SkinProcessorVertex*> initialVertexes)
+		{
+			uint32_t i = 0;
+			for (const auto vtx : initialVertexes)
+			{
+				if (weights[i] < 0.005f)
+				{
+					continue;
+				}
+				vtx->SubmitWeight(std::pair<float, uint32_t>(weights[i], id));
+				i++;
+			}
+		}
+	};
+	struct Bone
+	{
+		glm::mat4 offsetMatrix;
+		std::vector<uint8_t> children;//points to different boneids
+	};
+	struct SkinProcessorVertex {
+		std::vector<std::pair<float, uint8_t>> WeightBonePair;
+		skinnedVertex* vertex;
+
+		void SubmitWeight(std::pair<float, uint8_t> weightbonePair)
+		{
+			WeightBonePair.emplace_back(weightbonePair);
+		}
+
+		void ResolveWeights()
+		{
+			std::sort(WeightBonePair.begin(), WeightBonePair.end());
+			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+			{
+				vertex->BoneWeights[i]	= WeightBonePair[i].first;
+				vertex->BoneIDs[i]		= WeightBonePair[i].second;
+			}
+		}
+	};
+
+	struct LtSkinnedMeshInfo {
+		std::vector<Bone> bones; // id is index number
+		std::unordered_map<uint8_t, LtSkinnedMeshInfo> breakawayChildren;
+		/// <summary>
+		/// special feature : if the mesh exceeds 128 bones, the engine will split off into sub meshes
+		/// </summary>
+		uint8_t boneCounter;
+	};
+
 	struct Vertex
 	{
 		glm::vec3 pos;
@@ -70,7 +128,29 @@ namespace lte {
 			return pos == other.pos && color == other.color && texCoord == other.texCoord;
 		}
 	};
+	struct skinnedVertex : Vertex
+	{
+		glm::u8vec4 BoneIDs;
+		glm::vec4 BoneWeights;
 
+		static vk::VertexInputBindingDescription getBindingDescription() 
+		{
+			return { 0, sizeof(skinnedVertex), vk::VertexInputRate::eVertex };
+		}
+		static std::array<vk::VertexInputAttributeDescription, 5> getAttributeDescriptions() {
+			return {
+				vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, pos)),
+				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, color)),
+				vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(skinnedVertex, texCoord)),
+				vk::VertexInputAttributeDescription(3, 0, vk::Format::eR8G8B8A8Uint, offsetof(skinnedVertex, BoneIDs)),
+				vk::VertexInputAttributeDescription(4, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(skinnedVertex, BoneWeights)),
+			};
+		}
+		 bool operator==(const skinnedVertex& other)  const
+		{
+			return pos == other.pos && color == other.color && texCoord == other.texCoord && BoneIDs == other.BoneIDs && BoneWeights == other.BoneWeights;
+		}
+	};
 	
 	struct RenderSet {
 		//a render set contains all relevant data
@@ -100,7 +180,29 @@ namespace std {
 		{
 			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
 		}
+
 	};
 
+	template <>
+	struct std::hash<lte::skinnedVertex>
+	{
+		size_t operator()(lte::skinnedVertex const& vertex) const noexcept
+		{
+			size_t seed = 0;
+
+			// Helper lambda to combine hashes effectively to minimize collisions
+			auto hashCombine = [&seed](size_t hashValue) {
+				seed ^= hashValue + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+				};
+
+			hashCombine(std::hash<glm::vec3>()(vertex.pos));
+			hashCombine(std::hash<glm::vec3>()(vertex.color));
+			hashCombine(std::hash<glm::vec2>()(vertex.texCoord));
+			hashCombine(std::hash<glm::u8vec4>()(vertex.BoneIDs));
+			hashCombine(std::hash<glm::vec4>()(vertex.BoneWeights));
+
+			return seed;
+		}
+	};
 	
 }

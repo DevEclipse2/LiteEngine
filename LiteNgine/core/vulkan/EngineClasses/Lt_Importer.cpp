@@ -32,6 +32,20 @@ namespace lte
 	}
 	
 
+	void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene)
+	{
+		// Process all the meshes attached to this specific node
+		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+			// The node only contains an index to the actual mesh object in the scene
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			meshes.push_back(ProcessMesh(mesh, scene));
+		}
+
+		// Recursively process all children nodes
+		for (unsigned int i = 0; i < node->mNumChildren; i++) {
+			ProcessNode(node->mChildren[i], scene);
+		}
+	}
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene , Lt_Scene& scene)
 	{
 		printf("*******************************************************\n");

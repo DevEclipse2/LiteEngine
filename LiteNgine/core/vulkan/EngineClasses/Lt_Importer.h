@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#include <unordered_map>
 // Assimp headers
 #include <assimp/Importer.hpp>
 #include <assimp/Importer.hpp>      // C++ importer interface
@@ -26,12 +26,19 @@ namespace lte {
 	{
 
 
-		public:
-	
+	public:
+
+		static uint8_t ParseMesh(aiMesh* mesh);
+		static uint8_t ParseSkinnedMesh(aiMesh* mesh);
+		static void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene);
+
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
 		//uint8_t Unpack();
 		static uint8_t ParseScene(const aiScene* pScene, Lt_Scene& scene);
+
+	private:
+		std::unordered_map<uint16_t ,std::vector<Vertex>>
 	};
 }
