@@ -38,12 +38,13 @@ namespace lte
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 			// The node only contains an index to the actual mesh object in the scene
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			meshes.push_back(ProcessMesh(mesh, scene));
+			//meshes.push_back(ProcessMesh(mesh, scene));
+			//ParseMesh(mesh);
 		}
 
 		// Recursively process all children nodes
 		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			ProcessNode(node->mChildren[i], scene);
+			//ProcessNode(node->mChildren[i], scene);
 		}
 	}
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene , Lt_Scene& scene)

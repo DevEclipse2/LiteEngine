@@ -28,9 +28,9 @@ namespace lte {
 
 	public:
 
-		static uint8_t ParseMesh(aiMesh* mesh);
-		static uint8_t ParseSkinnedMesh(aiMesh* mesh);
-		static void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene);
+		//static uint8_t ParseMesh(aiMesh* mesh);
+		//static uint8_t ParseSkinnedMesh(aiMesh* mesh);
+		static void ParseNode(aiNode* node, const aiScene* scene);
 
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
@@ -39,6 +39,6 @@ namespace lte {
 		static uint8_t ParseScene(const aiScene* pScene, Lt_Scene& scene);
 
 	private:
-		std::unordered_map<uint16_t ,std::vector<Vertex>>
+		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
 	};
 }

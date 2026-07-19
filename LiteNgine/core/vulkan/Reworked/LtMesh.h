@@ -17,7 +17,7 @@ namespace lte {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
 	};
-	struct UniformBufferObject {
+	struct SkinnedUniformBufferObject {
 		alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
@@ -55,58 +55,6 @@ namespace lte {
 			return model;
 		}
 	};
-	struct PreprocessBone {
-		uint32_t id;
-		std::vector<float> weights;
-
-		void LoadVertex(std::vector<SkinProcessorVertex*> initialVertexes)
-		{
-			uint32_t i = 0;
-			for (const auto vtx : initialVertexes)
-			{
-				if (weights[i] < 0.005f)
-				{
-					continue;
-				}
-				vtx->SubmitWeight(std::pair<float, uint32_t>(weights[i], id));
-				i++;
-			}
-		}
-	};
-	struct Bone
-	{
-		glm::mat4 offsetMatrix;
-		std::vector<uint8_t> children;//points to different boneids
-	};
-	struct SkinProcessorVertex {
-		std::vector<std::pair<float, uint8_t>> WeightBonePair;
-		skinnedVertex* vertex;
-
-		void SubmitWeight(std::pair<float, uint8_t> weightbonePair)
-		{
-			WeightBonePair.emplace_back(weightbonePair);
-		}
-
-		void ResolveWeights()
-		{
-			std::sort(WeightBonePair.begin(), WeightBonePair.end());
-			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-			{
-				vertex->BoneWeights[i]	= WeightBonePair[i].first;
-				vertex->BoneIDs[i]		= WeightBonePair[i].second;
-			}
-		}
-	};
-
-	struct LtSkinnedMeshInfo {
-		std::vector<Bone> bones; // id is index number
-		std::unordered_map<uint8_t, LtSkinnedMeshInfo> breakawayChildren;
-		/// <summary>
-		/// special feature : if the mesh exceeds 128 bones, the engine will split off into sub meshes
-		/// </summary>
-		uint8_t boneCounter;
-	};
-
 	struct Vertex
 	{
 		glm::vec3 pos;
@@ -133,7 +81,7 @@ namespace lte {
 		glm::u8vec4 BoneIDs;
 		glm::vec4 BoneWeights;
 
-		static vk::VertexInputBindingDescription getBindingDescription() 
+		static vk::VertexInputBindingDescription getBindingDescription()
 		{
 			return { 0, sizeof(skinnedVertex), vk::VertexInputRate::eVertex };
 		}
@@ -146,11 +94,68 @@ namespace lte {
 				vk::VertexInputAttributeDescription(4, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(skinnedVertex, BoneWeights)),
 			};
 		}
-		 bool operator==(const skinnedVertex& other)  const
+		bool operator==(const skinnedVertex& other)  const
 		{
 			return pos == other.pos && color == other.color && texCoord == other.texCoord && BoneIDs == other.BoneIDs && BoneWeights == other.BoneWeights;
 		}
 	};
+
+	struct SkinnedProcessorVertex {
+		std::vector<std::pair<float, uint8_t>> WeightBonePair;
+		skinnedVertex* vertex;
+
+		void SubmitWeight(std::pair<float, uint8_t> weightbonePair)
+		{
+			WeightBonePair.emplace_back(weightbonePair);
+		}
+
+		void ResolveWeights()
+		{
+			std::sort(WeightBonePair.begin(), WeightBonePair.end());
+			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+			{
+				vertex->BoneWeights[i] = WeightBonePair[i].first;
+				vertex->BoneIDs[i] = WeightBonePair[i].second;
+			}
+		}
+	};
+
+	struct PreprocessBone {
+		uint32_t id;
+		std::vector<float> weights;
+
+		void LoadVertex(std::vector<SkinnedProcessorVertex*> initialVertexes)
+		{
+			uint32_t i = 0;
+			for (const auto vtx : initialVertexes)
+			{
+				if (weights[i] < 0.005f)
+				{
+					continue;
+				}
+				vtx->SubmitWeight(std::pair<float, uint32_t>(weights[i], id));
+				i++;
+			}
+		}
+	};
+	struct Bone
+	{
+		glm::mat4 offsetMatrix;
+		std::vector<uint8_t> children;//points to different boneids
+	};
+	
+
+	struct LtSkinnedMeshInfo {
+		std::vector<Bone> bones; // id is index number
+		std::unordered_map<uint8_t, LtSkinnedMeshInfo> breakawayChildren;
+		/// <summary>
+		/// special feature : if the mesh exceeds 128 bones, the engine will split off into sub meshes
+		/// </summary>
+		uint8_t boneCounter;
+	};
+
+	
+	
 	
 	struct RenderSet {
 		//a render set contains all relevant data
