@@ -407,3 +407,6 @@ LiteNgine/LiteNgine.vcxproj
 LiteNgine/swapchain.png
 LiteNgine/latest_log.txt
 LiteNgine/swapchain.png
+LiteNgine/autosave/current_session.ini
+LiteNgine/Simple.json
+LiteNgine/swapchain.png
