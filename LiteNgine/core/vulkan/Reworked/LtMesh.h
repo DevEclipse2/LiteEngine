@@ -7,7 +7,6 @@
 #include <glm/gtx/hash.hpp>
 #include <vulkan/vulkan_raii.hpp>
 #include "../EngineClasses/Lt_Console.h"
-#include "../EngineClasses/Lt_Importer.h"
 #define MAX_BONES 128
 #define MAX_BONE_INFLUENCE 4
 namespace lte {

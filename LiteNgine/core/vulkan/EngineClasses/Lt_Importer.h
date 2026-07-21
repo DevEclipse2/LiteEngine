@@ -31,7 +31,7 @@ namespace lte {
 		};
 		struct Lt_SkinnedMeshData
 		{
-			std::vector<lte::SkinnedProcessorVertex> WeightedVertexBuffer;
+			std::vector<SkinnedProcessorVertex> WeightedVertexBuffer;
 			std::vector<skinnedVertex> skinnedVertexBuffer;
 			std::vector<uint32_t> indexBuffer;
 		};
@@ -43,7 +43,7 @@ namespace lte {
 		{
 			std::vector<Lt_SkinnedMeshData> subMeshes;
 			std::unordered_map<std::string, uint8_t> BoneIndexes;
-			std::vector<lte::Bone> bones;
+			std::vector<Bone> bones;
 		};
 	public:
 
