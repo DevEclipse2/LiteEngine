@@ -1,5 +1,7 @@
 #pragma once
+#include "../../Reworked/CommandBuffers.h"
 #include "../../Reworked/LtMesh.h"
+#define MaxVertexBuffer 500000 // if a skinned vertex is 64 bytes this is 256mb Perfect!
 namespace lte {
 	class RenderData
 	{
@@ -27,8 +29,31 @@ namespace lte {
 		inline static uint32_t* skinnedIndicesArrayBuffer;
 		inline static uint32_t skinnedIndicesSizeBuffer;
 
-		//render sets
+		enum BufferType {
+			GenericBuffer,
+			VertexBuffer,
+			IndiceBuffer,
+			SkinnedVertexBuffer
+		};
 
+		struct Buffer
+		{
+			BufferType type;
+			vk::raii::Buffer buffer = nullptr;
+			vk::raii::DeviceMemory bufferMem = nullptr;
+			uint32_t offset;
+		};
+
+
+		//render sets
+		static void createVertexBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device);
+		inline static std::vector<std::unique_ptr<Buffer>> Buffers;
+		enum copyResult {
+			Sucess,
+			FailureGeneric,
+			FailureExceedBufferSize
+		};
+		static copyResult copyVertexBufferContents(std::vector<Vertex> data);
 		inline static std::vector<RenderSet> renderSets;
 		inline static std::vector<LtMeshInfo> MeshInformation;
 		void FillBuffer()
