@@ -77,9 +77,7 @@ namespace lte {
             createTextureImage(textures[i], tmpImg, device, physDevice, info);
             ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, tmpImg.mipLevels, device);
             uint32_t imgIndex = ImageDelegate::requestImageCreation(tmpImg);
-
             imageIndexes.emplace_back(imgIndex);
-            
             loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
             //loadModel(&vertexBuf[i], &indexBuf[i], models[i]);
             
@@ -95,6 +93,8 @@ namespace lte {
         IndicesSize = 0;
         VertexSizes.clear();
         IndiceSizes.clear();
+        VertexSizes.shrink_to_fit();
+        IndiceSizes.shrink_to_fit();
         for (const auto& objF : vertexBuf) {
             VertexesSize += objF.size();
             VertexSizes.emplace_back(objF.size());
@@ -129,8 +129,11 @@ namespace lte {
         }
 
         imageIndexes.clear();
+        imageIndexes.shrink_to_fit();
         vertexBuf.clear();
+        vertexBuf.shrink_to_fit();
         indexBuf.clear();
+        vertexBuf.shrink_to_fit();
     }
 
     void FileLoader::loadModel(std::vector<Vertex>* pVertices,std::vector<uint32_t>* pIndices,std::string path)

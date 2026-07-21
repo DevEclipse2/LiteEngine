@@ -58,6 +58,7 @@ namespace lte {
 	struct Vertex
 	{
 		glm::vec3 pos;
+		glm::vec3 normal;
 		glm::vec3 color;
 		glm::vec2 texCoord;
 
@@ -76,8 +77,12 @@ namespace lte {
 			return pos == other.pos && color == other.color && texCoord == other.texCoord;
 		}
 	};
-	struct skinnedVertex : Vertex
+	struct skinnedVertex
 	{
+		glm::vec3 pos;
+		glm::vec3 normal;
+		glm::vec3 color;
+		glm::vec2 texCoord;
 		glm::u8vec4 BoneIDs;
 		glm::vec4 BoneWeights;
 
@@ -98,46 +103,54 @@ namespace lte {
 		{
 			return pos == other.pos && color == other.color && texCoord == other.texCoord && BoneIDs == other.BoneIDs && BoneWeights == other.BoneWeights;
 		}
+		
+		skinnedVertex& operator=(const Vertex& other)
+		{
+			pos = other.pos;
+			normal = other.normal;
+			color = other.color;
+			texCoord = other.texCoord;
+
+			ResetBones();
+
+			return *this;
+		}
+		skinnedVertex(const Vertex& other)
+		{
+			*this = other; // Reuse the assignment operator logic
+		}
+		void ResetBones() {
+			for (int i = 0; i < 4; i++)
+			{
+				BoneIDs[i] = 0;
+				BoneWeights[i] = 0;
+			}
+		}
 	};
 
 	struct SkinnedProcessorVertex {
-		std::vector<std::pair<float, uint8_t>> WeightBonePair;
-		skinnedVertex* vertex;
 
+		std::vector<std::pair<float, uint8_t>> WeightBonePair;
 		void SubmitWeight(std::pair<float, uint8_t> weightbonePair)
 		{
 			WeightBonePair.emplace_back(weightbonePair);
 		}
 
-		void ResolveWeights()
+		void ResolveWeights(skinnedVertex& vertex)
 		{
 			std::sort(WeightBonePair.begin(), WeightBonePair.end());
 			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 			{
-				vertex->BoneWeights[i] = WeightBonePair[i].first;
-				vertex->BoneIDs[i] = WeightBonePair[i].second;
+				vertex.BoneWeights[i] = WeightBonePair[i].first;
+				vertex.BoneIDs[i] = WeightBonePair[i].second;
 			}
+
+			//drops everything
+			WeightBonePair.clear();
+			WeightBonePair.shrink_to_fit();
 		}
 	};
 
-	struct PreprocessBone {
-		uint32_t id;
-		std::vector<float> weights;
-
-		void LoadVertex(std::vector<SkinnedProcessorVertex*> initialVertexes)
-		{
-			uint32_t i = 0;
-			for (const auto vtx : initialVertexes)
-			{
-				if (weights[i] < 0.005f)
-				{
-					continue;
-				}
-				vtx->SubmitWeight(std::pair<float, uint32_t>(weights[i], id));
-				i++;
-			}
-		}
-	};
 	struct Bone
 	{
 		glm::mat4 offsetMatrix;

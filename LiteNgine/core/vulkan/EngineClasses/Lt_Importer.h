@@ -24,12 +24,31 @@ namespace lte {
 	
 	class Lt_Importer
 	{
+		struct Lt_MeshData
+		{
+			std::vector<Vertex> vertexBuffer;
+			std::vector<uint32_t> indexBuffer;
+		};
+		struct Lt_SkinnedMeshData
+		{
+			std::vector<lte::SkinnedProcessorVertex> WeightedVertexBuffer;
+			std::vector<skinnedVertex> skinnedVertexBuffer;
+			std::vector<uint32_t> indexBuffer;
+		};
 
-
+		struct StaticModel {
+			std::vector<Lt_MeshData> subMeshes;
+		};
+		struct SkinnedModel
+		{
+			std::vector<Lt_SkinnedMeshData> subMeshes;
+			std::unordered_map<std::string, uint8_t> BoneIndexes;
+			std::vector<lte::Bone> bones;
+		};
 	public:
 
-		//static uint8_t ParseMesh(aiMesh* mesh);
-		//static uint8_t ParseSkinnedMesh(aiMesh* mesh);
+		static uint8_t ParseMesh(aiMesh* mesh,Lt_MeshData& data);
+		static uint8_t ParseSkinnedMesh(aiMesh* mesh,Lt_SkinnedMeshData& data);
 		static void ParseNode(aiNode* node, const aiScene* scene);
 
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
@@ -40,5 +59,10 @@ namespace lte {
 
 	private:
 		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
+		inline static std::vector<StaticModel> staticModels;
+		inline static std::vector<SkinnedModel> skinnedModels;
+
+		inline static StaticModel m_currentStaticModel;
+		inline static SkinnedModel m_currentSkinnedModel;
 	};
 }
