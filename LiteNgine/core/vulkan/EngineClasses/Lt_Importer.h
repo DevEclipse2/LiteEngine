@@ -15,54 +15,70 @@
 //asset importer shennanigans
 namespace lte {
 
-	struct Lt_Scene
-	{
-
-
-	};
-
 	
 	class Lt_Importer
 	{
 		struct Lt_MeshData
 		{
+			glm::mat4 transform;
 			std::vector<Vertex> vertexBuffer;
 			std::vector<uint32_t> indexBuffer;
+			uint32_t VertexCount;
+			uint32_t IndexCount;
 		};
 		struct Lt_SkinnedMeshData
 		{
 			std::vector<SkinnedProcessorVertex> WeightedVertexBuffer;
 			std::vector<skinnedVertex> skinnedVertexBuffer;
 			std::vector<uint32_t> indexBuffer;
+			uint32_t VertexCount;
+			uint32_t IndexCount;
 		};
 
-		struct StaticModel {
+		struct Model {
+			glm::mat4 transform;
 			std::vector<Lt_MeshData> subMeshes;
-		};
-		struct SkinnedModel
-		{
-			std::vector<Lt_SkinnedMeshData> subMeshes;
+			std::vector<Lt_SkinnedMeshData> skinnedSubMeshes;
+			std::vector<glm::vec4> transforms;
+			std::vector<glm::vec4> skinnedTransforms;
 			std::unordered_map<std::string, uint8_t> BoneIndexes;
 			std::vector<Bone> bones;
+			uint32_t VertexCount;
+			uint32_t IndexCount;
+			uint32_t skinnedVertexCount;
+			uint32_t skinnedIndexCount;
+			const char* name;
 		};
+		
 	public:
-
+		static inline glm::mat4 ConvertAssimpMatrixToGLM(const aiMatrix4x4& from) {
+			glm::mat4 to;
+			// Transposing from row-major to column-major
+			to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
+			to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
+			to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
+			to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
+			return to;
+		}
 		static uint8_t ParseMesh(aiMesh* mesh,Lt_MeshData& data);
-		static uint8_t ParseSkinnedMesh(aiMesh* mesh,Lt_SkinnedMeshData& data);
-		static void ParseNode(aiNode* node, const aiScene* scene);
+		static uint8_t ParseSkinnedMesh(aiMesh* mesh,Lt_SkinnedMeshData& data,Model& model );
+		static void ParseNode(aiNode* node, const aiScene* scene, Model& currentModel, glm::mat4 parentTransform);
 
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
 		//uint8_t Unpack();
-		static uint8_t ParseScene(const aiScene* pScene, Lt_Scene& scene);
+		static uint8_t ParseScene(const aiScene* pScene);
 
 	private:
 		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
-		inline static std::vector<StaticModel> staticModels;
-		inline static std::vector<SkinnedModel> skinnedModels;
+		inline static std::vector<Model> loadedModels;
+		inline static Model m_currentStaticModel;
 
-		inline static StaticModel m_currentStaticModel;
-		inline static SkinnedModel m_currentSkinnedModel;
+		inline static std::vector<uint32_t> VertexSizes;
+		inline static std::vector<uint32_t> IndiceSizes;
+		inline static std::vector<RenderSet> renderSets;
+		inline static uint32_t totalVertices;
+		inline static uint32_t totalIndices;
 	};
 }

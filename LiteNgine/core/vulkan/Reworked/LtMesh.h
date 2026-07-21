@@ -171,15 +171,12 @@ namespace lte {
 	
 	struct RenderSet {
 		//a render set contains all relevant data
-
 		uint32_t vertexArrayStartIndex	= 0;
 		uint32_t vertexArraySize		= 0;
 		uint32_t IndiceArrayStartIndex	= 0;
 		uint32_t IndiceArraySize		= 0;
 		uint32_t imageIndex = 0;//might need more but its fine for now
-
 		MeshType type = MeshType::Static;
-
 		RenderSet(uint32_t vSI,uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI) : vertexArrayStartIndex{vSI} , vertexArraySize{vAS} , IndiceArrayStartIndex{iSI}, IndiceArraySize{iAS}, imageIndex{iI}
 		{}
 	};

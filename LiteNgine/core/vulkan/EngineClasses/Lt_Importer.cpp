@@ -25,8 +25,7 @@ namespace lte
 			Con::LogFailure(errstr + "Assimp loading of model failed from internal engine class Lt_Importer", HIGH_SEVERITY,TAG_ENGINE);
 			return Load_Fail_Generic;
 		}
-		Lt_Scene scene{};
-		ParseScene(importedScene,scene);
+		ParseScene(importedScene);
 		return 0;
 
 	}
@@ -36,6 +35,8 @@ namespace lte
 	{
 		data.vertexBuffer.reserve(mesh->mNumVertices);
 
+		data.VertexCount = mesh->mNumVertices;
+		data.IndexCount = mesh->mNumFaces * 3;
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 			Vertex v;
 
@@ -66,13 +67,14 @@ namespace lte
 		return 0;
 	}
 
-	uint8_t Lt_Importer::ParseSkinnedMesh(aiMesh* mesh, Lt_SkinnedMeshData& skinnedmeshData)
+	uint8_t Lt_Importer::ParseSkinnedMesh(aiMesh* mesh, Lt_SkinnedMeshData& skinnedmeshData, Model& model)
 	{
 
 		Lt_MeshData baseData;		
 		ParseMesh(mesh, baseData);
 		skinnedmeshData.indexBuffer = std::move(baseData.indexBuffer); // borrow (steal) the indices
-
+		skinnedmeshData.VertexCount = mesh->mNumVertices;
+		skinnedmeshData.IndexCount = mesh->mNumFaces * 3;
 		skinnedmeshData.skinnedVertexBuffer.reserve(baseData.vertexBuffer.size());
 		skinnedmeshData.WeightedVertexBuffer.resize(baseData.vertexBuffer.size());
 		//big resize reduces memory operations 
@@ -90,15 +92,15 @@ namespace lte
 			std::string boneName = bone->mName.C_Str();
 			uint8_t boneID;
 
-			if (m_currentSkinnedModel.BoneIndexes.find(boneName) == m_currentSkinnedModel.BoneIndexes.end())
+			if (model.BoneIndexes.find(boneName) == model.BoneIndexes.end())
 			{
-				boneID = static_cast<uint8_t>(m_currentSkinnedModel.bones.size());
-				m_currentSkinnedModel.BoneIndexes[boneName] = boneID;
+				boneID = static_cast<uint8_t>(model.bones.size());
+				model.BoneIndexes[boneName] = boneID;
 				Bone newBone;
-				m_currentSkinnedModel.bones.push_back(newBone);
+				model.bones.push_back(newBone);
 			}
 			else {
-				boneID = m_currentSkinnedModel.BoneIndexes[boneName];
+				boneID = model.BoneIndexes[boneName];
 			}
 
 			// 3. Apply weights to the vertices
@@ -121,51 +123,89 @@ namespace lte
 		return 0;
 	}
 
-	void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene)
+	void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene, Model& model, glm::mat4 parentTransform)
 	{
+		glm::mat4 nodeTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
+		glm::mat4 accumulatedTransform = parentTransform * nodeTransform;
+
 		for (unsigned int i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
 			if (mesh->HasBones()) {
-				Lt_SkinnedMeshData data; 
-				ParseSkinnedMesh(mesh, data);
-				m_currentSkinnedModel.subMeshes.push_back(data);
+				Lt_SkinnedMeshData data;
+				model.skinnedTransforms.emplace_back(accumulatedTransform);
+				ParseSkinnedMesh(mesh, data,model);
+				model.skinnedSubMeshes.push_back(data);
+				model.skinnedVertexCount += data.VertexCount;
+				model.skinnedIndexCount += data.IndexCount;
 			}
 			else
 			{
+				model.transforms.emplace_back(accumulatedTransform);
 				Lt_MeshData data;
 				ParseMesh(mesh, data);
-				m_currentStaticModel.subMeshes.push_back(data);
+				model.subMeshes.push_back(data);
+				model.IndexCount	+= data.IndexCount;
+				model.VertexCount	+= data.IndexCount;
+
 			}
 		}
 
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
 		{
-			ParseNode(node->mChildren[i], scene);
+			ParseNode(node->mChildren[i], scene,model,nodeTransform);
 		}
 	}
-	uint8_t Lt_Importer::ParseScene(const aiScene* pScene , Lt_Scene& scene)
+
+	uint8_t Lt_Importer::ParseScene(const aiScene* pScene)
 	{
 		printf("*******************************************************\n");
 		printf("Parsing %d meshes\n\n", pScene->mNumMeshes);
-		int totalVertices = 0,totalIndices = 0,totalBones = 0;
 
-		for (unsigned int i = 0; i < pScene->mNumMeshes; i++) {
-			const aiMesh* pMesh = pScene->mMeshes[i];
-			aiNode* rootNode = pScene->mRootNode;
-			bool IsSkinned = pScene->HasSkeletons();
-			int num_vertices = pMesh->mNumVertices;
-			int num_indices = pMesh->mNumFaces * 3;
-			int num_bones = pMesh->mNumBones;
-			ParseNode(rootNode, pScene);
-			//printf("  Mesh %d '%s': vertices %d indices %d bones %d\n\n", i, pMesh->mName.C_Str(), num_vertices, num_indices, num_bones);
-			totalVertices += num_vertices;
-			totalIndices += num_indices;
-			totalBones += num_bones;
-			
-			//printf("\n");
+		aiNode* rootNode = pScene->mRootNode;
+
+		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
+		//ParseNode(rootNode, pScene);
+
+		for (unsigned int i = 0; i < rootNode->mNumChildren; i++)
+		{
+			aiNode* topLevelNode = rootNode->mChildren[i];
+
+
+			Model newObject;
+			LtMeshInfo meshInfo;
+			newObject.name = topLevelNode->mName.C_Str();
+			glm::mat4 localTransform = ConvertAssimpMatrixToGLM(topLevelNode->mTransformation);
+			newObject.transform = rootTransform * localTransform;
+
+			ParseNode(topLevelNode, pScene, newObject,rootTransform);
+
+			loadedModels.push_back(newObject);
 		}
+
+		//Vertex* newVertexes = new Vertex[totalVertices];
+		//VertexArray = newVertexes;
+		//uint32_t* newIndices = new uint32_t[totalIndices];
+		//IndicesArray = newIndices;
+
+		//uint32_t Vindexes = 0;
+		//uint32_t Iindexes = 0;
+		//for (uint32_t i = 0; i < vertexBuf.size(); i++)
+		//{
+		//	if (vertexBuf[i].size() == 0) continue;
+		//	//starts at 0, length 12
+		//	//renders from zero to 11
+		//	//next one starts rendering from 12
+		//	RenderSet rs{ Vindexes,static_cast<uint32_t>(vertexBuf[i].size()),Iindexes,static_cast<uint32_t>(indexBuf[i].size()),imageIndexes[i] };
+		//	renderSets.emplace_back(rs);
+		//	//so we was reading garbage this whole time
+		//	memcpy(VertexArray + Vindexes, vertexBuf[i].data(), sizeof(Vertex) * vertexBuf[i].size());
+		//	memcpy(IndicesArray + Iindexes, indexBuf[i].data(), sizeof(uint32_t) * indexBuf[i].size());
+		//	Vindexes += static_cast<uint32_t>(vertexBuf[i].size());
+		//	Iindexes += static_cast<uint32_t>(indexBuf[i].size());
+		//}
+
 		//printf("\nTotal vertices %d total indices %d total bones %d\n", totalVertices, totalIndices, totalBones);
 		return 0;
 	}

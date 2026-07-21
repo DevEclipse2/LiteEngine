@@ -21,9 +21,6 @@ namespace lte {
     FileLoader::FileLoader()
     {
     }
-
-
-
     void FileLoader::createTextureImage(std::string path, LtImage& ImageIndex, vk::raii::Device& device , vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo cmdInfo)
     {
 
@@ -95,14 +92,17 @@ namespace lte {
         IndiceSizes.clear();
         VertexSizes.shrink_to_fit();
         IndiceSizes.shrink_to_fit();
-        for (const auto& objF : vertexBuf) {
+        for (const auto& objF : vertexBuf)
+        {
             VertexesSize += objF.size();
             VertexSizes.emplace_back(objF.size());
         }
-        for (const auto& indice : indexBuf) {
+        for (const auto& indice : indexBuf)
+        {
             IndicesSize += indice.size();
             IndiceSizes.emplace_back(indice.size());
         }
+
         Vertex* newVertexes = new Vertex[VertexesSize];
         delete[] VertexArray;
         VertexArray = newVertexes;
@@ -125,7 +125,6 @@ namespace lte {
             memcpy(IndicesArray + Iindexes, indexBuf[i].data(), sizeof(uint32_t) * indexBuf[i].size());
             Vindexes += static_cast<uint32_t>(vertexBuf[i].size());
             Iindexes += static_cast<uint32_t>(indexBuf[i].size());
-  
         }
 
         imageIndexes.clear();
