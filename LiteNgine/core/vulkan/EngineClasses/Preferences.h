@@ -18,6 +18,13 @@ namespace lte {
 			inline static uint16_t Width = 800;
 			inline static uint16_t Height = 600;
 		};
+
+		struct Optimiser
+		{
+			inline static bool UseDefragLimits = true;
+			inline static uint8_t maximumSearch = 128;
+			inline static uint8_t maximumTrial = 14;
+		};
 		
 	};
 }

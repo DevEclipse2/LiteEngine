@@ -176,7 +176,11 @@ namespace lte {
 		uint32_t IndiceArrayStartIndex	= 0;
 		uint32_t IndiceArraySize		= 0;
 		uint32_t imageIndex = 0;//might need more but its fine for now
+		//uint8_t BufferID; //max is 256 because who the fuck has more vram than 
+		//nvm its 16_t because 32 gb isnt really that much
+		uint16_t bufferId = 0;
 		MeshType type = MeshType::Static;
+
 		RenderSet(uint32_t vSI,uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI) : vertexArrayStartIndex{vSI} , vertexArraySize{vAS} , IndiceArrayStartIndex{iSI}, IndiceArraySize{iAS}, imageIndex{iI}
 		{}
 	};

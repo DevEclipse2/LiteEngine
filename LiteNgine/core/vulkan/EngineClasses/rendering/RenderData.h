@@ -1,7 +1,9 @@
 #pragma once
 #include "../../Reworked/CommandBuffers.h"
 #include "../../Reworked/LtMesh.h"
-#define MaxVertexBuffer 500000 // if a skinned vertex is 64 bytes this is 256mb Perfect!
+#include "vk_mem_alloc.h"
+#define MaxSkinnedVertexBuffer 2097152 // if a skinned vertex is 64 bytes this is 128mb. Perfect!
+#define MaxVertexBuffer 3050402 // if a vertex is 44 bytes this is around 128mb. Perfect!
 namespace lte {
 	class RenderData
 	{
@@ -38,10 +40,11 @@ namespace lte {
 
 		struct Buffer
 		{
-			BufferType type;
+			BufferType type = GenericBuffer;
 			vk::raii::Buffer buffer = nullptr;
-			vk::raii::DeviceMemory bufferMem = nullptr;
-			uint32_t offset;
+			std::vector<std::pair<uint32_t, uint32_t>> FreeSpace; // size, location ()
+			vk::raii::DeviceMemory Allocation = nullptr;
+			uint32_t offset = 0; // this tracks it in units such as vertex , NOT BYTES!
 		};
 
 
@@ -53,8 +56,12 @@ namespace lte {
 			FailureGeneric,
 			FailureExceedBufferSize
 		};
-		static copyResult copyVertexBufferContents(std::vector<Vertex> data);
+		static copyResult copyVertexBufferContents(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset);
+		static copyResult copyVertexBufferContentsBulk(std::vector<std::vector<Vertex>> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, std::vector<RenderSet&> rendersets);
+
+		static void MarkFreedVertexes();
 		inline static std::vector<RenderSet> renderSets;
+
 		inline static std::vector<LtMeshInfo> MeshInformation;
 		void FillBuffer()
 		{
