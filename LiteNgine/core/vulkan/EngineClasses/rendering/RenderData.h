@@ -2,8 +2,6 @@
 #include "../../Reworked/CommandBuffers.h"
 #include "../../Reworked/LtMesh.h"
 #include "vk_mem_alloc.h"
-#define MaxSkinnedVertexBuffer 2097152 // if a skinned vertex is 64 bytes this is 128mb. Perfect!
-#define MaxVertexBuffer 3050402 // if a vertex is 44 bytes this is around 128mb. Perfect!
 namespace lte {
 	class RenderData
 	{
@@ -35,7 +33,11 @@ namespace lte {
 			GenericBuffer,
 			VertexBuffer,
 			IndiceBuffer,
-			SkinnedVertexBuffer
+			SkinnedVertexBuffer,
+			XLVertexBuffer, // for special operations 
+			XLSkinnedVertexBuffer,
+			XLIndexBuffer,
+
 		};
 
 		struct Buffer
@@ -49,17 +51,23 @@ namespace lte {
 
 
 		//render sets
-		static void createVertexBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device);
 		inline static std::vector<std::unique_ptr<Buffer>> Buffers;
 		enum copyResult {
 			Sucess,
 			FailureGeneric,
 			FailureExceedBufferSize
 		};
-		static copyResult copyVertexBufferContents(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset);
+		enum freeResult {
+			Sucess,
+			FailureGeneric,
+			FailureIncompatibleType,
+		};
+		static void createBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device,BufferType type);
+		static copyResult copyBufferContents(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset);
+		static copyResult createXLVertexBuffer(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset); //for those truly whale sized models
 		static copyResult copyVertexBufferContentsBulk(std::vector<std::vector<Vertex>> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, std::vector<RenderSet&> rendersets);
-
-		static void MarkFreedVertexes();
+		static void DefragmentBuffer(uint16_t BufferId,uint32_t* savings);//defragmentation
+		static void MarkFreedVertexes(RenderSet& renderset);
 		inline static std::vector<RenderSet> renderSets;
 
 		inline static std::vector<LtMeshInfo> MeshInformation;

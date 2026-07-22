@@ -1,13 +1,40 @@
 #include "RenderData.h"
 #include "../../Reworked/Buffers.h"
 #include "../Preferences.h"
+#include "../Lt_Console.h"
 namespace lte {
-	void RenderData::createVertexBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device)
+	void RenderData::createBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device, RenderData::BufferType type)
 	{
 		//assert(vertexBuffer == nullptr);
-		uint32_t ByteSize = MaxVertexBuffer * sizeof(Vertex);
+		uint32_t ByteSize = -1;
+		switch (type)
+		{
+		case RenderData::BufferType::GenericBuffer:
+			Con::LogError("GenericBuffer is an invalid buffer type used to designate incorrectly formed buffers and is not a catch all,do not create a buffer with type genericBuffer!", HIGH_SEVERITY, TAG_ENGINE);
+			return;
+		case RenderData::BufferType::VertexBuffer:
+			ByteSize = Preferences::Optimiser::VertexBufferSize * sizeof(Vertex);
+			break;
+		case RenderData::BufferType::SkinnedVertexBuffer:
+			ByteSize = Preferences::Optimiser::SkinnedVertexBufferSize * sizeof(skinnedVertex);
+			break;
+		case RenderData::BufferType::IndiceBuffer:
+			ByteSize = Preferences::Optimiser::IndexBufferSize * sizeof(uint32_t);
+			break;
+		case RenderData::BufferType::XLVertexBuffer:
+			Con::LogError("XLVertexBuffer is a special buffer type assigned by the engine, not to be called through this function!", MED_SEVERITY, TAG_ENGINE);
+			return;
+		case RenderData::BufferType::XLSkinnedVertexBuffer:
+			Con::LogError("XLSkinnedVertexBuffer is a special buffer type assigned by the engine, not to be called through this function!", MED_SEVERITY, TAG_ENGINE);
+			return;
+		case RenderData::BufferType::XLIndexBuffer:
+			Con::LogError("XLIndexBuffer is a special buffer type assigned by the engine, not to be called through this function!", MED_SEVERITY, TAG_ENGINE);
+			return;
+		}
+		
 		Buffer NewBuffer;
 		Buffers::createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, NewBuffer.buffer, NewBuffer.Allocation, *info.device, device);
+		NewBuffer.type = RenderData::BufferType::VertexBuffer;
 		Buffers.emplace_back(std::make_unique<Buffer>(NewBuffer));
 	}
 	RenderData::copyResult RenderData::copyVertexBufferContents(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice,RenderSet& renderset)
@@ -26,6 +53,10 @@ namespace lte {
 		memcpy(dataStaging, data.data(), ByteSize);
 		stagingBufferMemory.unmapMemory();
 
+		if (data.size() > Preferences::Optimiser::VertexBufferSize)
+		{
+			return RenderData::copyResult::FailureExceedBufferSize;
+		}
 
 		for (int i = Buffers.size() - 1; i >= 0; i--)//newest to oldest
 		{
@@ -33,11 +64,15 @@ namespace lte {
 			if (currentBuffer.type != RenderData::BufferType::VertexBuffer)
 			{
 				//these are not the buffers you are looking for
+				if (currentBuffer.type == RenderData::BufferType::GenericBuffer)
+				{
+					Con::LogError("renderdata : buffertype cannot and should not be GENERIC type, Check Implementation now!", FATAL_SEVERITY, TAG_ENGINE);
+				}
 				continue;
 			}
 			if (currentBuffer.FreeSpace.size() == 0)
 			{
-				if ((MaxVertexBuffer - currentBuffer.offset) > data.size())
+				if ((Preferences::Optimiser::VertexBufferSize - currentBuffer.offset) > data.size())
 				{
 					//allocate memory at the back
 					Buffers::copyBufferIndexed(stagingBuffer, currentBuffer.buffer, ByteSize, info, 0, currentBuffer.offset * sizeof(Vertex));
@@ -80,7 +115,7 @@ namespace lte {
 				}
 				if (size == -1 || location == -1)
 				{
-					if ((MaxVertexBuffer - currentBuffer.offset) > data.size())
+					if ((Preferences::Optimiser::VertexBufferSize - currentBuffer.offset) > data.size())
 					{
 						//allocate memory at the back
 						Buffers::copyBufferIndexed(stagingBuffer, currentBuffer.buffer, ByteSize, info, 0, currentBuffer.offset * sizeof(Vertex));
