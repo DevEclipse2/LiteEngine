@@ -3,6 +3,12 @@
 #include "../../Reworked/LtMesh.h"
 #include "vk_mem_alloc.h"
 namespace lte {
+	struct AllocationPosition {
+		uint32_t startindex;
+		uint32_t size;
+		uint16_t bufferId;
+	};
+
 	class RenderData
 	{
 	public:
@@ -63,11 +69,11 @@ namespace lte {
 			FailureIncompatibleType,
 		};
 		static void createBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device,BufferType type);
-		static copyResult copyBufferContents(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset);
-		static copyResult createXLVertexBuffer(std::vector<Vertex> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset); //for those truly whale sized models
-		static copyResult copyVertexBufferContentsBulk(std::vector<std::vector<Vertex>> data, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, std::vector<RenderSet&> rendersets);
+		static copyResult copyBufferContents(BufferType type, void* rawData,uint32_t elementCount,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, AllocationPosition& allocPos);
+		static copyResult createXLBuffer(BufferType type, void* rawData, uint32_t elementCount, AllocationPosition& allocPos,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset); //for those truly whale sized models
+		static copyResult copyBufferContentsBulk(BufferType type,std::vector<std::tuple<void*,uint32_t,AllocationPosition*>> allocPos, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
 		static void DefragmentBuffer(uint16_t BufferId,uint32_t* savings);//defragmentation
-		static void MarkFreedVertexes(RenderSet& renderset);
+		static void MarkFreedVertexes(AllocationPosition& renderset);
 		inline static std::vector<RenderSet> renderSets;
 
 		inline static std::vector<LtMeshInfo> MeshInformation;
