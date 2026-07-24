@@ -1,6 +1,8 @@
 #include "Lt_ILayer.h"
+#include "../EngineClasses/Preferences.h"
 namespace lte {
 
+	uint32_t Lt_ILayer::frameCount = 0;
 	enum Result {
 		Continue,
 		Exit
@@ -23,11 +25,12 @@ namespace lte {
 			Con::LogError("unknown on wake result, possible programming oversight , please submit an issue on github,  interface layers / bootstrapper class", MED_SEVERITY, TAG_ENGINE);
 			break;
 		}
+		Bootstrapper::DumpPreferences();
 		Con::BootstrapDone();
 		windowMgr.Startup();
 		Lt_WindowInfo info;
-			info.width = 800,
-			info.height = 600;
+			info.width = Preferences::Graphics::Width;
+			info.height = Preferences::Graphics::Height;
 			info.displayName = "LiteNgine editor";
 			info.internalName = "MainWindow";
 			info.resizePointers.emplace_back([this]() {
@@ -37,11 +40,7 @@ namespace lte {
 		vulkanHandler.Init("LiteNgine Editor");
 		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
-		vk::SampleCountFlagBits& msaaSamples = Lt_Vulkan::devices[0].sampling;
-
-		/*singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
-		fileLoader.TemporaryFileLoad(device, PhysicalDevice, cmdInfo);*/
-
+		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue};
 
 		
 		Lt_WindowVK mainWindow{};
@@ -54,8 +53,6 @@ namespace lte {
 		singleTimeCommandInfo cmdInfo{ &backend.primary.device ,&backend.commandPool , &backend.primary.queue };
 		
 		backend.second();*/
-
-
 
 		Lt_GuiCreationInfo GuiCreationInfo{};
 		GuiCreationInfo.width = info.width;
@@ -79,69 +76,129 @@ namespace lte {
 		//theres a chance that it might override the original so im leaving this shit alone
 		GuiCreationInfo.colorImageViewIndex = &Lt_Vulkan::windows[mainWindowIndex].swapchain.colorImage;
 		GuiCreationInfo.pImageViews = &Lt_Vulkan::windows[mainWindowIndex].swapchain.imageViews;
+		Con::LogEvent("Spinning up User Interface...", TAG_ENGINE);
 		guiHandler.InitGui(GuiCreationInfo);
 		guiHandler.Instantiate();			
-		guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
-		guiHandler.updateBuffers();
-
+		/*guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
+		guiHandler.updateBuffers();*/
+		Con::LogEvent("Init image viewport", TAG_ENGINE);
 		viewport.Init();
-		//Viewport::Init(this);
+		Con::LogEvent("Init editor viewport", TAG_ENGINE);
+		editorViewport.Init(ImVec2(800,600),2);
+		layoutloader.Init();
+		//unfinished
+		IridiumCFG config;
+		Iridium::Init(config);
+		Con::LogEvent("Preparing to render first frame", TAG_ENGINE);
 
 	}
 	void Lt_ILayer::Loop()
 	{
+		Iridium::StartFrame(frameCount);
 		Con::Display();
-		//backend.Update();
-		
-		//leads to weird behaviour
+
+		//Con::LogEvent("NewFrame", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].newFrame(frames);
 		Lt_Vulkan::windows[mainWindowIndex].resetBuffers();
+
 		
+
 		if (mainResized) {
-			glfwGetWindowSize(windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex].ltMultiWindowIndex]->window.getGLFWWindow()
+			glfwGetFramebufferSize(windowMgr.windowInfo[Lt_Vulkan::windows[mainWindowIndex].ltMultiWindowIndex]->window.getGLFWWindow()
 			, &Lt_Vulkan::windows[mainWindowIndex].width, &Lt_Vulkan::windows[mainWindowIndex].height);
 			Lt_Vulkan::windows[mainWindowIndex].recreateSwapChain();
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			mainResized = false;
-			Con::Log("main window resized", TAG_ENGINE);
+			Con::LogEvent("main window resized", TAG_ENGINE);
 		}
-		//add any gui draw commands here
+		
+		editorViewport.RenderScene(Lt_Vulkan::windows[mainWindowIndex].syncSet.presentCompleteSemaphores[frames]);
 		guiHandler.StartFrame();
+		if(ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("New")) { /* Handle New */ }
+				if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Handle Open */ }
+				ImGui::Separator();
+				if (ImGui::MenuItem("Exit", "Alt+F4")) { /* Handle Exit */ }
+
+				ImGui::EndMenu();
+			}
+			//layoutloader.DrawMenu();
+			ImGui::EndMainMenuBar();
+		}
+		//layoutloader.DrawPopups();
+
+		Iridium::SubmitDrawCommands();
 		viewport.SubmitGUICommands();
+		layoutloader.SubmitGUICommands();
+		editorViewport.SubmitGUICommands();
+
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{
-			//update stuff			
 			guiHandler.updateFrameBuffer(Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height);
 			guiHandler.updateBuffers();
 			guiHandler.RenderFrame(frames);
 		}
-		/*if(!backend.AddAdditionalCommands(guiHandler.commandBuffers[backend.frameIndex])) {
-			std::cerr << "cannot submit additional commands" << std::endl;
-		}*/
+		//Con::Log("prepareCommandBuffers", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].prepCommand(frames);
 		Lt_Vulkan::windows[mainWindowIndex].addCommand(guiHandler.commandBuffers[frames]);
-		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames);
+		//Con::Log("submitCommandbuffer", TAG_ENGINE);
+		Lt_Vulkan::windows[mainWindowIndex].submitBuffers(frames,editorViewport.syncSet.renderFinishedSemaphores[editorViewport.swapFrame]);
+		//Con::Log("startRender", TAG_ENGINE);
 		Lt_Vulkan::windows[mainWindowIndex].startRender(frames);
-		/*backend.SubmitCommandBuffers();
-		backend.Draw();*/
+		if (frameCount == 20) {
+			auto& deviceSet = Lt_Vulkan::devices[0];
+			Con::LogEvent("CaptureFrame", TAG_ENGINE);
+			ImageDelegate::DumpImages(deviceSet.logicalDevice, deviceSet.physicalDevice, *Lt_Vulkan::commandPool, *deviceSet.queue, Lt_Vulkan::windows[mainWindowIndex].swapchain.swapChainImages[frames], Lt_Vulkan::windows[mainWindowIndex].width, Lt_Vulkan::windows[mainWindowIndex].height, "swapchain.png");
+		}
+		
+		editorViewport.FinishFrame();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+
+		
+		frameCount++;
 		frames++;
 		frames %= Lt_Vulkan::FramesInFlight;
+		Iridium::EndFrame();
 	}
 	void Lt_ILayer::Resize()
 	{
+		Con::LogEvent("Resize called", TAG_ENGINE);
+		int width = 0, height = 0;
+		const auto& window = windowMgr.windowInfo[mainWindowIndex]->window.getGLFWWindow();
+		glfwGetFramebufferSize(window, &width, &height);
+
+		//this suspends the thread
+		//we should probably use a bypass
+		if (width == 0 || height == 0) {
+			Con::LogEvent("Minimize", TAG_ENGINE);
+		}
+		while (width == 0 || height == 0) {
+			glfwGetFramebufferSize(window, &width, &height);
+			glfwWaitEvents(); // Sleeps the thread until an event (like un-minimizing) occurs
+		}
 		mainResized = true;
 	}
 	void Lt_ILayer::End() 
 	{
+		Con::LogEvent("Engine Shutdown initiated", TAG_ENGINE);
+		viewport.Terminate();
 		guiHandler.Terminate();
-		Con::OutputFile();
-		
+		ImageDelegate::Terminate();
+		Iridium::Terminate();
 		/*
 		backend.Exit();
 		backend.window.DestroyWindow();*/
 	}
 	void Lt_ILayer::Cleanup()
 	{
+		Con::LogEvent("Engine Cleanup initiated", TAG_ENGINE);
+		vulkanHandler.devices[0].logicalDevice.waitIdle();
+		vulkanHandler.commandPool = nullptr;
+
 	}
 }

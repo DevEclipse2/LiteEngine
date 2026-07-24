@@ -76,29 +76,40 @@ namespace lte
                     switch (logentry.type) {
                         case TYPE_ERROR:
                             outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            std::cout<< "\033[31m" + outputline + "\033[0m" << std::endl;
                         break;
                         case TYPE_EVENT:
                             outputline += " event: " + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[105m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_FAILURE:
                             outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[41m" + outputline + "\033[0m" << std::endl;
+
                             break;
                         case TYPE_INFORMATION:
                             outputline += " info: " + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[4:2m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_SUBOPTIMAL:
                             outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[4:4m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_SUCCESS:
                             outputline += " success: " + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[32m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_WARNING:
                             outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[33m" + outputline + "\033[0m" << std::endl;
+
                             break;
                         default:
                             std::cerr << "unhandled exception : log type handling failed" << std::endl;
                             LogError("failed to handle log type, please submit ticket" + logentry.type, HIGH_SEVERITY, TAG_ENGINE);
                             outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            std::cout << "\033[106m" + outputline + "\033[0m" << std::endl;
+
                             break;
                     }
                 }
@@ -118,6 +129,7 @@ namespace lte
 
     void Con::OutputFile()
     {
+        Display();
         //this clears latest.log
         std::ofstream outFile("latest_log.txt");
         if (outFile.is_open()) {

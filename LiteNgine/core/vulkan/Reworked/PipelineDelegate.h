@@ -30,7 +30,7 @@ namespace lte {
 				graphicsInfo.renderPass = nullptr;
 
 			vk::PipelineRenderingCreateInfo renderingInfo{};
-			renderingInfo.colorAttachmentCount = colorAttachmentCount,
+				renderingInfo.colorAttachmentCount = colorAttachmentCount,
 				renderingInfo.pColorAttachmentFormats = colorAttachmentFormats,
 				renderingInfo.depthAttachmentFormat = depthAttachmentFormat;
 

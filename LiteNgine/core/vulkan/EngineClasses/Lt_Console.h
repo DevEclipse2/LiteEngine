@@ -36,6 +36,7 @@
 #define TAG_ADDON			64	// 
 #define TAG_THREADMGR		128	// 
 #define TAG_PERFORMANCE		256 // 
+#define TAG_USER			512 // 
 /*
 new severities
 low med high critical fatal information

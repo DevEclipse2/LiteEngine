@@ -1,0 +1,25 @@
+todo list
+in no order of importance
+
+create viewport (Done!)
+create asset loading
+add animation loading
+editor animation thing
+codegraphs
+assimp
+networking stuff maybe
+audio system
+physics system
+
+
+
+log reading system
+profiler
+separated render thread and game thread
+post processing shader time
+
+preference loading into preference class
+layout loading
+
+
+vma

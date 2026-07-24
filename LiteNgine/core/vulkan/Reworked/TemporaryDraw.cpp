@@ -6,6 +6,9 @@ namespace lte {
 	float TemporaryDraw::frameTime = 0;
 	void TemporaryDraw::updateUniformBuffer(uint32_t frame , LtSwapChain& swap, std::vector<LtMeshInfo>& info)
 	{
+		//this gonna be 3d twin
+
+
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -14,7 +17,7 @@ namespace lte {
 		frameTime = (time - prevtime) * 1000;
 		UniformBufferObject ubo{};
 
-		glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 view = glm::lookAt(glm::vec3(20.0f, -6.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj = glm::perspective(glm::radians(45.0f),
 			static_cast<float>(swap.swapChainExtent.width) / static_cast<float>(swap.swapChainExtent.height),
 			0.1f, 20.0f);
@@ -22,11 +25,7 @@ namespace lte {
 		ubo.proj[1][1] *= -1;
 		// Update uniform buffers for each object
 		for (auto& gameObject : info) {
-			// Apply continuous rotation to the object
-			const float rotationSpeed = 0.5f;                          // Rotation speed in radians per second
-			/*gameObject.rotation.y += rotationSpeed * (time - prevtime);*/
-
-			// Get the model matrix for this object
+			const float rotationSpeed = 0.5f;
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
 
@@ -35,9 +34,6 @@ namespace lte {
 			ubo.model = model,
 				ubo.view = view,
 				ubo.proj = proj;
-
-
-			// Copy the UBO data to the mapped memory
 			memcpy(gameObject.uniformBuffersMapped[frame], &ubo, sizeof(ubo));
 		}
 		prevtime = time;

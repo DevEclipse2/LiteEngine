@@ -81,9 +81,6 @@
     <ClCompile Include="core\vulkan\Reworked\SwapchainHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\vulkan\Reworked\LtMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\Reworked\FileLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -133,6 +130,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\EditorViewport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\engine\Iridium.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\Game\Slate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\engine\Lt_PipelineNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -266,6 +281,30 @@
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\EditorViewport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\Iridium.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\ViewportCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Game\Slate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\LayoutLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\Lt_PipelineNodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\LtUiWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Preferences.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
@@ -289,5 +328,7 @@
     <Text Include="core\vulkan\EngineClasses\importer.txt" />
     <Text Include="core\documentas\class guide.txt" />
     <Text Include="core\documentas\bootprefs.txt" />
+    <Text Include="core\documentas\todo.txt" />
+    <Text Include="core\documentas\iridium.txt" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,6 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
 	void* pUserData)
 {
 
-	std::cerr << "validation layer: type " << to_string(type) << " msg: " << pCallbackData->pMessage << std::endl;
 
 	uint8_t logSeverity = 0;
 	switch (severity) {

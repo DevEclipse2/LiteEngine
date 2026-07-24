@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <deque>
+
 namespace lte
 {
     class DeviceHandler;
@@ -26,7 +27,6 @@ namespace lte
         uint32_t height = 0;
         uint32_t channel = 0;
         //LtImage();
-        
         
     };
     struct GUI_Image
@@ -46,6 +46,7 @@ namespace lte
             static void createImage(LtImage& image,uint32_t Width, uint32_t Height, uint32_t MipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice);
             ImageDelegate();
             ~ImageDelegate();
+            static void Terminate();
             static uint32_t requestImageCreation(LtImage& ltImage);
             static void requestImageDestruction(uint32_t& index);
             //static void loadTextureFromDisk(std::string path, LtImage* ltImage, singleTimeCommandInfo info, vk::raii::PhysicalDevice* physDevice);
@@ -72,6 +73,10 @@ namespace lte
             //static std::list<std::unique_ptr<LtImage>> ImagePool;
             static std::vector<std::unique_ptr<lte::LtImage>> ImagePool;
             //static std::deque<LtImage> ImagePool; // this is not the correct method
+
+
+            static void DumpImages(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, VkCommandPool commandPool,
+                VkQueue queue, VkImage image, uint32_t width, uint32_t height, const char* filename);
         private:
             static std::vector<uint32_t> AvailableIndexes;
 

@@ -6,6 +6,9 @@
 #include "../EngineClasses/Lt_Console.h"
 #include "Bootstrapper.h"
 #include "../Editor/Viewport.h"
+#include "../Editor/EditorViewport.h"
+#include "../../engine/Iridium.h"
+#include "../Editor/LayoutLoader.h"
 //this is where the main function comes to meet with the usable code
 namespace lte {
 	
@@ -22,16 +25,19 @@ namespace lte {
 		void Loop();
 		void Resize();
 		uint32_t mainWindowIndex = 0;
+		static uint32_t frameCount;
 		Lt_Vulkan vulkanHandler{};
 		std::vector<std::function<void()>> UiUpdateFuncs;
+
 	private:
 		//Lt_Window ltWindow{ 800, 600 ,"LiteEngine : Agstrum"};
 		FileLoader fileLoader{};
 		Lt_WindowTracker windowMgr{};
 		Lt_Gui guiHandler{};
 		Viewport viewport{};
+		EditorViewport editorViewport{};
 		uint8_t frames = 0;
-
+		LayoutLoader layoutloader{};
 		bool mainResized = false;
 	};
 }

@@ -465,6 +465,70 @@ namespace lte {
 			linecount++;
 		}
 	}
+	void Bootstrapper::SavePrefs(std::string fileName)
+	{
+	}
+	void Bootstrapper::DumpPreferences()
+	{
+		Preferences::Graphics::Width = extract<uint16_t>("[graphics]", "main_window_w", Preferences::Graphics::Width);
+		Preferences::Graphics::Height = extract<uint16_t>("[graphics]", "main_window_h", Preferences::Graphics::Height);
+	}
+	template <typename T>
+	T Bootstrapper::extract(
+		const std::string& category,
+		const std::string& key,
+		T defaultValue) {
+
+		auto catIt = data.find(category);
+		if (catIt == data.end()) return defaultValue;
+
+		auto keyIt = catIt->second.find(key);
+		if (keyIt == catIt->second.end()) return defaultValue;
+
+		const std::string& rawValue = keyIt->second.value;
+
+		try {
+			if constexpr (std::is_same_v<T, int>) {
+				return std::stoi(rawValue);
+			}
+			else if constexpr (std::is_same_v<T, float>) {
+				return std::stof(rawValue);
+			}
+			else if constexpr (std::is_same_v<T, double>) {
+				return std::stod(rawValue);
+			}
+			else if constexpr (std::is_same_v<T, uint8_t>) {
+				return static_cast<uint8_t>(std::stoi(rawValue));
+			}
+			else if constexpr (std::is_same_v<T, uint16_t>) {
+				return static_cast<uint16_t>(std::stoi(rawValue));
+			}
+			else if constexpr (std::is_same_v<T, uint32_t>) {
+				return static_cast<uint32_t>(std::stoi(rawValue));
+			}
+			else if constexpr (std::is_same_v<T, uint64_t>) {
+				return static_cast<uint64_t>(std::stoi(rawValue));
+			}
+			else if constexpr (std::is_same_v<T, bool>) {
+				return (rawValue == "true" || rawValue == "1");
+			}
+			else if constexpr (std::is_same_v<T, std::string>) {
+				return rawValue; // No conversion needed
+			}
+			else {
+				// Fails to compile if you request an unsupported type
+				static_assert(std::is_same_v<T, void>, "Unsupported type requested");
+			}
+		}
+		catch (const std::invalid_argument&) {
+			Con::LogFailure("Parsing of" + rawValue + "failed for" + key, HIGH_SEVERITY, TAG_ENGINE);
+		}
+		catch (const std::out_of_range&) {
+			Con::LogFailure("Value" + rawValue + "out of range for" + key, HIGH_SEVERITY, TAG_ENGINE);
+		}
+
+		return defaultValue;
+	}
 	std::string Bootstrapper::SaveFile()
 	{
 		Con::Log("writing new preferences file to disk...", TAG_ENGINE);

@@ -1,4 +1,7 @@
 #include "ImageDelegate.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#include <thread>
 namespace lte {
 
     std::vector<uint32_t> ImageDelegate::AvailableIndexes = {};
@@ -156,6 +159,149 @@ namespace lte {
         commandBuffer.pipelineBarrier2(dependencyInfo);
     }
 
+    void ImageDelegate::DumpImages(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, VkCommandPool commandPool,
+            VkQueue queue, VkImage image, uint32_t width, uint32_t height, const char* filename)
+    {
+        VkDeviceSize imageSize = width * height * 4;
+
+        // 1. Create a temporary R8G8B8A8_UNORM image to blit into
+        VkImage tempImage;
+        VkDeviceMemory tempImageMemory;
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent = { width, height, 1 };
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM; // Force standard RGBA output
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        vkCreateImage(*device, &imageInfo, nullptr, &tempImage);
+
+        VkMemoryRequirements memReq;
+        vkGetImageMemoryRequirements(*device, tempImage, &memReq);
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memReq.size;
+        allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memReq.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal,physicalDevice);
+        vkAllocateMemory(*device, &allocInfo, nullptr, &tempImageMemory);
+        vkBindImageMemory(*device, tempImage, tempImageMemory, 0);
+
+        // 2. Create host-visible buffer for final CPU read
+        VkBuffer buffer;
+        VkDeviceMemory bufferMemory;
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = imageSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        vkCreateBuffer(*device, &bufferInfo, nullptr, &buffer);
+
+        vkGetBufferMemoryRequirements(*device, buffer, &memReq);
+        allocInfo.allocationSize = memReq.size;
+        allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memReq.memoryTypeBits,vk::MemoryPropertyFlagBits::eHostVisible| vk::MemoryPropertyFlagBits::eHostCoherent,physicalDevice);
+        vkAllocateMemory(*device, &allocInfo, nullptr, &bufferMemory);
+        vkBindBufferMemory(*device, buffer, bufferMemory, 0);
+
+        // 3. Begin single-use command buffer
+        VkCommandBufferAllocateInfo allocCmdInfo{};
+        allocCmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocCmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocCmdInfo.commandPool = commandPool;
+        allocCmdInfo.commandBufferCount = 1;
+        VkCommandBuffer cmd;
+        vkAllocateCommandBuffers(*device, &allocCmdInfo, &cmd);
+
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(cmd, &beginInfo);
+
+        // 4. Transition layouts for Blit
+        auto transitionLayout = [&](VkImage img, VkImageLayout oldLayout, VkImageLayout newLayout,
+            VkAccessFlags srcAcc, VkAccessFlags dstAcc,
+            VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage) {
+                VkImageMemoryBarrier barrier{};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.oldLayout = oldLayout;
+                barrier.newLayout = newLayout;
+                barrier.image = img;
+                barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+                barrier.srcAccessMask = srcAcc;
+                barrier.dstAccessMask = dstAcc;
+                vkCmdPipelineBarrier(cmd, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            };
+
+        // Transition User Image -> TRANSFER_SRC
+        transitionLayout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+        // Transition Temp Image -> TRANSFER_DST
+        transitionLayout(tempImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            0, VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+        // 5. Blit (This automatically converts the format!)
+        VkImageBlit blit{};
+        blit.srcOffsets[1] = { (int32_t)width, (int32_t)height, 1 };
+        blit.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+        blit.dstOffsets[1] = { (int32_t)width, (int32_t)height, 1 };
+        blit.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+        vkCmdBlitImage(cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            tempImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
+
+        // 6. Transition Temp Image -> TRANSFER_SRC
+        transitionLayout(tempImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+        // 7. Copy Temp Image to Host Buffer
+        VkBufferImageCopy copyRegion{};
+        copyRegion.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+        copyRegion.imageExtent = { width, height, 1 };
+        vkCmdCopyImageToBuffer(cmd, tempImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &copyRegion);
+
+        // 8. Put User Image back to SHADER_READ_ONLY
+        transitionLayout(image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+
+        // 9. Execute and Wait
+        vkEndCommandBuffer(cmd);
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmd;
+        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(queue); // Wait for the GPU to finish the blit (usually < 1ms)
+
+        // 10. Copy data to CPU memory FAST
+        void* data;
+        vkMapMemory(*device, bufferMemory, 0, imageSize, 0, &data);
+
+        // Copy the raw VRAM data into a standard vector
+        std::vector<uint8_t> pixelData((uint8_t*)data, (uint8_t*)data + imageSize);
+
+        vkUnmapMemory(*device, bufferMemory);
+
+        // 11. Cleanup Vulkan resources IMMEDIATELY on the main thread (thread-safe)
+        vkFreeCommandBuffers(*device, commandPool, 1, &cmd);
+        vkDestroyBuffer(*device, buffer, nullptr);
+        vkFreeMemory(*device, bufferMemory, nullptr);
+        vkDestroyImage(*device, tempImage, nullptr);
+        vkFreeMemory(*device, tempImageMemory, nullptr);
+
+        // 12. Spin up a detached background thread to do the heavy PNG compression
+        std::string safeFilename = filename;
+        std::thread([pixels = std::move(pixelData), width, height, safeFilename]() {
+
+            // This will take 100ms+, but the main application will keep running smoothly!
+            stbi_write_png(safeFilename.c_str(), width, height, 4, pixels.data(), width * 4);
+
+            }).detach();
+    }
     void ImageDelegate::createDepthResources(LtSwapChain* swapChain,LtImage& DepthRes,vk::raii::Device& device ,vk::raii::PhysicalDevice& physicalDevice,vk::SampleCountFlagBits msaaSamples) 
     {
         vk::Format depthFormat = PipelineDelegate::findDepthFormat(physicalDevice);
@@ -220,6 +366,10 @@ namespace lte {
         }
         commandBuffer->pipelineBarrier(sourceStage, destinationStage, {}, {}, nullptr, barrier);
         CommandBuffers::endSingleTimeCommands(*commandBuffer,info.queue);
+    }
+    void ImageDelegate::Terminate() 
+    {
+        ImagePool.clear();
     }
 
     void ImageDelegate::generateMipmaps(LtImage& ltImage,vk::Format imageFormat, vk::raii::PhysicalDevice& physicalDevice,singleTimeCommandInfo info) 

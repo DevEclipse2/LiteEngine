@@ -38,6 +38,7 @@ namespace lte
 
 			std::vector<vk::PresentModeKHR> availablePresentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
 			vk::PresentModeKHR              presentMode = SwapchainHandler::chooseSwapPresentMode(availablePresentModes);
+			
 
 
 			if (!(surfaceCapabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eSampled)) {

@@ -1,4 +1,5 @@
 #include "PipelineDelegate.h"
+#include "../EngineClasses/Lt_Console.h"
 namespace lte {
 
 	void PipelineDelegate::createPipelineFast (LtPipeline* pipeline , std::string shaderFilepath, std::string vertShadername , std::string fragShadername , vk::raii::Device& device , vk::raii::PhysicalDevice& physicalDevice, vk::SurfaceFormatKHR* surfaceformat,vk::raii::DescriptorSetLayout& layout) 
@@ -42,7 +43,7 @@ namespace lte {
 		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
 			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
 		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e16,
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1,
 			multisampling.sampleShadingEnable = vk::False;
 		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
 			depthStencil.depthTestEnable = vk::True,
@@ -67,12 +68,12 @@ namespace lte {
 
 		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 		vk::PipelineDynamicStateCreateInfo dynamicState{};
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
 			dynamicState.pDynamicStates = dynamicStates.data();
 
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.setLayoutCount = 1,
+			pipelineLayoutInfo.setLayoutCount = 1,
 			pipelineLayoutInfo.pSetLayouts = &*layout,
 			pipelineLayoutInfo.pushConstantRangeCount = 0;
 
@@ -86,12 +87,25 @@ namespace lte {
 	{
 		std::ifstream file(filepath, std::ios::ate | std::ios::binary);
 
+
 		if (!file.is_open()) {
 			throw std::runtime_error("failed to open file!");
 		}
+
+		if (file.tellg() == -1) {
+			throw std::runtime_error("cant read file");
+		}
 		std::vector<char> buffer(file.tellg());
+		
 		file.seekg(0, std::ios::beg);
 		file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+		uint32_t* Validator = reinterpret_cast<uint32_t*>(buffer.data());
+
+		if (*Validator != 0x07230203) {
+			
+			Con::LogError("file is not valid SPRIV shader! check file path again", FATAL_SEVERITY,TAG_ENGINE|TAG_VULKAN);
+			throw std::runtime_error("File is not a valid compiled SPIR-V shader! Did you pass a source file?");
+		}
 		file.close();
 		if (output != nullptr) {
 			*output = buffer;

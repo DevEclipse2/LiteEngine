@@ -1,7 +1,7 @@
 #include "Lt_Gui.h"
 
 
-
+#include "../EngineClasses/Lt_Vulkan.h"
 
 
 //known issues
@@ -28,6 +28,8 @@ void CheckVKResult(VkResult err) {
 namespace lte {
 	void Lt_Gui::Instantiate()
 	{
+	
+		//Imgui_ImplVulkan();
 		/*createDescriptorPool();
 		createResources();*/
 	}
@@ -69,10 +71,13 @@ namespace lte {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+		io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+		io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 		io.DisplaySize.x = (float)creationInfo.width;
 		io.DisplaySize.y = (float)creationInfo.height;
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		io.ConfigViewportsNoDecoration = false;
+		io.IniFilename = "autosave/current_session.ini";
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -122,13 +127,42 @@ namespace lte {
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = pipelineCreateInfo;
 		init_info.PipelineInfoMain.RenderPass = NULL;
 		init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits samplebits = VK_SAMPLE_COUNT_1_BIT;
+		
+		/*switch (Lt_Vulkan::devices[0].sampling) {
+		case vk::SampleCountFlagBits::e1:
+			samplebits = VK_SAMPLE_COUNT_1_BIT;
+			break;
+		case vk::SampleCountFlagBits::e2:
+			samplebits = VK_SAMPLE_COUNT_2_BIT;
+			break;
+		case vk::SampleCountFlagBits::e4:
+			samplebits = VK_SAMPLE_COUNT_4_BIT;
+			break;
+		case vk::SampleCountFlagBits::e8:
+			samplebits = VK_SAMPLE_COUNT_8_BIT;
+			break;
+		case vk::SampleCountFlagBits::e16:
+			samplebits = VK_SAMPLE_COUNT_16_BIT;
+			break;
+		case vk::SampleCountFlagBits::e32:
+			samplebits = VK_SAMPLE_COUNT_32_BIT;
+			break;
+		case vk::SampleCountFlagBits::e64:
+			samplebits = VK_SAMPLE_COUNT_64_BIT;
+			break;
+		}*/
+
+
+
+		init_info.PipelineInfoMain.MSAASamples = samplebits;
 		init_info.Queue = **(creationInfo.queue);
 		init_info.PipelineCache = *creationInfo.cache;
 		init_info.MinImageCount = creationInfo.minImgCount; //stuff
 		init_info.UseDynamicRendering = true;
 		init_info.ImageCount = creationInfo.minImgCount;
 		init_info.Allocator = NULL;
+		init_info.MinAllocationSize = 1024*1024;
 		
 		init_info.CheckVkResultFn = &CheckVKResult;// for debugging
 
@@ -138,7 +172,7 @@ namespace lte {
 		init_info.PipelineInfoForViewports.PipelineRenderingCreateInfo = pipelineCreateInfo;
 		init_info.PipelineInfoForViewports.RenderPass = NULL;
 		init_info.PipelineInfoForViewports.Subpass = 0;
-		init_info.PipelineInfoForViewports.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.PipelineInfoForViewports.MSAASamples = samplebits;
 
 		// 3. RenderPass must be null!
 		ImGui_ImplVulkan_Init(&init_info);
@@ -190,8 +224,6 @@ namespace lte {
 
 		recordCommandBuffer(drawData, frameIndex);
 
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
 
 		return false;
 	}
@@ -482,17 +514,14 @@ namespace lte {
 		vk::RenderingAttachmentInfo attachmentInfo = {};
 			attachmentInfo.sType = vk::StructureType::eRenderingAttachmentInfo;
 			attachmentInfo.pNext = NULL;
-			attachmentInfo.imageView = *ImageDelegate::ImagePool[*creationInfo.colorImageViewIndex]->imageView,
+			attachmentInfo.imageView = creationInfo.pImageViews->at(drawindex),
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			attachmentInfo.resolveImageView = creationInfo.pImageViews->at(drawindex),
-			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eNone,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eLoad,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
-		//attachmentInfo.clearValue = clearColor;
+	//attachmentInfo.clearValue = clearColor;
 	// Note: In a real implementation, you would set imageView, imageLayout,
 	// loadOp, storeOp, and clearValue based on your swapchain image
-
 		vk::RenderingInfo renderingInfo{};
 		renderingInfo.renderArea = vk::Rect2D{ {0, 0}, {static_cast<uint32_t>(data->DisplaySize.x),
 													   static_cast<uint32_t>(data->DisplaySize.y)} };

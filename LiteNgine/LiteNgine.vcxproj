@@ -44,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -51,6 +52,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -124,7 +126,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
@@ -150,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
@@ -193,7 +195,6 @@
     <ClCompile Include="core\vulkan\Reworked\ImageDelegate.cpp" />
     <ClCompile Include="core\vulkan\Reworked\DeviceHandler.cpp" />
     <ClCompile Include="core\vulkan\Reworked\SwapchainHandler.cpp" />
-    <ClCompile Include="core\vulkan\Reworked\LtMesh.cpp" />
     <ClCompile Include="core\vulkan\Reworked\FileLoader.cpp" />
     <ClCompile Include="core\vulkan\InterfaceLayers\Lt_ILayer.cpp" />
     <ClCompile Include="core\vulkan\Reworked\LtSync.cpp" />
@@ -209,10 +210,17 @@
     <ClCompile Include="dep\imGuiNodes\imgui_canvas.cpp" />
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor.cpp" />
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp" />
+    <ClCompile Include="core\vulkan\Editor\EditorViewport.cpp" />
+    <ClCompile Include="core\engine\Iridium.cpp" />
+    <ClCompile Include="core\Game\Slate.cpp" />
+    <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp" />
+    <ClCompile Include="core\engine\Lt_PipelineNodes.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
+    <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\vulkan\EngineClasses\Preferences.h" />
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
     <ClInclude Include="core\vulkan\Reworked\CommandBuffers.h" />
     <ClInclude Include="core\vulkan\Reworked\Buffers.h" />
@@ -254,8 +262,15 @@
     <ClInclude Include="dep\imGuiNodes\imgui_extra_math.h" />
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor.h" />
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h" />
+    <ClInclude Include="core\vulkan\Editor\EditorViewport.h" />
+    <ClInclude Include="core\engine\Iridium.h" />
+    <ClInclude Include="core\Game\Slate.h" />
+    <ClInclude Include="core\vulkan\Editor\LayoutLoader.h" />
+    <ClInclude Include="core\engine\Lt_PipelineNodes.h" />
+    <ClInclude Include="core\vulkan\Editor\LtUiWindow.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
+    <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">
@@ -272,6 +287,8 @@
     <Text Include="core\documentas\bootprefs.txt" />
     <Text Include="core\documentas\class guide.txt" />
     <Text Include="core\documentas\engine formatting.txt" />
+    <Text Include="core\documentas\iridium.txt" />
+    <Text Include="core\documentas\todo.txt" />
     <Text Include="core\engine\Log.txt" />
     <Text Include="core\documentas\codeGraph.txt" />
     <Text Include="core\documentas\fileSys.txt" />

@@ -70,6 +70,24 @@ namespace lte {
 
 		info.queue->waitIdle();
 	}
+	void Buffers::copyBufferIndexed(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size, singleTimeCommandInfo info,vk::DeviceSize srcOffset,vk::DeviceSize dstOffset)
+	{
+		vk::CommandBufferAllocateInfo allocInfo{};
+			allocInfo.commandPool = *info.CommandPool,
+			allocInfo.level = vk::CommandBufferLevel::ePrimary,
+			allocInfo.commandBufferCount = 1;
+		vk::raii::CommandBuffer commandCopyBuffer = std::move(info.device->allocateCommandBuffers(allocInfo).front());
+		vk::CommandBufferBeginInfo cmdbuffer{};
+		cmdbuffer.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+		commandCopyBuffer.begin(cmdbuffer);
+		commandCopyBuffer.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(srcOffset, dstOffset, size));
+		commandCopyBuffer.end();
+		vk::SubmitInfo Submitinfo{};
+		Submitinfo.commandBufferCount = 1,
+			Submitinfo.pCommandBuffers = &*commandCopyBuffer;
+		info.queue->submit(Submitinfo, nullptr);
+		info.queue->waitIdle();
+	}
 	void Buffers::createUniformBuffers(std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device& device, vk::raii::PhysicalDevice& physDevice)
 	{
 

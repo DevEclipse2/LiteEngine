@@ -4,6 +4,7 @@
 #else 
 #define noDbg true;
 #endif
+#include <chrono>
 namespace lte {
 	vk::raii::Instance Lt_Vulkan::instance = nullptr;
 	const std::vector<char const*> Lt_Vulkan::validationLayers = {
@@ -30,10 +31,24 @@ namespace lte {
 	}
 	void Lt_Vulkan::Init(std::string name)
 	{
-		createInstance(name, true);
+		bool usevalidation = true;
+		std::vector<char const*> requiredLayers;
+		if (usevalidation) {
+			requiredLayers.assign(validationLayers.begin(), validationLayers.end());
+		}
+		auto layerProperties = context.enumerateInstanceLayerProperties();
+		if (std::ranges::any_of(requiredLayers, [&layerProperties](auto const& requiredLayer) {
+			return std::ranges::none_of(layerProperties,
+				[requiredLayer](auto const& layerProperty)
+				{ return strcmp(layerProperty.layerName, requiredLayer) == 0; });
+			}))
+		{
+			usevalidation = false;
+		}
+		createInstance(name, usevalidation);
 		//vulkan only needs 1 instance. Ever. Period.
 		//Period? you need a pad?
-		if (true) {
+		if (usevalidation) {
 			DebugMessenger::setupMessenger(instance);
 
 			vk::DebugUtilsMessengerCallbackDataEXT callbackData{};
@@ -101,12 +116,22 @@ namespace lte {
 			throw std::runtime_error("Required extension not supported: " + std::string(*unsupportedPropertyIt));
 		}
 
+		/*std::vector<vk::ValidationFeatureEnableEXT> enables = {
+	vk::ValidationFeatureEnableEXT::eGpuAssisted,
+	vk::ValidationFeatureEnableEXT::eGpuAssistedReserveBindingSlot
+		};
+
+		vk::ValidationFeaturesEXT features = {};
+		features.enabledValidationFeatureCount = static_cast<uint32_t>(enables.size());
+		features.pEnabledValidationFeatures = enables.data();*/
+
 		vk::InstanceCreateInfo createInfo{};
 		createInfo.pApplicationInfo = &appInfo;
 		createInfo.enabledLayerCount = static_cast<uint32_t>(requiredLayers.size());
 		createInfo.ppEnabledLayerNames = requiredLayers.data(),
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
 		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
+		//createInfo.pNext = &features;
 		instance = vk::raii::Instance(context, createInfo);
 	}
 	std::vector<const char*> Lt_Vulkan::getRequiredInstanceExtensions(bool enableValidationLayers)
@@ -169,9 +194,9 @@ namespace lte {
 		ImageDelegate::createSwapchainImageViews(&swapchain, &Lt_Vulkan::devices[deviceID].logicalDevice);
 		LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice,msaaSamples);
-		swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
+		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice,vk::SampleCountFlagBits::e1);
+		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice,vk::SampleCountFlagBits::e1);
+		//swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
 		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout,device);
 	}
@@ -179,6 +204,7 @@ namespace lte {
 
 		Lt_Vulkan::devices[deviceID].logicalDevice.waitIdle();
 		SwapchainHandler::cleanupSwapChain(&swapchain);
+
 		//physical device is unlikely to change tbh
 		//deviceHandler.pickPhysicalDevice(instance, PhysicalDevice, msaaSamples);
 		//this frees the commandbuffers
@@ -200,11 +226,10 @@ namespace lte {
 		ImageDelegate::requestImageDestruction(swapchain.depthImage);
 		LtImage colImg{};
 		LtImage depImg{};
-		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice, msaaSamples);
-		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice, msaaSamples);
+		ImageDelegate::createColorResources(&swapchain, colImg, device, PhysicalDevice, vk::SampleCountFlagBits::e1);
+		ImageDelegate::createDepthResources(&swapchain, depImg, device, PhysicalDevice, vk::SampleCountFlagBits::e1);
 		swapchain.colorImage = ImageDelegate::requestImageCreation(colImg);
 		swapchain.depthImage = ImageDelegate::requestImageCreation(depImg);
-
 		/*deviceHandler.createDescriptorPool(&pool, &primary.device, maxObjects, framesInFlight);
 		deviceHandler.createDescriptorSets(pipeline.descSetLayout, pool, sampler, MeshInfo, framesInFlight, primary.device, renderSets);*/
 
@@ -219,15 +244,15 @@ namespace lte {
 	}
 	void Lt_WindowVK::newFrame(uint8_t frameIndex)
 	{
+
 		auto fenceResult = Lt_Vulkan::devices[0].logicalDevice.waitForFences(*syncSet.inFlightFences[frameIndex], vk::True, UINT64_MAX);
 		if (fenceResult != vk::Result::eSuccess)
 		{
 			throw std::runtime_error("failed to wait for fence!");
 		}
-
 		//here
 		auto [result, imageIndex] = swapchain.swapChain.acquireNextImage(UINT64_MAX, *syncSet.presentCompleteSemaphores[frameIndex], nullptr);
-
+		
 		//availableIndex = imageIndex;
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
@@ -245,10 +270,9 @@ namespace lte {
 	{
 		Commands.clear();
 	}
-	void Lt_WindowVK::submitBuffers(uint8_t frameIndex)
+	void Lt_WindowVK::submitBuffers(uint8_t frameIndex, vk::raii::Semaphore& additionalSemaphore)
 	{
-		
-		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+		vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eFragmentShader);
 		std::vector<vk::CommandBuffer> commands = {};
 		commands.reserve(Commands.size());
 		//for safety pursposes :shrug:
@@ -263,10 +287,12 @@ namespace lte {
 		//	The Vulkan spec states : Each element of the pCommandBuffers member of each element of pSubmits must be in the pending or executable state(https ://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pCommandBuffers-00070)
 		//		Objects : 1
 		//		[0] VkCommandBuffer 0x24b461d1cc8
+		vk::Semaphore waitSemaphore[] = { *syncSet.presentCompleteSemaphores[frameIndex] , additionalSemaphore};
+
 		const vk::SubmitInfo submitInfo{
-										1,
+										2,
 										//here
-										&*syncSet.presentCompleteSemaphores[frameIndex],
+										waitSemaphore,
 										&waitDestinationStageMask,
 										static_cast<uint32_t>(std::size(commands)),
 										&*commands.data(),
@@ -311,7 +337,7 @@ namespace lte {
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,        // dstStage
 			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);
 		// Transition the multisampled color image to COLOR_ATTACHMENT_OPTIMAL
-		ImageDelegate::transition_image_layout(
+		/*ImageDelegate::transition_image_layout(
 			*ImageDelegate::ImagePool[swapchain.colorImage]->image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eColorAttachmentOptimal,
@@ -319,7 +345,7 @@ namespace lte {
 			vk::AccessFlagBits2::eColorAttachmentWrite,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 			vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);
+			vk::ImageAspectFlagBits::eColor, cmdBuffer[frame]);*/
 		// Transition the depth image to DEPTH_ATTACHMENT_OPTIMAL
 
 		ImageDelegate::transition_image_layout(
@@ -336,11 +362,9 @@ namespace lte {
 		vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
 		vk::RenderingAttachmentInfo attachmentInfo = {};
-			attachmentInfo.imageView = *ImageDelegate::ImagePool[swapchain.colorImage]->imageView,
+			attachmentInfo.imageView = *swapchain.imageViews[frame],
 			attachmentInfo.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eAverage,
-			attachmentInfo.resolveImageView = *swapchain.imageViews[frame],
-			attachmentInfo.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			attachmentInfo.resolveMode = vk::ResolveModeFlagBits::eNone,
 			attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear,
 			attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore,
 			attachmentInfo.clearValue = clearColor;

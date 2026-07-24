@@ -1,4 +1,5 @@
 #include "Lt_Importer.h"
+#include "rendering/RenderData.h"
 #define Load_Success 0
 #define Load_Fail_Generic 1
 #define Load_Fail_UnsupportedFile	2
@@ -23,9 +24,262 @@ namespace lte
 		{
 			std::string errstr = importer.GetErrorString();
 			Con::LogFailure(errstr + "Assimp loading of model failed from internal engine class Lt_Importer", HIGH_SEVERITY,TAG_ENGINE);
-			return 1;
+			return Load_Fail_Generic;
 		}
+		ParseScene(importedScene);
 		return 0;
 
+	}
+	
+
+	uint8_t Lt_Importer::ParseMesh(aiMesh* mesh, Lt_MeshData& data)
+	{
+		data.vertexBuffer.reserve(mesh->mNumVertices);
+
+		data.VertexCount = mesh->mNumVertices;
+		data.IndexCount = mesh->mNumFaces * 3;
+		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+			Vertex v;
+
+			v.pos = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+			if (mesh->HasNormals()) {
+				v.normal.x = mesh->mNormals[i].x;
+				v.normal.y = mesh->mNormals[i].y;
+				v.normal.z = mesh->mNormals[i].z;
+			}
+			if (mesh->mTextureCoords[0]) {
+
+				//up to 8 uv channels , use uv 0
+				v.texCoord.x = mesh->mTextureCoords[0][i].x;
+				v.texCoord.y = mesh->mTextureCoords[0][i].y;
+			}
+			else
+			{
+				v.texCoord = { 0.0f, 0.0f };
+			}
+			data.vertexBuffer.push_back(v);
+		}
+		for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+			aiFace face = mesh->mFaces[i];
+			for (unsigned int j = 0; j < face.mNumIndices; j++) {
+				data.indexBuffer.push_back(face.mIndices[j]);
+			}
+		}
+		return 0;
+	}
+
+	uint8_t Lt_Importer::ParseSkinnedMesh(aiMesh* mesh, Lt_SkinnedMeshData& skinnedmeshData, Model& model)
+	{
+
+		Lt_MeshData baseData;		
+		ParseMesh(mesh, baseData);
+		skinnedmeshData.indexBuffer = std::move(baseData.indexBuffer); // borrow (steal) the indices
+		skinnedmeshData.VertexCount = mesh->mNumVertices;
+		skinnedmeshData.IndexCount = mesh->mNumFaces * 3;
+		skinnedmeshData.skinnedVertexBuffer.reserve(baseData.vertexBuffer.size());
+		skinnedmeshData.WeightedVertexBuffer.resize(baseData.vertexBuffer.size());
+		//big resize reduces memory operations 
+
+		for (const Vertex& v : baseData.vertexBuffer) {
+			skinnedmeshData.skinnedVertexBuffer.push_back(v);
+		}
+
+		//bone shi
+
+
+		for (unsigned int i = 0; i < mesh->mNumBones; i++)
+		{
+			aiBone* bone = mesh->mBones[i];
+			std::string boneName = bone->mName.C_Str();
+			uint8_t boneID;
+
+			if (model.BoneIndexes.find(boneName) == model.BoneIndexes.end())
+			{
+				boneID = static_cast<uint8_t>(model.bones.size());
+				model.BoneIndexes[boneName] = boneID;
+				Bone newBone;
+				model.bones.push_back(newBone);
+			}
+			else {
+				boneID = model.BoneIndexes[boneName];
+			}
+
+			// 3. Apply weights to the vertices
+			for (unsigned int w = 0; w < bone->mNumWeights; w++)
+			{
+				int vertexId = bone->mWeights[w].mVertexId;
+				float weight = bone->mWeights[w].mWeight;
+
+				std::pair<float, uint8_t> weightBonePair = std::pair<float,uint8_t>(weight,boneID);
+				skinnedmeshData.WeightedVertexBuffer[vertexId].SubmitWeight(weightBonePair);
+			}
+		}
+
+		for (int i = 0; i < skinnedmeshData.skinnedVertexBuffer.size(); i++)
+		{
+			skinnedmeshData.WeightedVertexBuffer[i].ResolveWeights(skinnedmeshData.skinnedVertexBuffer[i]);
+		}
+		skinnedmeshData.WeightedVertexBuffer.clear();
+		skinnedmeshData.WeightedVertexBuffer.shrink_to_fit();
+		return 0;
+	}
+
+	void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene, Model& model, glm::mat4 parentTransform)
+	{
+		glm::mat4 nodeTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
+		glm::mat4 accumulatedTransform = parentTransform * nodeTransform;
+
+		for (unsigned int i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+			if (mesh->HasBones()) {
+				Lt_SkinnedMeshData data;
+				model.skinnedTransforms.emplace_back(accumulatedTransform);
+				ParseSkinnedMesh(mesh, data,model);
+				model.skinnedSubMeshes.push_back(data);
+				model.skinnedVertexCount += data.VertexCount;
+				model.skinnedIndexCount += data.IndexCount;
+			}
+			else
+			{
+				model.transforms.emplace_back(accumulatedTransform);
+				Lt_MeshData data;
+				ParseMesh(mesh, data);
+				model.subMeshes.push_back(data);
+				model.IndexCount	+= data.IndexCount;
+				model.VertexCount	+= data.IndexCount;
+
+			}
+		}
+
+		for (unsigned int i = 0; i < node->mNumChildren; i++)
+		{
+			ParseNode(node->mChildren[i], scene,model,nodeTransform);
+		}
+	}
+
+	uint8_t Lt_Importer::ParseScene(const aiScene* pScene)
+	{
+		printf("*******************************************************\n");
+		printf("Parsing %d meshes\n\n", pScene->mNumMeshes);
+
+		aiNode* rootNode = pScene->mRootNode;
+
+		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
+		//ParseNode(rootNode, pScene);
+
+		for (unsigned int i = 0; i < rootNode->mNumChildren; i++)
+		{
+			aiNode* topLevelNode = rootNode->mChildren[i];
+
+
+			Model newObject;
+			LtMeshInfo meshInfo;
+			newObject.name = topLevelNode->mName.C_Str();
+			glm::mat4 localTransform = ConvertAssimpMatrixToGLM(topLevelNode->mTransformation);
+			newObject.transform = rootTransform * localTransform;
+
+			ParseNode(topLevelNode, pScene, newObject,rootTransform);
+
+			loadedModels.push_back(newObject);
+		}
+
+		//Vertex* newVertexes = new Vertex[totalVertices];
+		//VertexArray = newVertexes;
+		//uint32_t* newIndices = new uint32_t[totalIndices];
+		//IndicesArray = newIndices;
+
+		//uint32_t Vindexes = 0;
+		//uint32_t Iindexes = 0;
+		//for (uint32_t i = 0; i < vertexBuf.size(); i++)
+		//{
+		//	if (vertexBuf[i].size() == 0) continue;
+		//	//starts at 0, length 12
+		//	//renders from zero to 11
+		//	//next one starts rendering from 12
+		//	RenderSet rs{ Vindexes,static_cast<uint32_t>(vertexBuf[i].size()),Iindexes,static_cast<uint32_t>(indexBuf[i].size()),imageIndexes[i] };
+		//	renderSets.emplace_back(rs);
+		//	//so we was reading garbage this whole time
+		//	memcpy(VertexArray + Vindexes, vertexBuf[i].data(), sizeof(Vertex) * vertexBuf[i].size());
+		//	memcpy(IndicesArray + Iindexes, indexBuf[i].data(), sizeof(uint32_t) * indexBuf[i].size());
+		//	Vindexes += static_cast<uint32_t>(vertexBuf[i].size());
+		//	Iindexes += static_cast<uint32_t>(indexBuf[i].size());
+		//}
+
+		//printf("\nTotal vertices %d total indices %d total bones %d\n", totalVertices, totalIndices, totalBones);
+		return 0;
+	}
+	uint8_t Lt_Importer::GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice)
+	{
+
+		//this feeds the static vertex buffers first
+
+		//td::vector<std::tuple<void*, uint32_t, AllocationPosition*>> allocPos
+		{
+			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> VertexAllocators{};
+			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> IndiceAllocators{};
+			std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
+			for (const auto& mesh : loadedModels)
+			{
+				if (mesh.subMeshes.size() == 0)continue;
+				for (const auto& submesh : mesh.subMeshes)
+				{
+					AllocationPositions.emplace_back(AllocationPosition{});
+					VertexAllocators.emplace_back(std::tuple(submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+					IndiceAllocators.emplace_back(std::tuple(submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+				}
+			}
+			RenderData::copyBufferContentsBulk(RenderData::BufferType::VertexBuffer, VertexAllocators, info, physicalDevice);
+			RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, IndiceAllocators, info, physicalDevice);
+			std::vector<RenderSet> StaticRenderSet;
+			for (const auto& item : AllocationPositions)
+			{
+
+				//need image index
+				uint8_t overSizedFlags = 0;
+				if (item.first.IsXL) overSizedFlags |= 1;
+				if (item.second.IsXL) overSizedFlags|= 2;
+				StaticRenderSet.emplace_back(RenderSet{item.first.startindex,item.first.size,item.second.startindex,item.second.size,,item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
+			}
+			renderSets.insert(renderSets.end(), StaticRenderSet.begin(), StaticRenderSet.end());
+		}
+		//feeds the skinned vertex buffers
+		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedVertexAllocators{};
+		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedIndiceAllocators{};
+		std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
+		for (const auto& mesh : loadedModels)
+		{
+			if (mesh.skinnedSubMeshes.size() == 0)continue;
+			for (const auto& submesh : mesh.skinnedSubMeshes)
+			{
+				AllocationPositions.emplace_back(AllocationPosition{});
+				skinnedVertexAllocators.emplace_back(std::tuple(submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+				skinnedIndiceAllocators.emplace_back(std::tuple(submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+			}
+		}
+		RenderData::copyBufferContentsBulk(RenderData::BufferType::SkinnedVertexBuffer, skinnedVertexAllocators, info, physicalDevice);
+		RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, skinnedIndiceAllocators, info, physicalDevice);
+		std::vector<RenderSet> skinnedRenderSet;
+		uint32_t Index;
+		for (const auto& item : AllocationPositions)
+		{
+			uint8_t overSizedFlags = 0;
+			if (item.first.IsXL) overSizedFlags |= 1;
+			if (item.second.IsXL) overSizedFlags |= 2;
+			StaticRenderSet.emplace_back(RenderSet{ item.first.startindex,item.first.size,item.second.startindex,item.second.size,,item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags });
+		}
+		renderSets.insert(renderSets.end(), skinnedRenderSet.begin(), skinnedRenderSet.end());
+
+		//extract all from allocation positions 
+		//somehow create rendersets
+		return 0;
+	}
+	uint8_t Lt_Importer::RemoveModels()
+	{
+		//just this for now
+		loadedModels.clear();
+		loadedModels.shrink_to_fit();
+		return 0;
 	}
 }
