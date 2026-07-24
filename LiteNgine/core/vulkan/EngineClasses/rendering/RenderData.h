@@ -7,6 +7,7 @@ namespace lte {
 		uint32_t startindex;
 		uint32_t size;
 		uint16_t bufferId;
+		bool IsXL = false;
 	};
 
 	class RenderData
@@ -70,12 +71,10 @@ namespace lte {
 		};
 		static void createBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device,BufferType type);
 		static copyResult copyBufferContents(BufferType type, void* rawData,uint32_t elementCount,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, AllocationPosition& allocPos);
-		static copyResult createXLBuffer(BufferType type, void* rawData, uint32_t elementCount, AllocationPosition& allocPos,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset); //for those truly whale sized models
+		static copyResult createXLBuffer(BufferType type, void* rawData, uint32_t elementCount, AllocationPosition& allocPos,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice); //for those truly whale sized models
 		static copyResult copyBufferContentsBulk(BufferType type,std::vector<std::tuple<void*,uint32_t,AllocationPosition*>> allocPos, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
 		static void DefragmentBuffer(uint16_t BufferId,uint32_t* savings);//defragmentation
-		static void MarkFreedVertexes(AllocationPosition& renderset);
-		inline static std::vector<RenderSet> renderSets;
-
+		static void MarkFreed(AllocationPosition& renderset);
 		inline static std::vector<LtMeshInfo> MeshInformation;
 		void FillBuffer()
 		{

@@ -2,6 +2,7 @@
 #include <cmath>
 #include "../InterfaceLayers/Lt_ILayer.h"
 #include "../EngineClasses/Lt_Importer.h"
+#include "../EngineClasses/rendering/RenderData.h"
 #include <numbers>
 namespace lte {
 	uint8_t deviceID = 0;
@@ -28,18 +29,20 @@ namespace lte {
 
 
 		Lt_Importer::Load("models/skeletalTest.fbx", 0);
-		FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, physDev,info);
-		renderSets = FileLoader::renderSets;
-
+		/*FileLoader::TemporaryFileLoad(Lt_Vulkan::devices[0].logicalDevice, physDev,info);
+		*/
+		Lt_Importer::GenerateRenderSets(info, deviceSet.physicalDevice);
+		renderSets = Lt_Importer::renderSets;
+		Lt_Importer::RemoveModels();
 		Con::Log("create sampler", TAG_ENGINE);
 
 		DeviceHandler::createTextureSampler(&sampler, physDev, Lt_Vulkan::devices[0].logicalDevice);
-		Con::Log("create vtx buffer", TAG_ENGINE);
-
+		
+		/*Con::Log("create vtx buffer", TAG_ENGINE);
 		Buffers::createVertexBuffer(FileLoader::VertexesSize, FileLoader::VertexArray, &vertexBuffer, &vertexBufferMemory, info, physDev);
 		Con::Log("create idx buffer", TAG_ENGINE);
 
-		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);
+		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);*/
 		//fix this later
 
 		meshes.push_back(LtMeshInfo{});

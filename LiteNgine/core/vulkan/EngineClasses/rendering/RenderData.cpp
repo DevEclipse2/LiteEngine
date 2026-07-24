@@ -194,7 +194,7 @@ namespace lte {
 		allocPos.startindex = 0;
 		return RenderData::copyResult::Sucess;
 	}
-	RenderData::copyResult RenderData::createXLBuffer(BufferType type, void* rawData, uint32_t elementCount, AllocationPosition& allocPos, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, RenderSet& renderset)
+	RenderData::copyResult RenderData::createXLBuffer(BufferType type, void* rawData, uint32_t elementCount, AllocationPosition& allocPos, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice)
 	{
 		uint32_t DataSize = -1;
 		vk::BufferUsageFlagBits fb;
@@ -216,14 +216,9 @@ namespace lte {
 			DataSize = sizeof(uint32_t);
 			break;
 		case RenderData::BufferType::XLVertexBuffer:
-			Con::LogError("XLVertexBuffer is a special buffer type assigned by the engine, not to be called through this function!", MED_SEVERITY, TAG_ENGINE);
-			return copyResult::FailureGeneric;
 		case RenderData::BufferType::XLSkinnedVertexBuffer:
-			Con::LogError("XLSkinnedVertexBuffer is a special buffer type assigned by the engine, not to be called through this function!", MED_SEVERITY, TAG_ENGINE);
-			return copyResult::FailureGeneric;
-
 		case RenderData::BufferType::XLIndexBuffer:
-			Con::LogError("XLIndexBuffer is a special buffer type assigned by the engine, not to be called through this function!", MED_SEVERITY, TAG_ENGINE);
+			Con::LogError("XL Buffers are already garanteed for a function called \" createXLBuffer \" DONT DO THIS ", MED_SEVERITY, TAG_ENGINE);
 			return copyResult::FailureGeneric;
 		}
 		vk::BufferCreateInfo stagingInfo{};
@@ -247,8 +242,21 @@ namespace lte {
 
 		Buffer NewBuffer;
 		Buffers::createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferDst | fb, vk::MemoryPropertyFlagBits::eDeviceLocal, NewBuffer.buffer, NewBuffer.Allocation, *info.device, physicalDevice);
-		NewBuffer.type = type;
-
+		switch (type)
+		{
+		case RenderData::BufferType::GenericBuffer:
+			Con::LogError("GenericBuffer is an invalid buffer type used to designate incorrectly formed buffers and is not a catch all,do not create a buffer with type genericBuffer!", HIGH_SEVERITY, TAG_ENGINE);
+			return;
+		case RenderData::BufferType::VertexBuffer:
+			NewBuffer.type = XLVertexBuffer;
+			break;
+		case RenderData::BufferType::SkinnedVertexBuffer:
+			NewBuffer.type = XLSkinnedVertexBuffer;
+			break;
+		case RenderData::BufferType::IndiceBuffer:
+			NewBuffer.type = XLIndexBuffer;
+			break;
+		}
 		Buffers.emplace_back(std::make_unique<Buffer>(NewBuffer));
 		allocPos.bufferId = Buffers.size() - 1;
 		Buffers::copyBufferIndexed(stagingBuffer, Buffers[Buffers.size() - 1]->buffer, ByteSize, info, 0, 0);
@@ -289,18 +297,40 @@ namespace lte {
 		}
 
 		vk::DeviceSize totalByteSize = 0;
+		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> normalBatches;
 		for (const auto& tuple : allocPos)
 		{
+			void* rawData = std::get<0>(tuple);
 			uint32_t elementCount = std::get<1>(tuple);
+			AllocationPosition* pos = std::get<2>(tuple);
+
 			if (elementCount > MaxCapacity)
 			{
-				return RenderData::copyResult::FailureExceedBufferSize;
+				// Model is a whale. Offload it immediately to the XL allocator.
+				pos->IsXL = true;
+
+				// Call your XL buffer function (without the RenderSet argument!)
+				copyResult res = createXLBuffer(type, rawData, elementCount, *pos, info, physicalDevice);
+
+				if (res != copyResult::Sucess) {
+					Con::LogError("Failed to create XL Buffer for massive model!", HIGH_SEVERITY, TAG_ENGINE);
+					return res;
+				}
+				// XL buffers do not contribute to the bulk staging buffer size.
 			}
-			totalByteSize += elementCount * DataSize;
+			else
+			{
+				// Model is normal. Queue it for the bulk batch.
+				pos->IsXL = false;
+				normalBatches.push_back(tuple);
+				totalByteSize += elementCount * DataSize;
+			}
+		}
+		if (totalByteSize == 0 || normalBatches.empty()) {
+			return RenderData::copyResult::Sucess;
 		}
 
-		if (totalByteSize == 0) return RenderData::copyResult::Sucess;
-
+		// 3. Allocate ONE giant staging buffer for the normal batch
 		vk::raii::Buffer stagingBuffer(nullptr);
 		vk::raii::DeviceMemory stagingBufferMemory(nullptr);
 		Buffers::createBuffer(
@@ -313,15 +343,14 @@ namespace lte {
 			physicalDevice
 		);
 
-		// Map memory exactly once
 		uint8_t* mappedData = static_cast<uint8_t*>(stagingBufferMemory.mapMemory(0, totalByteSize));
 		vk::DeviceSize currentStagingByteOffset = 0;
 
-		// Structure to group Vulkan copy commands by Destination Buffer ID
 		std::unordered_map<int, std::vector<vk::BufferCopy>> copyBatches;
 
-		//Process each item, allocate space, pack into buffer
-		for (auto& tuple : allocPos)
+		// 4. Process each NORMAL item
+		// (Note: we iterate over normalBatches now, not the original allocPos)
+		for (auto& tuple : normalBatches)
 		{
 			void* rawData = std::get<0>(tuple);
 			uint32_t elementCount = std::get<1>(tuple);
@@ -331,11 +360,9 @@ namespace lte {
 			int targetBufferId = -1;
 			uint32_t targetElementIndex = 0;
 
-			// Search existing buffers (Newest to Oldest)
 			for (int i = Buffers.size() - 1; i >= 0; i--)
 			{
 				auto& currentBuffer = *Buffers[i];
-
 				if (currentBuffer.type != type) continue;
 
 				if (currentBuffer.FreeSpace.empty())
@@ -396,25 +423,24 @@ namespace lte {
 						break;
 					}
 				}
+
 			}
-			// If no space was found in any existing buffer, allocate a new one
+
 			if (targetBufferId == -1)
 			{
 				createBuffer(info, physicalDevice, type);
 				targetBufferId = Buffers.size() - 1;
 				targetElementIndex = 0;
-				Buffers[targetBufferId]->offset += elementCount; // Advance offset for future alloc
+				Buffers[targetBufferId]->offset += elementCount;
 			}
 
-			// Update out-parameter AllocationPosition
+			// Update AllocationPosition for the normal model
 			pos->size = elementCount;
 			pos->bufferId = targetBufferId;
 			pos->startindex = targetElementIndex;
 
-			// Copy raw data into the giant mapped staging buffer
 			memcpy(mappedData + currentStagingByteOffset, rawData, byteSize);
 
-			// Record the Vulkan copy region
 			vk::BufferCopy copyRegion;
 			copyRegion.srcOffset = currentStagingByteOffset;
 			copyRegion.dstOffset = targetElementIndex * DataSize;
@@ -427,8 +453,6 @@ namespace lte {
 
 		stagingBufferMemory.unmapMemory();
 
-		//moves that to main buffers
-
 		vk::CommandBufferAllocateInfo allocInfo{};
 		allocInfo.commandPool = *info.CommandPool;
 		allocInfo.level = vk::CommandBufferLevel::ePrimary;
@@ -440,10 +464,8 @@ namespace lte {
 		cmdbufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 		commandBulkCopyBuffer.begin(cmdbufferBeginInfo);
 
-		// Iterate through our grouped batches and record them
 		for (const auto& [destId, regions] : copyBatches)
 		{
-			//does this in a single call!
 			commandBulkCopyBuffer.copyBuffer(*stagingBuffer, *Buffers[destId]->buffer, regions);
 		}
 
@@ -453,16 +475,20 @@ namespace lte {
 		Submitinfo.commandBufferCount = 1;
 		Submitinfo.pCommandBuffers = &*commandBulkCopyBuffer;
 
-		// Submit to the queue and wait for the entire batch to finish copying
 		info.queue->submit(Submitinfo, nullptr);
 		info.queue->waitIdle();
+
 		return RenderData::copyResult::Sucess;
 	}
-	void RenderData::MarkFreedVertexes(AllocationPosition& renderset)
+	void RenderData::MarkFreed(AllocationPosition& renderset)
 	{
 		if (renderset.bufferId >= Buffers.size())
 		{
 			Con::LogError("Buffer with id" + std::to_string(renderset.bufferId) + " does not exist!", HIGH_SEVERITY, TAG_ENGINE);
+		}
+		if (renderset.IsXL)
+		{
+			//Destroy this buffer
 		}
 		Buffers[renderset.bufferId]->FreeSpace.emplace_back(std::pair<uint32_t, uint32_t>(renderset.size, renderset.startindex));
 	}

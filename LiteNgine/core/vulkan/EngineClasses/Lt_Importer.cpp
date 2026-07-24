@@ -1,4 +1,5 @@
 #include "Lt_Importer.h"
+#include "rendering/RenderData.h"
 #define Load_Success 0
 #define Load_Fail_Generic 1
 #define Load_Fail_UnsupportedFile	2
@@ -207,6 +208,78 @@ namespace lte
 		//}
 
 		//printf("\nTotal vertices %d total indices %d total bones %d\n", totalVertices, totalIndices, totalBones);
+		return 0;
+	}
+	uint8_t Lt_Importer::GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice)
+	{
+
+		//this feeds the static vertex buffers first
+
+		//td::vector<std::tuple<void*, uint32_t, AllocationPosition*>> allocPos
+		{
+			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> VertexAllocators{};
+			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> IndiceAllocators{};
+			std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
+			for (const auto& mesh : loadedModels)
+			{
+				if (mesh.subMeshes.size() == 0)continue;
+				for (const auto& submesh : mesh.subMeshes)
+				{
+					AllocationPositions.emplace_back(AllocationPosition{});
+					VertexAllocators.emplace_back(std::tuple(submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+					IndiceAllocators.emplace_back(std::tuple(submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+				}
+			}
+			RenderData::copyBufferContentsBulk(RenderData::BufferType::VertexBuffer, VertexAllocators, info, physicalDevice);
+			RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, IndiceAllocators, info, physicalDevice);
+			std::vector<RenderSet> StaticRenderSet;
+			for (const auto& item : AllocationPositions)
+			{
+
+				//need image index
+				uint8_t overSizedFlags = 0;
+				if (item.first.IsXL) overSizedFlags |= 1;
+				if (item.second.IsXL) overSizedFlags|= 2;
+				StaticRenderSet.emplace_back(RenderSet{item.first.startindex,item.first.size,item.second.startindex,item.second.size,,item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
+			}
+			renderSets.insert(renderSets.end(), StaticRenderSet.begin(), StaticRenderSet.end());
+		}
+		//feeds the skinned vertex buffers
+		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedVertexAllocators{};
+		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedIndiceAllocators{};
+		std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
+		for (const auto& mesh : loadedModels)
+		{
+			if (mesh.skinnedSubMeshes.size() == 0)continue;
+			for (const auto& submesh : mesh.skinnedSubMeshes)
+			{
+				AllocationPositions.emplace_back(AllocationPosition{});
+				skinnedVertexAllocators.emplace_back(std::tuple(submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+				skinnedIndiceAllocators.emplace_back(std::tuple(submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+			}
+		}
+		RenderData::copyBufferContentsBulk(RenderData::BufferType::SkinnedVertexBuffer, skinnedVertexAllocators, info, physicalDevice);
+		RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, skinnedIndiceAllocators, info, physicalDevice);
+		std::vector<RenderSet> skinnedRenderSet;
+		uint32_t Index;
+		for (const auto& item : AllocationPositions)
+		{
+			uint8_t overSizedFlags = 0;
+			if (item.first.IsXL) overSizedFlags |= 1;
+			if (item.second.IsXL) overSizedFlags |= 2;
+			StaticRenderSet.emplace_back(RenderSet{ item.first.startindex,item.first.size,item.second.startindex,item.second.size,,item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags });
+		}
+		renderSets.insert(renderSets.end(), skinnedRenderSet.begin(), skinnedRenderSet.end());
+
+		//extract all from allocation positions 
+		//somehow create rendersets
+		return 0;
+	}
+	uint8_t Lt_Importer::RemoveModels()
+	{
+		//just this for now
+		loadedModels.clear();
+		loadedModels.shrink_to_fit();
 		return 0;
 	}
 }

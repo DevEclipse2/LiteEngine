@@ -178,10 +178,11 @@ namespace lte {
 		uint32_t imageIndex = 0;//might need more but its fine for now
 		//uint8_t BufferID; //max is 256 because who the fuck has more vram than 
 		//nvm its 16_t because 32 gb isnt really that much
-		uint16_t bufferId = 0;
+		uint16_t vertexBufferId = 0;
+		uint16_t indiceBufferId = 0;
 		MeshType type = MeshType::Static;
-		bool IsXL;
-		RenderSet(uint32_t vSI,uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI) : vertexArrayStartIndex{vSI} , vertexArraySize{vAS} , IndiceArrayStartIndex{iSI}, IndiceArraySize{iAS}, imageIndex{iI}
+		uint8_t IsXL;//1 is vertex oversized, 2 is indice oversized
+		RenderSet(uint32_t vSI, uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI, uint16_t vBID, uint16_t iBID, MeshType type, uint8_t IsXL) : vertexArrayStartIndex{ vSI }, vertexArraySize{ vAS }, IndiceArrayStartIndex{ iSI }, IndiceArraySize{ iAS }, imageIndex{ iI }, vertexBufferId{vBID},indiceBufferId{iBID},type{type},IsXL{IsXL}
 		{}
 	};
 	

@@ -47,7 +47,7 @@ namespace lte {
 			uint32_t IndexCount;
 			uint32_t skinnedVertexCount;
 			uint32_t skinnedIndexCount;
-			const char* name;
+			std::string name;
 		};
 		
 	public:
@@ -70,14 +70,13 @@ namespace lte {
 		//uint8_t Unpack();
 		static uint8_t ParseScene(const aiScene* pScene);
 
+		static uint8_t GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
+		static uint8_t RemoveModels();
+		inline static std::vector<RenderSet> renderSets;
 	private:
 		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
 		inline static std::vector<Model> loadedModels;
 		inline static Model m_currentStaticModel;
-
-		inline static std::vector<uint32_t> VertexSizes;
-		inline static std::vector<uint32_t> IndiceSizes;
-		inline static std::vector<RenderSet> renderSets;
 		inline static uint32_t totalVertices;
 		inline static uint32_t totalIndices;
 	};
