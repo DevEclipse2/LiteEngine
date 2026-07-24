@@ -1,5 +1,8 @@
 #include "Lt_Importer.h"
 #include "rendering/RenderData.h"
+#include <stb_image.h>
+#include "../Reworked/Buffers.h"
+#include "Lt_Vulkan.h"
 #define Load_Success 0
 #define Load_Fail_Generic 1
 #define Load_Fail_UnsupportedFile	2
@@ -26,12 +29,10 @@ namespace lte
 			Con::LogFailure(errstr + "Assimp loading of model failed from internal engine class Lt_Importer", HIGH_SEVERITY,TAG_ENGINE);
 			return Load_Fail_Generic;
 		}
-		ParseScene(importedScene);
+		ParseScene(importedScene,"textures/");
 		return 0;
 
 	}
-	
-
 	uint8_t Lt_Importer::ParseMesh(aiMesh* mesh, Lt_MeshData& data)
 	{
 		data.vertexBuffer.reserve(mesh->mNumVertices);
@@ -137,6 +138,7 @@ namespace lte
 				Lt_SkinnedMeshData data;
 				model.skinnedTransforms.emplace_back(accumulatedTransform);
 				ParseSkinnedMesh(mesh, data,model);
+				data.materialIndex = mesh->mMaterialIndex;
 				model.skinnedSubMeshes.push_back(data);
 				model.skinnedVertexCount += data.VertexCount;
 				model.skinnedIndexCount += data.IndexCount;
@@ -146,10 +148,10 @@ namespace lte
 				model.transforms.emplace_back(accumulatedTransform);
 				Lt_MeshData data;
 				ParseMesh(mesh, data);
+				data.materialIndex = mesh->mMaterialIndex;
 				model.subMeshes.push_back(data);
 				model.IndexCount	+= data.IndexCount;
 				model.VertexCount	+= data.IndexCount;
-
 			}
 		}
 
@@ -159,13 +161,107 @@ namespace lte
 		}
 	}
 
-	uint8_t Lt_Importer::ParseScene(const aiScene* pScene)
+	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
 	{
 		printf("*******************************************************\n");
 		printf("Parsing %d meshes\n\n", pScene->mNumMeshes);
 
-		aiNode* rootNode = pScene->mRootNode;
+		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
+		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
+		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue };
 
+		for (unsigned int i = 0; i < pScene->mNumMaterials; i++)
+		{
+			aiMaterial* aiMat = pScene->mMaterials[i];
+			Lt_Material newMaterial;
+
+			if (aiMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+			{
+				aiString str;
+				aiMat->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+				std::string texPath = str.C_Str();
+				if (loadedTextureMap.find(texPath) != loadedTextureMap.end())
+				{
+					newMaterial.diffuseTextureIndex = loadedTextureMap[texPath];
+				}
+				else
+				{
+
+					std::string fullPath = directory + "/" + texPath;
+			
+					int width, height, channels = 0;
+					uint32_t mipLevels = 0;
+
+					const aiTexture* embeddedTexture = pScene->GetEmbeddedTexture(texPath.c_str());
+					uint8_t* pixels;
+					if (embeddedTexture)
+					{
+						if (embeddedTexture->mHeight == 0)
+						{
+							pixels = stbi_load_from_memory(
+								reinterpret_cast<const stbi_uc*>(embeddedTexture->pcData),
+								embeddedTexture->mWidth,
+								&width,
+								&height,
+								&channels,
+								STBI_rgb_alpha
+							);
+						}
+						else
+						{
+							//data is uncompresed
+							//rare
+							size_t imageByteSize = embeddedTexture->mWidth * embeddedTexture->mHeight * 4;
+							width = embeddedTexture->mWidth;
+							height = embeddedTexture->mHeight;
+							channels = 4;
+
+							pixels = (uint8_t*)malloc(imageByteSize);
+							memcpy(pixels, embeddedTexture->pcData, imageByteSize);
+						}
+					}
+					else
+					{
+						std::string fullPath = directory + "/" + texPath;
+						pixels = stbi_load(fullPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+					}
+					vk::DeviceSize imageSize = width * height * 4;
+					mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+					if (!pixels) {
+						throw std::runtime_error("failed to load texture image!");
+					}
+					vk::raii::Buffer stagingBuffer = nullptr;
+					vk::raii::DeviceMemory stagingBufferMemory = nullptr;
+					Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, device, PhysicalDevice);
+
+					void* data = stagingBufferMemory.mapMemory(0, imageSize);
+					memcpy(data, pixels, imageSize);
+					stagingBufferMemory.unmapMemory();
+
+					stbi_image_free(pixels);
+					LtImage tmpImg{};
+
+					ImageDelegate::createImage(tmpImg, width, height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, device, PhysicalDevice);
+					ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, 1, device);
+					ImageDelegate::createSampler(tmpImg, device);
+
+
+
+					ImageDelegate::transitionImageLayout(tmpImg.image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, tmpImg.mipLevels, cmdInfo);
+					Buffers::copyBufferToImage(stagingBuffer, tmpImg.image, tmpImg.width, tmpImg.height, cmdInfo);
+					//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
+					ImageDelegate::generateMipmaps(tmpImg, vk::Format::eR8G8B8A8Srgb, PhysicalDevice, cmdInfo);
+
+					ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, tmpImg.mipLevels, device);
+					uint32_t imgIndex = ImageDelegate::requestImageCreation(tmpImg);
+					newMaterial.diffuseTextureIndex = imgIndex;
+				}
+			}
+			sceneMaterials.push_back(newMaterial);
+		}
+
+		aiNode* rootNode = pScene->mRootNode;
+	
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
 		//ParseNode(rootNode, pScene);
 
@@ -184,35 +280,10 @@ namespace lte
 
 			loadedModels.push_back(newObject);
 		}
-
-		//Vertex* newVertexes = new Vertex[totalVertices];
-		//VertexArray = newVertexes;
-		//uint32_t* newIndices = new uint32_t[totalIndices];
-		//IndicesArray = newIndices;
-
-		//uint32_t Vindexes = 0;
-		//uint32_t Iindexes = 0;
-		//for (uint32_t i = 0; i < vertexBuf.size(); i++)
-		//{
-		//	if (vertexBuf[i].size() == 0) continue;
-		//	//starts at 0, length 12
-		//	//renders from zero to 11
-		//	//next one starts rendering from 12
-		//	RenderSet rs{ Vindexes,static_cast<uint32_t>(vertexBuf[i].size()),Iindexes,static_cast<uint32_t>(indexBuf[i].size()),imageIndexes[i] };
-		//	renderSets.emplace_back(rs);
-		//	//so we was reading garbage this whole time
-		//	memcpy(VertexArray + Vindexes, vertexBuf[i].data(), sizeof(Vertex) * vertexBuf[i].size());
-		//	memcpy(IndicesArray + Iindexes, indexBuf[i].data(), sizeof(uint32_t) * indexBuf[i].size());
-		//	Vindexes += static_cast<uint32_t>(vertexBuf[i].size());
-		//	Iindexes += static_cast<uint32_t>(indexBuf[i].size());
-		//}
-
-		//printf("\nTotal vertices %d total indices %d total bones %d\n", totalVertices, totalIndices, totalBones);
 		return 0;
 	}
 	uint8_t Lt_Importer::GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice)
 	{
-
 		//this feeds the static vertex buffers first
 
 		//td::vector<std::tuple<void*, uint32_t, AllocationPosition*>> allocPos
@@ -220,19 +291,22 @@ namespace lte
 			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> VertexAllocators{};
 			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> IndiceAllocators{};
 			std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
+			std::vector<uint32_t> meshMaterials;
 			for (const auto& mesh : loadedModels)
 			{
 				if (mesh.subMeshes.size() == 0)continue;
 				for (const auto& submesh : mesh.subMeshes)
 				{
-					AllocationPositions.emplace_back(AllocationPosition{});
-					VertexAllocators.emplace_back(std::tuple(submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
-					IndiceAllocators.emplace_back(std::tuple(submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+					AllocationPositions.emplace_back(std::pair (AllocationPosition{}, AllocationPosition{}));
+					VertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+					IndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+					meshMaterials.emplace_back(submesh.materialIndex);
 				}
 			}
 			RenderData::copyBufferContentsBulk(RenderData::BufferType::VertexBuffer, VertexAllocators, info, physicalDevice);
 			RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, IndiceAllocators, info, physicalDevice);
 			std::vector<RenderSet> StaticRenderSet;
+			uint32_t iter = 0;
 			for (const auto& item : AllocationPositions)
 			{
 
@@ -240,7 +314,8 @@ namespace lte
 				uint8_t overSizedFlags = 0;
 				if (item.first.IsXL) overSizedFlags |= 1;
 				if (item.second.IsXL) overSizedFlags|= 2;
-				StaticRenderSet.emplace_back(RenderSet{item.first.startindex,item.first.size,item.second.startindex,item.second.size,,item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
+				StaticRenderSet.emplace_back(RenderSet{item.first.startindex,item.first.size,item.second.startindex,item.second.size,meshMaterials[iter],item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
+				iter++;
 			}
 			renderSets.insert(renderSets.end(), StaticRenderSet.begin(), StaticRenderSet.end());
 		}
@@ -248,26 +323,29 @@ namespace lte
 		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedVertexAllocators{};
 		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedIndiceAllocators{};
 		std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
+		std::vector<uint32_t> meshMaterials;
 		for (const auto& mesh : loadedModels)
 		{
 			if (mesh.skinnedSubMeshes.size() == 0)continue;
 			for (const auto& submesh : mesh.skinnedSubMeshes)
 			{
-				AllocationPositions.emplace_back(AllocationPosition{});
-				skinnedVertexAllocators.emplace_back(std::tuple(submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
-				skinnedIndiceAllocators.emplace_back(std::tuple(submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+				AllocationPositions.emplace_back(std::pair(AllocationPosition{}, AllocationPosition{}));
+				skinnedVertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+				skinnedIndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+				meshMaterials.emplace_back(submesh.materialIndex);
 			}
 		}
 		RenderData::copyBufferContentsBulk(RenderData::BufferType::SkinnedVertexBuffer, skinnedVertexAllocators, info, physicalDevice);
 		RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, skinnedIndiceAllocators, info, physicalDevice);
 		std::vector<RenderSet> skinnedRenderSet;
-		uint32_t Index;
+		uint32_t iter = 0;
 		for (const auto& item : AllocationPositions)
 		{
 			uint8_t overSizedFlags = 0;
 			if (item.first.IsXL) overSizedFlags |= 1;
 			if (item.second.IsXL) overSizedFlags |= 2;
-			StaticRenderSet.emplace_back(RenderSet{ item.first.startindex,item.first.size,item.second.startindex,item.second.size,,item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags });
+			skinnedRenderSet.emplace_back(RenderSet{ item.first.startindex,item.first.size,item.second.startindex,item.second.size,meshMaterials[iter],item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
+			iter++;
 		}
 		renderSets.insert(renderSets.end(), skinnedRenderSet.begin(), skinnedRenderSet.end());
 

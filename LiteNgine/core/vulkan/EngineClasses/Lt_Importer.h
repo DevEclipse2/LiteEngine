@@ -11,13 +11,20 @@
 #include <assimp/postprocess.h>     // Post processing flags
 #include "../Reworked/ltMesh.h"
 #include "../EngineClasses/Lt_Console.h"
-
+#include "../Reworked/CommandBuffers.h"
 //asset importer shennanigans
 namespace lte {
 
 	
 	class Lt_Importer
 	{
+
+		// 2. A struct to represent a material
+		struct Lt_Material {
+			uint32_t diffuseTextureIndex = -1; // in
+			uint32_t normalTextureIndex = -1;
+		};
+
 		struct Lt_MeshData
 		{
 			glm::mat4 transform;
@@ -25,6 +32,7 @@ namespace lte {
 			std::vector<uint32_t> indexBuffer;
 			uint32_t VertexCount;
 			uint32_t IndexCount;
+			uint32_t materialIndex = -1;
 		};
 		struct Lt_SkinnedMeshData
 		{
@@ -33,14 +41,15 @@ namespace lte {
 			std::vector<uint32_t> indexBuffer;
 			uint32_t VertexCount;
 			uint32_t IndexCount;
+			uint32_t materialIndex = -1;
 		};
 
 		struct Model {
 			glm::mat4 transform;
 			std::vector<Lt_MeshData> subMeshes;
 			std::vector<Lt_SkinnedMeshData> skinnedSubMeshes;
-			std::vector<glm::vec4> transforms;
-			std::vector<glm::vec4> skinnedTransforms;
+			std::vector<glm::mat4> transforms;
+			std::vector<glm::mat4> skinnedTransforms;
 			std::unordered_map<std::string, uint8_t> BoneIndexes;
 			std::vector<Bone> bones;
 			uint32_t VertexCount;
@@ -48,6 +57,7 @@ namespace lte {
 			uint32_t skinnedVertexCount;
 			uint32_t skinnedIndexCount;
 			std::string name;
+			std::vector<Lt_Material> materials;
 		};
 		
 	public:
@@ -68,7 +78,7 @@ namespace lte {
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
 		//uint8_t Unpack();
-		static uint8_t ParseScene(const aiScene* pScene);
+		static uint8_t ParseScene(const aiScene* pScene, const std::string& directory);
 
 		static uint8_t GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
 		static uint8_t RemoveModels();
@@ -79,5 +89,7 @@ namespace lte {
 		inline static Model m_currentStaticModel;
 		inline static uint32_t totalVertices;
 		inline static uint32_t totalIndices;
+		inline static std::vector<Lt_Material> sceneMaterials;
+		inline static std::unordered_map<std::string, int> loadedTextureMap;
 	};
 }

@@ -39,7 +39,8 @@ namespace lte {
 		Buffer NewBuffer;
 		Buffers::createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, NewBuffer.buffer, NewBuffer.Allocation, *info.device, device);
 		NewBuffer.type = type;
-		Buffers.emplace_back(std::make_unique<Buffer>(NewBuffer));
+		Buffers[BufferCount] = (std::make_unique<Buffer>(std::move(NewBuffer)));
+		BufferCount++;
 	}
 	RenderData::copyResult RenderData::copyBufferContents(BufferType type, void* rawData, uint32_t elementCount, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, AllocationPosition& allocPos)
 	{
@@ -49,7 +50,7 @@ namespace lte {
 		{
 		case RenderData::BufferType::GenericBuffer:
 			Con::LogError("GenericBuffer is an invalid buffer type used to designate incorrectly formed buffers and is not a catch all,do not create a buffer with type genericBuffer!", HIGH_SEVERITY, TAG_ENGINE);
-			return;
+			return copyResult::FailureGeneric;
 		case RenderData::BufferType::VertexBuffer:
 			DataSize = sizeof(Vertex);
 			TypeBufferMaxSize = Preferences::Optimiser::VertexBufferSize;
@@ -202,7 +203,7 @@ namespace lte {
 		{
 		case RenderData::BufferType::GenericBuffer:
 			Con::LogError("GenericBuffer is an invalid buffer type used to designate incorrectly formed buffers and is not a catch all,do not create a buffer with type genericBuffer!", HIGH_SEVERITY, TAG_ENGINE);
-			return;
+			return copyResult::FailureGeneric;
 		case RenderData::BufferType::VertexBuffer:
 			fb = vk::BufferUsageFlagBits::eVertexBuffer;
 			DataSize = sizeof(Vertex);
@@ -246,7 +247,7 @@ namespace lte {
 		{
 		case RenderData::BufferType::GenericBuffer:
 			Con::LogError("GenericBuffer is an invalid buffer type used to designate incorrectly formed buffers and is not a catch all,do not create a buffer with type genericBuffer!", HIGH_SEVERITY, TAG_ENGINE);
-			return;
+			return copyResult::FailureGeneric;
 		case RenderData::BufferType::VertexBuffer:
 			NewBuffer.type = XLVertexBuffer;
 			break;
@@ -257,7 +258,8 @@ namespace lte {
 			NewBuffer.type = XLIndexBuffer;
 			break;
 		}
-		Buffers.emplace_back(std::make_unique<Buffer>(NewBuffer));
+		Buffers[BufferCount] = (std::make_unique<Buffer>(std::move(NewBuffer)));
+		BufferCount++;
 		allocPos.bufferId = Buffers.size() - 1;
 		Buffers::copyBufferIndexed(stagingBuffer, Buffers[Buffers.size() - 1]->buffer, ByteSize, info, 0, 0);
 		allocPos.startindex = 0;
@@ -489,6 +491,8 @@ namespace lte {
 		if (renderset.IsXL)
 		{
 			//Destroy this buffer
+			Buffers.erase(renderset.bufferId);
+			return;
 		}
 		Buffers[renderset.bufferId]->FreeSpace.emplace_back(std::pair<uint32_t, uint32_t>(renderset.size, renderset.startindex));
 	}

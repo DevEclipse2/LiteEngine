@@ -81,11 +81,11 @@
     <OutDir>..\build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;C:\git\LiteEngine\LiteNgine\dep;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;C:\git\LiteEngine\LiteNgine\dep;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -215,6 +215,7 @@
     <ClCompile Include="core\Game\Slate.cpp" />
     <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp" />
     <ClCompile Include="core\engine\Lt_PipelineNodes.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\rendering\RenderData.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
@@ -268,6 +269,8 @@
     <ClInclude Include="core\vulkan\Editor\LayoutLoader.h" />
     <ClInclude Include="core\engine\Lt_PipelineNodes.h" />
     <ClInclude Include="core\vulkan\Editor\LtUiWindow.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\rendering\RenderData.h" />
+    <ClInclude Include="dep\vk_mem_alloc.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />

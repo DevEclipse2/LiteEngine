@@ -34,8 +34,8 @@ namespace lte {
 		Lt_Importer::GenerateRenderSets(info, deviceSet.physicalDevice);
 		renderSets = Lt_Importer::renderSets;
 		Lt_Importer::RemoveModels();
-		Con::Log("create sampler", TAG_ENGINE);
 
+		Con::Log("create sampler", TAG_ENGINE);
 		DeviceHandler::createTextureSampler(&sampler, physDev, Lt_Vulkan::devices[0].logicalDevice);
 		
 		/*Con::Log("create vtx buffer", TAG_ENGINE);

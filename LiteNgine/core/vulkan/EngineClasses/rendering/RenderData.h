@@ -58,22 +58,19 @@ namespace lte {
 
 
 		//render sets
-		inline static std::vector<std::unique_ptr<Buffer>> Buffers;
+		inline static std::unordered_map<uint16_t,std::unique_ptr<Buffer>> Buffers;
+		inline static uint16_t BufferCount = 0;
+
 		enum copyResult {
 			Sucess,
 			FailureGeneric,
 			FailureExceedBufferSize
 		};
-		enum freeResult {
-			Sucess,
-			FailureGeneric,
-			FailureIncompatibleType,
-		};
 		static void createBuffer(singleTimeCommandInfo info, vk::raii::PhysicalDevice& device,BufferType type);
 		static copyResult copyBufferContents(BufferType type, void* rawData,uint32_t elementCount,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice, AllocationPosition& allocPos);
 		static copyResult createXLBuffer(BufferType type, void* rawData, uint32_t elementCount, AllocationPosition& allocPos,singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice); //for those truly whale sized models
 		static copyResult copyBufferContentsBulk(BufferType type,std::vector<std::tuple<void*,uint32_t,AllocationPosition*>> allocPos, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
-		static void DefragmentBuffer(uint16_t BufferId,uint32_t* savings);//defragmentation
+		//static void DefragmentBuffer(uint16_t BufferId,uint32_t* savings);//defragmentation
 		static void MarkFreed(AllocationPosition& renderset);
 		inline static std::vector<LtMeshInfo> MeshInformation;
 		void FillBuffer()
