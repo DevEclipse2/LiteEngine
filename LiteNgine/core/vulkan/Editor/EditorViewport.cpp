@@ -45,6 +45,13 @@ namespace lte {
 		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);*/
 		//fix this later
 
+		for (auto& model : Lt_Importer::strippedModels)
+		{
+			
+			meshes.emplace_back
+		}
+
+		
 		meshes.push_back(LtMeshInfo{});
 		meshes.push_back(LtMeshInfo{});
 		//MeshInfo.push_back(LtMeshInfo{});
@@ -58,7 +65,14 @@ namespace lte {
 
 		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
 		DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
+
+
+
+
+
+
 		DeviceHandler::createDescriptorSets(pipeline.descSetLayout,descriptorPool,sampler,meshes,framesInFlight,deviceSet.logicalDevice,renderSets);
+
 
 		descriptorSets.resize(framesInFlight);
 		for (int i = 0; i < FramesInFlight; i++) 
@@ -301,6 +315,14 @@ namespace lte {
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.pipeline);
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, size.x, size.y, 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), extent));
+
+
+
+		//remaking this portion
+		//for each renderset,
+
+
+
 
 		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
 		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint32);

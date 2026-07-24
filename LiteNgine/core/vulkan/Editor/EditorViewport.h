@@ -40,11 +40,6 @@ namespace lte {
 		std::vector<LtMeshInfo> meshes;
 		std::vector<RenderSet> renderSets;
 		vk::raii::Sampler sampler = nullptr;
-		vk::raii::Buffer vertexBuffer = nullptr;
-		vk::raii::Buffer indexBuffer = nullptr;
-		vk::raii::DeviceMemory vertexBufferMemory = nullptr;
-		vk::raii::DeviceMemory indexBufferMemory = nullptr;
-
 		void createImages();// depth color and 2 out images
 		void createPipeline();//idk something here
 		void SubmitCommands(vk::raii::CommandBuffer& commandBuffer);//maybe reference simpledraw

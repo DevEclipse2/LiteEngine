@@ -66,62 +66,148 @@ namespace lte
 				data.indexBuffer.push_back(face.mIndices[j]);
 			}
 		}
+		data.vertexBuffer.shrink_to_fit();
+		data.indexBuffer.shrink_to_fit();
 		return 0;
 	}
 
-	uint8_t Lt_Importer::ParseSkinnedMesh(aiMesh* mesh, Lt_SkinnedMeshData& skinnedmeshData, Model& model)
+	uint8_t Lt_Importer::ParseSkinnedMesh(aiMesh* mesh, std::vector<Lt_SkinnedMeshData>& outSubMeshes, Model& model)
 	{
 
 		Lt_MeshData baseData;		
 		ParseMesh(mesh, baseData);
-		skinnedmeshData.indexBuffer = std::move(baseData.indexBuffer); // borrow (steal) the indices
-		skinnedmeshData.VertexCount = mesh->mNumVertices;
-		skinnedmeshData.IndexCount = mesh->mNumFaces * 3;
-		skinnedmeshData.skinnedVertexBuffer.reserve(baseData.vertexBuffer.size());
-		skinnedmeshData.WeightedVertexBuffer.resize(baseData.vertexBuffer.size());
-		//big resize reduces memory operations 
+		std::vector<SkinnedProcessorVertex> processorVertices(baseData.vertexBuffer.size());
+		std::vector<skinnedVertex> globalVertices;
+		globalVertices.reserve(baseData.vertexBuffer.size());
 
 		for (const Vertex& v : baseData.vertexBuffer) {
-			skinnedmeshData.skinnedVertexBuffer.push_back(v);
+			globalVertices.push_back(v); // Converts using your constructor
 		}
-
-		//bone shi
-
 
 		for (unsigned int i = 0; i < mesh->mNumBones; i++)
 		{
 			aiBone* bone = mesh->mBones[i];
 			std::string boneName = bone->mName.C_Str();
-			uint8_t boneID;
+			uint8_t globalBoneID;
 
-			if (model.BoneIndexes.find(boneName) == model.BoneIndexes.end())
-			{
-				boneID = static_cast<uint8_t>(model.bones.size());
-				model.BoneIndexes[boneName] = boneID;
+			if (model.BoneIndexes.find(boneName) == model.BoneIndexes.end()) {
+				globalBoneID = static_cast<uint8_t>(model.bones.size());
+				model.BoneIndexes[boneName] = globalBoneID;
 				Bone newBone;
+				newBone.offsetMatrix = ConvertAssimpMatrixToGLM(bone->mOffsetMatrix);
 				model.bones.push_back(newBone);
 			}
 			else {
-				boneID = model.BoneIndexes[boneName];
+				globalBoneID = model.BoneIndexes[boneName];
 			}
 
-			// 3. Apply weights to the vertices
-			for (unsigned int w = 0; w < bone->mNumWeights; w++)
-			{
+			for (unsigned int w = 0; w < bone->mNumWeights; w++) {
 				int vertexId = bone->mWeights[w].mVertexId;
 				float weight = bone->mWeights[w].mWeight;
-
-				std::pair<float, uint8_t> weightBonePair = std::pair<float,uint8_t>(weight,boneID);
-				skinnedmeshData.WeightedVertexBuffer[vertexId].SubmitWeight(weightBonePair);
+				processorVertices[vertexId].SubmitWeight({ weight, globalBoneID });
 			}
 		}
 
-		for (int i = 0; i < skinnedmeshData.skinnedVertexBuffer.size(); i++)
-		{
-			skinnedmeshData.WeightedVertexBuffer[i].ResolveWeights(skinnedmeshData.skinnedVertexBuffer[i]);
+		// Resolve the weights into the global vertices
+		for (int i = 0; i < globalVertices.size(); i++) {
+			processorVertices[i].ResolveWeights(globalVertices[i]);
 		}
-		skinnedmeshData.WeightedVertexBuffer.clear();
-		skinnedmeshData.WeightedVertexBuffer.shrink_to_fit();
+		processorVertices.clear();
+
+		//mesh partitioner
+
+		const int MAX_BONES_PER_CHUNK = 128;
+
+		// Helper struct for building chunks
+		struct MeshChunk {
+			Lt_SkinnedMeshData data;
+			std::unordered_map<uint8_t, uint8_t> globalToLocalBones;
+			std::unordered_map<uint32_t, uint32_t> oldVertexToNewVertex;
+		};
+
+		std::vector<MeshChunk> chunks;
+		chunks.push_back(MeshChunk()); // Start with one chunk
+		chunks[0].data.skinnedVertexBuffer.reserve(baseData.vertexBuffer.size());
+		chunks[0].data.indexBuffer.reserve(baseData.indexBuffer.size());
+		// Process triangle by triangle to ensure no tearing
+		for (size_t i = 0; i < baseData.indexBuffer.size(); i += 3)
+		{
+			uint32_t idx0 = baseData.indexBuffer[i];
+			uint32_t idx1 = baseData.indexBuffer[i + 1];
+			uint32_t idx2 = baseData.indexBuffer[i + 2];
+
+			skinnedVertex v0 = globalVertices[idx0];
+			skinnedVertex v1 = globalVertices[idx1];
+			skinnedVertex v2 = globalVertices[idx2];
+
+			// Collect unique global bones used by this triangle
+			std::unordered_set<uint8_t> triangleBones;
+			auto extractBones = [&](const skinnedVertex& v) {
+				for (int j = 0; j < 4; j++) {
+					if (v.BoneWeights[j] > 0.0f) triangleBones.insert(v.BoneIDs[j]);
+				}
+				};
+			extractBones(v0); extractBones(v1); extractBones(v2);
+
+			// Check if the current chunk can hold this triangle's bones
+			MeshChunk* currentChunk = &chunks.back();
+			int newBonesNeeded = 0;
+			for (uint8_t gb : triangleBones) {
+				if (currentChunk->globalToLocalBones.find(gb) == currentChunk->globalToLocalBones.end()) {
+					newBonesNeeded++;
+				}
+			}
+
+			// If it exceeds the limit, start a new chunk
+			if (currentChunk->globalToLocalBones.size() + newBonesNeeded > MAX_BONES_PER_CHUNK) {
+				chunks.push_back(MeshChunk());
+				currentChunk = &chunks.back();
+			}
+
+			// Add the triangle's bones to the chunk's palette
+			for (uint8_t gb : triangleBones) {
+				if (currentChunk->globalToLocalBones.find(gb) == currentChunk->globalToLocalBones.end()) {
+					uint8_t localId = static_cast<uint8_t>(currentChunk->data.bonePalette.size());
+					currentChunk->globalToLocalBones[gb] = localId;
+					currentChunk->data.bonePalette.push_back(gb);
+				}
+			}
+
+			// Helper lambda to add a vertex to the chunk, remapping its BoneIDs to Local IDs
+			auto addVertexToChunk = [&](uint32_t oldIdx, skinnedVertex v) -> uint32_t {
+				if (currentChunk->oldVertexToNewVertex.find(oldIdx) == currentChunk->oldVertexToNewVertex.end())
+				{
+					// Remap BoneIDs from Global to Local
+					for (int j = 0; j < 4; j++) {
+						if (v.BoneWeights[j] > 0.0f) {
+							v.BoneIDs[j] = currentChunk->globalToLocalBones[v.BoneIDs[j]];
+						}
+						else {
+							v.BoneIDs[j] = 0;
+						}
+					}
+
+					uint32_t newIdx = currentChunk->data.skinnedVertexBuffer.size();
+					currentChunk->data.skinnedVertexBuffer.push_back(v);
+					currentChunk->oldVertexToNewVertex[oldIdx] = newIdx;
+					return newIdx;
+				}
+				return currentChunk->oldVertexToNewVertex[oldIdx];
+				};
+
+			// Add the remapped vertices and indices to the chunk
+			currentChunk->data.indexBuffer.push_back(addVertexToChunk(idx0, v0));
+			currentChunk->data.indexBuffer.push_back(addVertexToChunk(idx1, v1));
+			currentChunk->data.indexBuffer.push_back(addVertexToChunk(idx2, v2));
+		}
+
+		for (auto& chunk : chunks) {
+			chunk.data.VertexCount = chunk.data.skinnedVertexBuffer.size();
+			chunk.data.IndexCount = chunk.data.indexBuffer.size();
+			chunk.data.materialIndex = mesh->mMaterialIndex;
+			outSubMeshes.push_back(std::move(chunk.data));
+		}
+
 		return 0;
 	}
 
@@ -135,13 +221,17 @@ namespace lte
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
 			if (mesh->HasBones()) {
-				Lt_SkinnedMeshData data;
+				std::vector<Lt_SkinnedMeshData> data;
 				model.skinnedTransforms.emplace_back(accumulatedTransform);
 				ParseSkinnedMesh(mesh, data,model);
-				data.materialIndex = mesh->mMaterialIndex;
-				model.skinnedSubMeshes.push_back(data);
-				model.skinnedVertexCount += data.VertexCount;
-				model.skinnedIndexCount += data.IndexCount;
+				model.skinnedSubMeshes.reserve(data.size());
+				for (auto& submesh : data)
+				{
+					submesh.materialIndex = mesh->mMaterialIndex;
+					model.skinnedSubMeshes.emplace_back(submesh);
+					model.VertexCount += submesh.VertexCount;
+					model.IndexCount += submesh.IndexCount;
+				}
 			}
 			else
 			{
@@ -151,13 +241,44 @@ namespace lte
 				data.materialIndex = mesh->mMaterialIndex;
 				model.subMeshes.push_back(data);
 				model.IndexCount	+= data.IndexCount;
-				model.VertexCount	+= data.IndexCount;
+				model.VertexCount	+= data.VertexCount;
 			}
 		}
 
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
 		{
 			ParseNode(node->mChildren[i], scene,model,nodeTransform);
+		}
+	}
+
+	void Lt_Importer::ParseBoneHeirarchy(const aiNode* node, int parentBoneID, Model& model)
+	{
+		std::string nodeName = node->mName.C_Str();
+		int currentBoneID = parentBoneID;
+
+		// Check if this node is actually a bone we care about
+		if (model.BoneIndexes.find(nodeName) != model.BoneIndexes.end())
+		{
+			currentBoneID = model.BoneIndexes[nodeName];
+			Bone& currentBone = model.bones[currentBoneID];
+
+			// 1. Assign the local space transform (Bind Pose)
+			currentBone.localTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
+
+			// 2. Link to parent
+			currentBone.parentId = parentBoneID;
+
+			// 3. Tell the parent that it has a new child
+			if (parentBoneID != -1)
+			{
+				model.bones[parentBoneID].children.push_back(currentBoneID);
+			}
+		}
+
+		// Recursively walk down the tree
+		for (unsigned int i = 0; i < node->mNumChildren; i++)
+		{
+			ParseBoneHeirarchy(node->mChildren[i], currentBoneID, model);
 		}
 	}
 
@@ -277,7 +398,7 @@ namespace lte
 			newObject.transform = rootTransform * localTransform;
 
 			ParseNode(topLevelNode, pScene, newObject,rootTransform);
-
+			ParseBoneHeirarchy(topLevelNode, -1, newObject);
 			loadedModels.push_back(newObject);
 		}
 		return 0;
@@ -300,7 +421,7 @@ namespace lte
 					AllocationPositions.emplace_back(std::pair (AllocationPosition{}, AllocationPosition{}));
 					VertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 					IndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
-					meshMaterials.emplace_back(submesh.materialIndex);
+					meshMaterials.emplace_back(mesh.materials[submesh.materialIndex]);
 				}
 			}
 			RenderData::copyBufferContentsBulk(RenderData::BufferType::VertexBuffer, VertexAllocators, info, physicalDevice);
@@ -314,7 +435,7 @@ namespace lte
 				uint8_t overSizedFlags = 0;
 				if (item.first.IsXL) overSizedFlags |= 1;
 				if (item.second.IsXL) overSizedFlags|= 2;
-				StaticRenderSet.emplace_back(RenderSet{item.first.startindex,item.first.size,item.second.startindex,item.second.size,meshMaterials[iter],item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
+				StaticRenderSet.emplace_back(RenderSet{item.first.startindex,item.first.size,item.second.startindex,item.second.size,meshMaterials[iter],item.first.bufferId,item.second.bufferId,MeshType::Skinned,overSizedFlags});
 				iter++;
 			}
 			renderSets.insert(renderSets.end(), StaticRenderSet.begin(), StaticRenderSet.end());
@@ -332,7 +453,7 @@ namespace lte
 				AllocationPositions.emplace_back(std::pair(AllocationPosition{}, AllocationPosition{}));
 				skinnedVertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 				skinnedIndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
-				meshMaterials.emplace_back(submesh.materialIndex);
+				meshMaterials.emplace_back(mesh.materials[submesh.materialIndex]);
 			}
 		}
 		RenderData::copyBufferContentsBulk(RenderData::BufferType::SkinnedVertexBuffer, skinnedVertexAllocators, info, physicalDevice);
@@ -355,7 +476,23 @@ namespace lte
 	}
 	uint8_t Lt_Importer::RemoveModels()
 	{
-		//just this for now
+		//strips the models properly
+		uint32_t RendersetOffset;
+		for (auto& model : loadedModels)
+		{
+			StrippedModel newModel;
+			newModel.bones = model.bones;
+			newModel.BoneIndexes = model.BoneIndexes;
+			newModel.name = model.name;
+			newModel.transform = model.transform;
+			newModel.transforms = model.transforms;
+			newModel.staticRenderset = std::vector<RenderSet>(renderSets.begin() + RendersetOffset, renderSets.begin() + RendersetOffset + model.subMeshes.size());
+			renderSetOffset += model.subMeshes.size();
+			newModel.staticRenderset = std::vector<RenderSet>(renderSets.begin() + RendersetOffset, renderSets.begin() + RendersetOffset + model.skinnedSubMeshes.size());
+			renderSetOffset += model.skinnedSubMeshes.size();
+			//since models are loaded linearly,with static rendersets first, you can just load the amount of rendersets = staticmeshes into rendersets.
+		}
+		//remove all loaded models and frees a bunch of memory
 		loadedModels.clear();
 		loadedModels.shrink_to_fit();
 		return 0;

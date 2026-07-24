@@ -44,7 +44,6 @@ namespace lte {
 			XLVertexBuffer, // for special operations 
 			XLSkinnedVertexBuffer,
 			XLIndexBuffer,
-
 		};
 
 		struct Buffer

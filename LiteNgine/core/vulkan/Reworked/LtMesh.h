@@ -64,11 +64,12 @@ namespace lte {
 		static vk::VertexInputBindingDescription getBindingDescription() {
 			return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
 		}
-		static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions() {
+		static std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions() {
 			return {
 				vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos)),
-				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)),
-				vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord))
+				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, normal)),
+				vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)),
+				vk::VertexInputAttributeDescription(3, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord))
 			};
 		}
 		bool operator==(const Vertex& other) const
@@ -89,13 +90,14 @@ namespace lte {
 		{
 			return { 0, sizeof(skinnedVertex), vk::VertexInputRate::eVertex };
 		}
-		static std::array<vk::VertexInputAttributeDescription, 5> getAttributeDescriptions() {
+		static std::array<vk::VertexInputAttributeDescription, 6> getAttributeDescriptions() {
 			return {
 				vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, pos)),
-				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, color)),
-				vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(skinnedVertex, texCoord)),
-				vk::VertexInputAttributeDescription(3, 0, vk::Format::eR8G8B8A8Uint, offsetof(skinnedVertex, BoneIDs)),
-				vk::VertexInputAttributeDescription(4, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(skinnedVertex, BoneWeights)),
+				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, normal)),
+				vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, color)),
+				vk::VertexInputAttributeDescription(3, 0, vk::Format::eR32G32Sfloat, offsetof(skinnedVertex, texCoord)),
+				vk::VertexInputAttributeDescription(4, 0, vk::Format::eR8G8B8A8Uint, offsetof(skinnedVertex, BoneIDs)),
+				vk::VertexInputAttributeDescription(5, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(skinnedVertex, BoneWeights)),
 			};
 		}
 		bool operator==(const skinnedVertex& other)  const
@@ -152,12 +154,16 @@ namespace lte {
 
 	struct Bone
 	{
+		std::string name = "";
+		int parentId = -1;
 		glm::mat4 offsetMatrix;
-		std::vector<uint8_t> children;//points to different boneids
+		glm::mat4 localTransform;
+		std::vector<uint16_t> children;//points to different boneids
 	};
 	
 
 	struct LtSkinnedMeshInfo {
+
 		std::vector<Bone> bones; // id is index number
 		std::unordered_map<uint8_t, LtSkinnedMeshInfo> breakawayChildren;
 		/// <summary>

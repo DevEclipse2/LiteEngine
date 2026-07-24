@@ -15,7 +15,6 @@
 //asset importer shennanigans
 namespace lte {
 
-	
 	class Lt_Importer
 	{
 
@@ -25,9 +24,20 @@ namespace lte {
 			uint32_t normalTextureIndex = -1;
 		};
 
+		struct StrippedModel// model with only relevant transforms and stuff
+		{
+			std::vector<RenderSet> staticRenderset;
+			std::vector<RenderSet> skinnedRenderset;
+			glm::mat4 transform;
+			std::vector<glm::mat4> transforms;
+			std::vector<glm::mat4> skinnedTransforms;
+			std::unordered_map<std::string, uint16_t> BoneIndexes;
+			std::vector<Bone> bones;
+			std::string name;
+		};
+
 		struct Lt_MeshData
 		{
-			glm::mat4 transform;
 			std::vector<Vertex> vertexBuffer;
 			std::vector<uint32_t> indexBuffer;
 			uint32_t VertexCount;
@@ -42,6 +52,7 @@ namespace lte {
 			uint32_t VertexCount;
 			uint32_t IndexCount;
 			uint32_t materialIndex = -1;
+			std::vector<uint16_t> bonePalette;
 		};
 
 		struct Model {
@@ -50,16 +61,14 @@ namespace lte {
 			std::vector<Lt_SkinnedMeshData> skinnedSubMeshes;
 			std::vector<glm::mat4> transforms;
 			std::vector<glm::mat4> skinnedTransforms;
-			std::unordered_map<std::string, uint8_t> BoneIndexes;
+			std::unordered_map<std::string, uint16_t> BoneIndexes;
 			std::vector<Bone> bones;
 			uint32_t VertexCount;
 			uint32_t IndexCount;
-			uint32_t skinnedVertexCount;
-			uint32_t skinnedIndexCount;
 			std::string name;
 			std::vector<Lt_Material> materials;
 		};
-		
+
 	public:
 		static inline glm::mat4 ConvertAssimpMatrixToGLM(const aiMatrix4x4& from) {
 			glm::mat4 to;
@@ -71,9 +80,9 @@ namespace lte {
 			return to;
 		}
 		static uint8_t ParseMesh(aiMesh* mesh,Lt_MeshData& data);
-		static uint8_t ParseSkinnedMesh(aiMesh* mesh,Lt_SkinnedMeshData& data,Model& model );
+		static uint8_t ParseSkinnedMesh(aiMesh* mesh, std::vector<Lt_SkinnedMeshData>& outSubMeshes,Model& model );
 		static void ParseNode(aiNode* node, const aiScene* scene, Model& currentModel, glm::mat4 parentTransform);
-
+		static void ParseBoneHeirarchy(const aiNode* node, int parentBoneID, Model& model);
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
@@ -83,6 +92,7 @@ namespace lte {
 		static uint8_t GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
 		static uint8_t RemoveModels();
 		inline static std::vector<RenderSet> renderSets;
+		inline static std::vector<StrippedModel> strippedModels;
 	private:
 		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
 		inline static std::vector<Model> loadedModels;
@@ -91,5 +101,6 @@ namespace lte {
 		inline static uint32_t totalIndices;
 		inline static std::vector<Lt_Material> sceneMaterials;
 		inline static std::unordered_map<std::string, int> loadedTextureMap;
+		inline static uint32_t renderSetOffset = 0;
 	};
 }
