@@ -221,6 +221,7 @@
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\vulkan\EngineClasses\Lt_Mat.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Preferences.h" />
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
     <ClInclude Include="core\vulkan\Reworked\CommandBuffers.h" />

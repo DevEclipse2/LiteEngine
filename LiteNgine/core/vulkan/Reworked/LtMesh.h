@@ -67,7 +67,7 @@ namespace lte {
 		static std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions() {
 			return {
 				vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos)),
-				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(skinnedVertex, normal)),
+				vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)),
 				vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)),
 				vk::VertexInputAttributeDescription(3, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord))
 			};
@@ -162,16 +162,52 @@ namespace lte {
 	};
 	
 
-	struct LtSkinnedMeshInfo {
+	//struct LtSkinnedMeshInfo {
 
-		std::vector<Bone> bones; // id is index number
-		std::unordered_map<uint8_t, LtSkinnedMeshInfo> breakawayChildren;
-		/// <summary>
-		/// special feature : if the mesh exceeds 128 bones, the engine will split off into sub meshes
-		/// </summary>
-		uint8_t boneCounter;
+	//	// Transform properties
+	//	glm::vec3 position = { 0.0f, 0.0f, 0.0f };
+	//	glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
+	//	glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+	//	std::vector<Bone> bones;
+
+	//	// Uniform buffer for this object (one per frame in flight)
+	//	std::vector<vk::raii::Buffer> uniformBuffers;
+	//	std::vector<vk::raii::DeviceMemory> uniformBuffersMemory;
+	//	std::vector<void*> uniformBuffersMapped;
+
+	//	// Descriptor sets for this object (one per frame in flight)
+	//	std::vector<vk::raii::DescriptorSet> descriptorSets;
+
+	//	// Calculate model matrix based on position, rotation, and scale
+	//	glm::mat4 getModelMatrix() const {
+	//		glm::mat4 model = glm::mat4(1.0f);
+	//		model = glm::translate(model, position);
+	//		model = glm::rotate(model, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	//		model = glm::rotate(model, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	//		model = glm::rotate(model, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+	//		model = glm::scale(model, -scale);
+	//		return model;
+	//	}
+	//};
+
+	struct LtSkinnedMeshInfo 
+	{
+		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+
+		std::vector<glm::mat4> finalBoneMatrices;
+
+		glm::mat4 getModelMatrix() const {
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, position);
+			model = glm::rotate(model, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, -scale);
+			return model;
+		}
 	};
-
 	
 	
 	
@@ -188,8 +224,16 @@ namespace lte {
 		uint16_t indiceBufferId = 0;
 		MeshType type = MeshType::Static;
 		uint8_t IsXL;//1 is vertex oversized, 2 is indice oversized
-		RenderSet(uint32_t vSI, uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI, uint16_t vBID, uint16_t iBID, MeshType type, uint8_t IsXL) : vertexArrayStartIndex{ vSI }, vertexArraySize{ vAS }, IndiceArrayStartIndex{ iSI }, IndiceArraySize{ iAS }, imageIndex{ iI }, vertexBufferId{vBID},indiceBufferId{iBID},type{type},IsXL{IsXL}
-		{}
+		std::vector<uint16_t> bonePalette;
+		
+		RenderSet(uint32_t vSI, uint32_t vAS, uint32_t iSI, uint32_t iAS, uint32_t iI,
+			uint16_t vBID, uint16_t iBID, MeshType type, uint8_t IsXL,
+			std::vector<uint16_t> palette = {})
+			: vertexArrayStartIndex{ vSI }, vertexArraySize{ vAS }, IndiceArrayStartIndex{ iSI },
+			IndiceArraySize{ iAS }, imageIndex{ iI }, vertexBufferId{ vBID },
+			indiceBufferId{ iBID }, type{ type }, IsXL{ IsXL }, bonePalette{ std::move(palette) }
+		{
+		}
 	};
 	
 	class LtMesh

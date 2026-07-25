@@ -3,6 +3,7 @@
 #include <stb_image.h>
 #include "../Reworked/Buffers.h"
 #include "Lt_Vulkan.h"
+#include "../Reworked/FileLoader.h"
 #define Load_Success 0
 #define Load_Fail_Generic 1
 #define Load_Fail_UnsupportedFile	2
@@ -284,12 +285,26 @@ namespace lte
 
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
 	{
+
+		//only ever do this once
+
+
+
+
 		printf("*******************************************************\n");
 		printf("Parsing %d meshes\n\n", pScene->mNumMeshes);
 
 		vk::raii::Device& device = Lt_Vulkan::devices[0].logicalDevice;
 		vk::raii::PhysicalDevice& PhysicalDevice = Lt_Vulkan::devices[0].physicalDevice;
 		singleTimeCommandInfo cmdInfo{ &device,&Lt_Vulkan::commandPool , &Lt_Vulkan::devices[0].queue };
+
+		
+		//load the random file only once
+		LtImage fallbackImage{};
+		FileLoader::createTextureImage("textures/texture.png", fallbackImage,device,PhysicalDevice,cmdInfo);
+		fallBackImageIndex = ImageDelegate::requestImageCreation(fallbackImage);
+
+
 
 		for (unsigned int i = 0; i < pScene->mNumMaterials; i++)
 		{
@@ -413,6 +428,7 @@ namespace lte
 			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> IndiceAllocators{};
 			std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
 			std::vector<uint32_t> meshMaterials;
+			
 			for (const auto& mesh : loadedModels)
 			{
 				if (mesh.subMeshes.size() == 0)continue;
@@ -421,7 +437,14 @@ namespace lte
 					AllocationPositions.emplace_back(std::pair (AllocationPosition{}, AllocationPosition{}));
 					VertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 					IndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
-					meshMaterials.emplace_back(mesh.materials[submesh.materialIndex]);
+					if (mesh.materials.size() == 0)
+					{
+						meshMaterials.emplace_back(fallBackImageIndex);
+					}
+					else
+					{
+						meshMaterials.emplace_back(mesh.materials[submesh.materialIndex].diffuseTextureIndex);
+					}
 				}
 			}
 			RenderData::copyBufferContentsBulk(RenderData::BufferType::VertexBuffer, VertexAllocators, info, physicalDevice);
@@ -441,43 +464,75 @@ namespace lte
 			renderSets.insert(renderSets.end(), StaticRenderSet.begin(), StaticRenderSet.end());
 		}
 		//feeds the skinned vertex buffers
-		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedVertexAllocators{};
-		std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedIndiceAllocators{};
-		std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions; // first is vertex, second is index 
-		std::vector<uint32_t> meshMaterials;
-		for (const auto& mesh : loadedModels)
 		{
-			if (mesh.skinnedSubMeshes.size() == 0)continue;
-			for (const auto& submesh : mesh.skinnedSubMeshes)
-			{
-				AllocationPositions.emplace_back(std::pair(AllocationPosition{}, AllocationPosition{}));
-				skinnedVertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
-				skinnedIndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
-				meshMaterials.emplace_back(mesh.materials[submesh.materialIndex]);
-			}
-		}
-		RenderData::copyBufferContentsBulk(RenderData::BufferType::SkinnedVertexBuffer, skinnedVertexAllocators, info, physicalDevice);
-		RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, skinnedIndiceAllocators, info, physicalDevice);
-		std::vector<RenderSet> skinnedRenderSet;
-		uint32_t iter = 0;
-		for (const auto& item : AllocationPositions)
-		{
-			uint8_t overSizedFlags = 0;
-			if (item.first.IsXL) overSizedFlags |= 1;
-			if (item.second.IsXL) overSizedFlags |= 2;
-			skinnedRenderSet.emplace_back(RenderSet{ item.first.startindex,item.first.size,item.second.startindex,item.second.size,meshMaterials[iter],item.first.bufferId,item.second.bufferId,MeshType::Static,overSizedFlags});
-			iter++;
-		}
-		renderSets.insert(renderSets.end(), skinnedRenderSet.begin(), skinnedRenderSet.end());
+			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedVertexAllocators{};
+			std::vector<std::tuple<void*, uint32_t, AllocationPosition*>> skinnedIndiceAllocators{};
+			std::list<std::pair<AllocationPosition, AllocationPosition>> AllocationPositions;
+			std::vector<uint32_t> meshMaterials;
 
-		//extract all from allocation positions 
-		//somehow create rendersets
+			// NEW: We need to store the palettes so we can give them to the RenderSets later
+			std::vector<std::vector<uint16_t>> meshBonePalettes;
+
+			for (const auto& mesh : loadedModels)
+			{
+				if (mesh.skinnedSubMeshes.size() == 0) continue;
+				for (const auto& submesh : mesh.skinnedSubMeshes)
+				{
+					AllocationPositions.emplace_back(std::pair(AllocationPosition{}, AllocationPosition{}));
+					skinnedVertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
+					skinnedIndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
+
+					// Extract Texture and Palette
+					if (mesh.materials.size() == 0)
+					{
+						meshMaterials.emplace_back(fallBackImageIndex);
+					}
+					else
+					{
+						meshMaterials.emplace_back(mesh.materials[submesh.materialIndex].diffuseTextureIndex);
+					}
+					meshBonePalettes.emplace_back(submesh.bonePalette);
+				}
+			}
+
+			RenderData::copyBufferContentsBulk(RenderData::BufferType::SkinnedVertexBuffer, skinnedVertexAllocators, info, physicalDevice);
+			RenderData::copyBufferContentsBulk(RenderData::BufferType::IndiceBuffer, skinnedIndiceAllocators, info, physicalDevice);
+
+			std::vector<RenderSet> skinnedRenderSet;
+			uint32_t iter = 0;
+			for (const auto& item : AllocationPositions)
+			{
+				uint8_t overSizedFlags = 0;
+				if (item.first.IsXL) overSizedFlags |= 1;
+				if (item.second.IsXL) overSizedFlags |= 2;
+
+				// FIX 2: MeshType::Skinned
+				// FIX 3: Pass the palette into the RenderSet
+				skinnedRenderSet.emplace_back(RenderSet{
+					item.first.startindex, item.first.size, item.second.startindex, item.second.size,
+					meshMaterials[iter], item.first.bufferId, item.second.bufferId,
+					MeshType::Skinned, overSizedFlags, meshBonePalettes[iter]
+					});
+				iter++;
+			}
+			renderSets.insert(renderSets.end(), skinnedRenderSet.begin(), skinnedRenderSet.end());
+		}
 		return 0;
 	}
 	uint8_t Lt_Importer::RemoveModels()
 	{
 		//strips the models properly
-		uint32_t RendersetOffset;
+		uint32_t staticOffset = 0;
+		uint32_t skinnedOffset = 0;
+
+		// 2. Find out where the skinned rendersets begin in the global array
+		// (It begins exactly after all the static rendersets finish)
+		for (const auto& model : loadedModels)
+		{
+			skinnedOffset += model.subMeshes.size();
+		}
+
+		// 3. Extract the models
 		for (auto& model : loadedModels)
 		{
 			StrippedModel newModel;
@@ -486,15 +541,38 @@ namespace lte
 			newModel.name = model.name;
 			newModel.transform = model.transform;
 			newModel.transforms = model.transforms;
-			newModel.staticRenderset = std::vector<RenderSet>(renderSets.begin() + RendersetOffset, renderSets.begin() + RendersetOffset + model.subMeshes.size());
-			renderSetOffset += model.subMeshes.size();
-			newModel.staticRenderset = std::vector<RenderSet>(renderSets.begin() + RendersetOffset, renderSets.begin() + RendersetOffset + model.skinnedSubMeshes.size());
-			renderSetOffset += model.skinnedSubMeshes.size();
-			//since models are loaded linearly,with static rendersets first, you can just load the amount of rendersets = staticmeshes into rendersets.
+
+			// Grab Static RenderSets
+			if (model.subMeshes.size() > 0)
+			{
+				newModel.staticRenderset = std::vector<RenderSet>(
+					renderSets.begin() + staticOffset,
+					renderSets.begin() + staticOffset + model.subMeshes.size()
+				);
+				staticOffset += model.subMeshes.size();
+			}
+
+			// Grab Skinned RenderSets (FIX: assigned to skinnedRenderset!)
+			if (model.skinnedSubMeshes.size() > 0)
+			{
+				newModel.skinnedRenderset = std::vector<RenderSet>(
+					renderSets.begin() + skinnedOffset,
+					renderSets.begin() + skinnedOffset + model.skinnedSubMeshes.size()
+				);
+				skinnedOffset += model.skinnedSubMeshes.size();
+			}
+
+			// Save the stripped model to your engine's permanent asset list
+			strippedModels.push_back(std::move(newModel));
 		}
-		//remove all loaded models and frees a bunch of memory
+
+		// Remove all loaded models and free the heavy geometry vectors
 		loadedModels.clear();
 		loadedModels.shrink_to_fit();
+
 		return 0;
+		//since models are loaded linearly,with static rendersets first, you can just load the amount of rendersets = staticmeshes into rendersets.
+
+		//remove all loaded models and frees a bunch of memory
 	}
 }

@@ -1,24 +1,28 @@
 #include "EditorViewport.h"
 #include <cmath>
 #include "../InterfaceLayers/Lt_ILayer.h"
-#include "../EngineClasses/Lt_Importer.h"
 #include "../EngineClasses/rendering/RenderData.h"
 #include <numbers>
+#include "../EngineClasses/Lt_Mat.h"
+#include "../EngineClasses/rendering/RenderData.h"
 namespace lte {
 	uint8_t deviceID = 0;
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
 	{
+
+		meshes.clear();
+
 		auto& deviceSet = Lt_Vulkan::devices[deviceID];
 		framesInFlight = FramesInFlight;
 		size = Size;
+		//does weird things to meshes
 		createImages();
+
 		Con::Log("create desc set layoud", TAG_ENGINE);
 		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, deviceSet.logicalDevice);
 		Con::Log("create pipeline", TAG_ENGINE);
-
 		createPipeline();
 		Con::Log("create synchronization", TAG_ENGINE);
-
 		LtSync::createSyncObjects(syncSet, framesInFlight, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 		auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
 		Con::Log("create command buffer", TAG_ENGINE);
@@ -44,33 +48,28 @@ namespace lte {
 
 		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);*/
 		//fix this later
-
 		for (auto& model : Lt_Importer::strippedModels)
 		{
+			if (model.bones.size() != 0)
+			{
+				//enable later
+
+				/*
+				skinnedModel = model;
+				skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
+				ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);*/
+
+			}
+			else
+			{
+				meshes.emplace_back(LtMeshInfo{});
+				ExtractTransformDegrees(model.transform, meshes.back().position, meshes.back().rotation, meshes.back().scale);
+			}
 			
-			meshes.emplace_back
 		}
-
-		
-		meshes.push_back(LtMeshInfo{});
-		meshes.push_back(LtMeshInfo{});
-		//MeshInfo.push_back(LtMeshInfo{});
-		meshes[0].position = { 0.0f, 0.0f, -1.0f };
-		meshes[0].rotation = { 0.0f, 0.0f, 0.0f };
-		meshes[0].scale = { 1.1f, 1.1f,1.1f };
-
-		meshes[1].position = { -2.0f, 0.0f, -1.0f };
-		meshes[1].rotation = { glm::radians(90.0f) ,0.0f , 0.0f};
-		meshes[1].scale = { 0.45f, 0.45f, 0.45f };
-
 		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
+
 		DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
-
-
-
-
-
-
 		DeviceHandler::createDescriptorSets(pipeline.descSetLayout,descriptorPool,sampler,meshes,framesInFlight,deviceSet.logicalDevice,renderSets);
 
 
@@ -125,23 +124,25 @@ namespace lte {
 	}
 	void EditorViewport::createImages() {
 
+		std::cout<<"Offset of colorImage: " + std::to_string(offsetof(EditorViewport, colorImage))<<std::endl;
+		std::cout<<"Offset of meshes: " + std::to_string(offsetof(EditorViewport, meshes))<<std::endl;
+		std::cout << ("Address of this: " + std::to_string((uintptr_t)this))<<std::endl;
+
 		auto& deviceSet = Lt_Vulkan::devices[deviceID];
 		vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e8;
-		int deviceID = 0;
 		//colorimage
 		vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
 
-		ImageDelegate::createImage(colorImage, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
-		ImageDelegate::createImageView(colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
 
+		//breaks meshes and makes it stupid big
+		ImageDelegate::createImage(colorImage, size.x, size.y, 1, samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);	
+		
+		ImageDelegate::createImageView(colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1, deviceSet.logicalDevice);
 		//depth image
 		vk::Format depthFormat = PipelineDelegate::findDepthFormat(deviceSet.physicalDevice);
 		ImageDelegate::createImage(depthImage, size.x, size.y, 1, samples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, deviceSet.logicalDevice, deviceSet.physicalDevice);
 		ImageDelegate::createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1, deviceSet.logicalDevice);
-		
 		images.clear();
-
-
 		//swap images
 		for (int i = 0; i < framesInFlight; i++) {
 			Con::Log("Making swap image" + std::to_string(i), TAG_ENGINE);
@@ -151,100 +152,191 @@ namespace lte {
 			ImageDelegate::createSampler(swapImg, deviceSet.logicalDevice);
 			images.emplace_back(std::make_unique<LtImage>(std::move(swapImg)));
 		}
-
 	}
 	void EditorViewport::createPipeline()
 	{
-		std::string shaderFilepath = "shaders/slang.spv";
-		auto& deviceSet = Lt_Vulkan::devices[0];
-
-		vk::PipelineShaderStageCreateInfo vertShaderInfo{};
-		vk::PipelineShaderStageCreateInfo fragShaderInfo{};
-		vk::raii::ShaderModule module = PipelineDelegate::createShaderModule(PipelineDelegate::readShaderInfo(nullptr, shaderFilepath), deviceSet.logicalDevice);
-
-		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
-		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
-			vertShaderStageInfo.module = module,
-			vertShaderStageInfo.pName = "vertMain";
-		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
-		fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
-			fragShaderStageInfo.module = module,
-			fragShaderStageInfo.pName = "fragMain";
-		//defines pipeline
-
-		vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-		auto bindingDescription = Vertex::getBindingDescription();
-		auto attributeDescriptions = Vertex::getAttributeDescriptions();
-		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-		vertexInputInfo.vertexBindingDescriptionCount = 1,
-			vertexInputInfo.pVertexBindingDescriptions = &bindingDescription,
-			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
-			vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-		inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
-		vk::PipelineViewportStateCreateInfo      viewportState{};
-		viewportState.viewportCount = 1, viewportState.scissorCount = 1;
+		//regular pipeline	
+		{
+			std::string shaderFilepath = "shaders/slang.spv";
+			auto& deviceSet = Lt_Vulkan::devices[0];
 
 
-		//vk::PipelineRasterizationStateCreateInfo rasterizer{};
-		vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
-			vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
-		vk::PipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e8,
-			multisampling.sampleShadingEnable = vk::False;
-		vk::PipelineDepthStencilStateCreateInfo depthStencil{};
-		depthStencil.depthTestEnable = vk::True,
-			depthStencil.depthWriteEnable = vk::True,
-			depthStencil.depthCompareOp = vk::CompareOp::eLess,
-			depthStencil.depthBoundsTestEnable = vk::False,
-			depthStencil.stencilTestEnable = vk::False;
-		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-		colorBlendAttachment.blendEnable = vk::True,
-			colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
-			colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
-			colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd,
-			colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne,
-			colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero,
-			colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd,
-			colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-		vk::PipelineColorBlendStateCreateInfo colorBlending{};
-		colorBlending.logicOpEnable = vk::False,
-			colorBlending.logicOp = vk::LogicOp::eCopy,
-			colorBlending.attachmentCount = 1,
-			colorBlending.pAttachments = &colorBlendAttachment;
+			vk::raii::ShaderModule module = PipelineDelegate::createShaderModule(PipelineDelegate::readShaderInfo(nullptr, shaderFilepath), deviceSet.logicalDevice);
 
-		std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-		vk::PipelineDynamicStateCreateInfo dynamicState{};
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
-		dynamicState.pDynamicStates = dynamicStates.data();
+			vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
+			vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
+				vertShaderStageInfo.module = module,
+				vertShaderStageInfo.pName = "vertMain";
+			vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
+			fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
+				fragShaderStageInfo.module = module,
+				fragShaderStageInfo.pName = "fragMain";
+			//defines pipeline
+
+			vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+			auto bindingDescription = Vertex::getBindingDescription();
+			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
+			vertexInputInfo.vertexBindingDescriptionCount = 1,
+				vertexInputInfo.pVertexBindingDescriptions = &bindingDescription,
+				vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+				vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+			vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
+			inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
+			vk::PipelineViewportStateCreateInfo      viewportState{};
+			viewportState.viewportCount = 1, viewportState.scissorCount = 1;
 
 
-		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.setLayoutCount = 1,
-			pipelineLayoutInfo.pSetLayouts = &*pipeline.descSetLayout,
-			pipelineLayoutInfo.pushConstantRangeCount = 0;
+			//vk::PipelineRasterizationStateCreateInfo rasterizer{};
+			vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
+				vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
+			vk::PipelineMultisampleStateCreateInfo multisampling{};
+			multisampling.rasterizationSamples = vk::SampleCountFlagBits::e8,
+				multisampling.sampleShadingEnable = vk::False;
+			vk::PipelineDepthStencilStateCreateInfo depthStencil{};
+			depthStencil.depthTestEnable = vk::True,
+				depthStencil.depthWriteEnable = vk::True,
+				depthStencil.depthCompareOp = vk::CompareOp::eLess,
+				depthStencil.depthBoundsTestEnable = vk::False,
+				depthStencil.stencilTestEnable = vk::False;
+			vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
+			colorBlendAttachment.blendEnable = vk::True,
+				colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+				colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+				colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd,
+				colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne,
+				colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero,
+				colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd,
+				colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+			vk::PipelineColorBlendStateCreateInfo colorBlending{};
+			colorBlending.logicOpEnable = vk::False,
+				colorBlending.logicOp = vk::LogicOp::eCopy,
+				colorBlending.attachmentCount = 1,
+				colorBlending.pAttachments = &colorBlendAttachment;
 
-		vk::Format depthFormat = PipelineDelegate::findDepthFormat(Lt_Vulkan::devices[deviceID].physicalDevice);
-		vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
-
-		vk::PipelineRenderingCreateInfoKHR pipelineCreateInfo{ };
-		pipelineCreateInfo.sType = vk::StructureType::ePipelineRenderingCreateInfoKHR;
-		pipelineCreateInfo.pNext = NULL;
-		pipelineCreateInfo.viewMask = 0;
-		pipelineCreateInfo.colorAttachmentCount = 1;
-		pipelineCreateInfo.pColorAttachmentFormats = &colorFormat;
-		pipelineCreateInfo.depthAttachmentFormat = depthFormat;
-		pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
+			std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+			vk::PipelineDynamicStateCreateInfo dynamicState{};
+			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+				dynamicState.pDynamicStates = dynamicStates.data();
 
 
-		vk::raii::PipelineLayout pipelineLayout(deviceSet.logicalDevice, pipelineLayoutInfo); 
+			vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+			pipelineLayoutInfo.setLayoutCount = 1,
+				pipelineLayoutInfo.pSetLayouts = &*pipeline.descSetLayout,
+				pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-		pipeline.createPipeline(std::size(shaderStages), shaderStages, &vertexInputInfo, &inputAssembly, &viewportState, &rasterizer, &multisampling, &colorBlending, &dynamicState, &depthStencil, pipelineLayout, 1,
-			&colorFormat, //colorformat
-			depthFormat, deviceSet.logicalDevice);
+			vk::Format depthFormat = PipelineDelegate::findDepthFormat(Lt_Vulkan::devices[deviceID].physicalDevice);
+			vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
+
+			vk::PipelineRenderingCreateInfoKHR pipelineCreateInfo{ };
+			pipelineCreateInfo.sType = vk::StructureType::ePipelineRenderingCreateInfoKHR;
+			pipelineCreateInfo.pNext = NULL;
+			pipelineCreateInfo.viewMask = 0;
+			pipelineCreateInfo.colorAttachmentCount = 1;
+			pipelineCreateInfo.pColorAttachmentFormats = &colorFormat;
+			pipelineCreateInfo.depthAttachmentFormat = depthFormat;
+			pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
 
 
+			vk::raii::PipelineLayout pipelineLayout(deviceSet.logicalDevice, pipelineLayoutInfo);
+
+			pipeline.createPipeline(std::size(shaderStages), shaderStages, &vertexInputInfo, &inputAssembly, &viewportState, &rasterizer, &multisampling, &colorBlending, &dynamicState, &depthStencil, pipelineLayout, 1,
+				&colorFormat, //colorformat
+				depthFormat, deviceSet.logicalDevice);
+
+		}
+		//for skinned 
+		{
+			std::string vertshaderFilepath = "shaders/skin.spv";
+			std::string fragmentShaderFilepath = "shaders/slang.spv";
+			auto& deviceSet = Lt_Vulkan::devices[0];
+
+			vk::raii::ShaderModule FragmentModule = PipelineDelegate::createShaderModule(PipelineDelegate::readShaderInfo(nullptr, fragmentShaderFilepath), deviceSet.logicalDevice);
+			vk::raii::ShaderModule Vertmodule = PipelineDelegate::createShaderModule(PipelineDelegate::readShaderInfo(nullptr, vertshaderFilepath), deviceSet.logicalDevice); // crashes at this line
+
+			vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
+			vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex,
+				vertShaderStageInfo.module = Vertmodule,
+				vertShaderStageInfo.pName = "vertSkinned";
+			vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
+			fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment,
+				fragShaderStageInfo.module = FragmentModule,
+				fragShaderStageInfo.pName = "fragMain";
+			//defines pipeline
+
+			vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+			auto bindingDescription = Vertex::getBindingDescription();
+			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
+			vertexInputInfo.vertexBindingDescriptionCount = 1,
+				vertexInputInfo.pVertexBindingDescriptions = &bindingDescription,
+				vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+				vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+			vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
+			inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
+			vk::PipelineViewportStateCreateInfo      viewportState{};
+			viewportState.viewportCount = 1, viewportState.scissorCount = 1;
+
+
+			//vk::PipelineRasterizationStateCreateInfo rasterizer{};
+			vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
+				vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise, vk::False, 0.0f, 0.0f, 1.0f, 1.0f);
+			vk::PipelineMultisampleStateCreateInfo multisampling{};
+			multisampling.rasterizationSamples = vk::SampleCountFlagBits::e8,
+				multisampling.sampleShadingEnable = vk::False;
+			vk::PipelineDepthStencilStateCreateInfo depthStencil{};
+			depthStencil.depthTestEnable = vk::True,
+				depthStencil.depthWriteEnable = vk::True,
+				depthStencil.depthCompareOp = vk::CompareOp::eLess,
+				depthStencil.depthBoundsTestEnable = vk::False,
+				depthStencil.stencilTestEnable = vk::False;
+			vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
+			colorBlendAttachment.blendEnable = vk::True,
+				colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+				colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+				colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd,
+				colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne,
+				colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero,
+				colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd,
+				colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+			vk::PipelineColorBlendStateCreateInfo colorBlending{};
+			colorBlending.logicOpEnable = vk::False,
+				colorBlending.logicOp = vk::LogicOp::eCopy,
+				colorBlending.attachmentCount = 1,
+				colorBlending.pAttachments = &colorBlendAttachment;
+
+			std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+			vk::PipelineDynamicStateCreateInfo dynamicState{};
+			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+				dynamicState.pDynamicStates = dynamicStates.data();
+
+
+			vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+			pipelineLayoutInfo.setLayoutCount = 1,
+				pipelineLayoutInfo.pSetLayouts = &*pipeline.descSetLayout,
+				pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+			vk::Format depthFormat = PipelineDelegate::findDepthFormat(Lt_Vulkan::devices[deviceID].physicalDevice);
+			vk::Format colorFormat = vk::Format::eR8G8B8A8Unorm;
+
+			vk::PipelineRenderingCreateInfoKHR pipelineCreateInfo{ };
+			pipelineCreateInfo.sType = vk::StructureType::ePipelineRenderingCreateInfoKHR;
+			pipelineCreateInfo.pNext = NULL;
+			pipelineCreateInfo.viewMask = 0;
+			pipelineCreateInfo.colorAttachmentCount = 1;
+			pipelineCreateInfo.pColorAttachmentFormats = &colorFormat;
+			pipelineCreateInfo.depthAttachmentFormat = depthFormat;
+			pipelineCreateInfo.stencilAttachmentFormat = vk::Format::eUndefined;
+
+
+			vk::raii::PipelineLayout pipelineLayout(deviceSet.logicalDevice, pipelineLayoutInfo);
+
+			SkinnedPipeline.createPipeline(std::size(shaderStages), shaderStages, &vertexInputInfo, &inputAssembly, &viewportState, &rasterizer, &multisampling, &colorBlending, &dynamicState, &depthStencil, pipelineLayout, 1,
+				&colorFormat, //colorformat
+				depthFormat, deviceSet.logicalDevice);
+		}
 
 	}
 
@@ -312,21 +404,18 @@ namespace lte {
 			renderingInfo.pDepthAttachment = &depthAttachmentInfo;
 
 		commandBuffer.beginRendering(renderingInfo);
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.pipeline);
 		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, size.x, size.y, 0.0f, 1.0f));
 		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), extent));
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.pipeline);
+
+		
+
+		commandBuffer.bindVertexBuffers(0, *RenderData::Buffers[renderSets[0].vertexBufferId]->buffer, {0});
+		//problem is we have a skinned vertex buffer and a normal one
+		//now what
 
 
-
-		//remaking this portion
-		//for each renderset,
-
-
-
-
-		commandBuffer.bindVertexBuffers(0, *vertexBuffer, { 0 });
-		commandBuffer.bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint32);
-
+		commandBuffer.bindIndexBuffer(*RenderData::Buffers[renderSets[0].indiceBufferId]->buffer, 0, vk::IndexType::eUint32);
 		uint64_t objectid = 0;
 
 		for (const auto& gameObject : meshes)
@@ -342,7 +431,24 @@ namespace lte {
 			commandBuffer.drawIndexed(renderSets[objectid].IndiceArraySize, 1, renderSets[objectid].IndiceArrayStartIndex, renderSets[objectid].vertexArrayStartIndex, 0);
 			objectid++;
 		}
+
+		//switch to skinned
+
+		//temporarily disabled
+		
+		/*
+		
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *SkinnedPipeline.pipeline);
+		uint16_t skinnedVertId = skinnedModel.skinnedRenderset[0].vertexBufferId;
+		uint16_t skinnedIndexId = skinnedModel.skinnedRenderset[0].indiceBufferId;
+
+		commandBuffer.bindVertexBuffers(0, *RenderData::Buffers[skinnedVertId]->buffer, { 0 });
+		commandBuffer.bindIndexBuffer(*RenderData::Buffers[skinnedIndexId]->buffer, 0, vk::IndexType::eUint32);
+		RenderSkinnedMeshes(skinnedMeshes, skinnedModel,commandBuffer);
+		*/
 		commandBuffer.endRendering();
+
+		
 		ImageDelegate::transition_image_layout(
 			*(images[swapFrame]->image),
 			vk::ImageLayout::eColorAttachmentOptimal,
@@ -386,6 +492,46 @@ namespace lte {
 			memcpy(gameObject.uniformBuffersMapped[swapFrame], &ubo, sizeof(ubo));
 		}
 		prevtime = time;
+	}
+
+	void EditorViewport::RenderSkinnedMeshes(std::vector<LtSkinnedMeshInfo>& activeMeshes, const Lt_Importer::StrippedModel& characterAsset, vk::raii::CommandBuffer& cmdBuffer)
+	{
+		uint32_t currentUBOIndex = 0;
+
+		for (auto& instance : activeMeshes)
+		{
+			// (You do this once per character, not per chunk)
+			//UpdateAnimation(instance, characterAsset);
+
+			for (const auto& renderSet : characterAsset.skinnedRenderset)
+			{
+				SkinnedUniformBufferObject uboData{};
+				uboData.view = camera.getViewMatrix();
+				uboData.model = instance.getModelMatrix();
+
+				for (size_t p = 0; p < renderSet.bonePalette.size(); p++)
+				{
+					uint16_t globalBoneId = renderSet.bonePalette[p];
+					uboData.boneTransforms[p] = instance.finalBoneMatrices[globalBoneId];
+				}
+
+				// 5. Copy this chunk's data to the giant dynamic buffer
+				uint8_t* offsetPtr = static_cast<uint8_t*>(dynamicUBOMappedPtr) + (currentUBOIndex * dynamicAlignment);
+				memcpy(offsetPtr, &uboData, sizeof(SkinnedUniformBufferObject));
+
+				uint32_t dynamicOffset = currentUBOIndex * dynamicAlignment;
+				cmdBuffer.bindDescriptorSets(
+					vk::PipelineBindPoint::eGraphics,
+					SkinnedPipeline.PipelineLayout, 0,
+					{ *skinnedDescriptorSet },
+					{ dynamicOffset }
+				);
+
+				cmdBuffer.drawIndexed(renderSet.IndiceArraySize, 1, renderSet.IndiceArrayStartIndex, renderSet.vertexArrayStartIndex, 0);
+
+				currentUBOIndex++;
+			}
+		}
 	}
 
 	void EditorViewport::SubmitGUICommands() 

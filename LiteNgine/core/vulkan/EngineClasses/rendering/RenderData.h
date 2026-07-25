@@ -71,7 +71,6 @@ namespace lte {
 		static copyResult copyBufferContentsBulk(BufferType type,std::vector<std::tuple<void*,uint32_t,AllocationPosition*>> allocPos, singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
 		//static void DefragmentBuffer(uint16_t BufferId,uint32_t* savings);//defragmentation
 		static void MarkFreed(AllocationPosition& renderset);
-		inline static std::vector<LtMeshInfo> MeshInformation;
 		void FillBuffer()
 		{
 			

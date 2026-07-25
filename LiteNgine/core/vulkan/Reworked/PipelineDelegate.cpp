@@ -125,6 +125,12 @@ namespace lte {
 	}
 	[[nodiscard]] vk::raii::ShaderModule PipelineDelegate::createShaderModule(const std::vector<char>& code , vk::raii::Device& pDevice)
 	{
+		if (code.size() ==0)
+		{
+			Con::LogError("shader module code empty!", CRIT_SEVERITY, TAG_VULKAN | TAG_ENGINE);
+			return nullptr;
+		}
+
 
 		vk::ShaderModuleCreateInfo createInfo{};
 			createInfo.codeSize = code.size() * sizeof(char),

@@ -18,6 +18,7 @@ namespace lte {
 	class Lt_Importer
 	{
 
+	public:
 		// 2. A struct to represent a material
 		struct Lt_Material {
 			uint32_t diffuseTextureIndex = -1; // in
@@ -93,6 +94,9 @@ namespace lte {
 		static uint8_t RemoveModels();
 		inline static std::vector<RenderSet> renderSets;
 		inline static std::vector<StrippedModel> strippedModels;
+
+		inline static uint32_t fallBackImageIndex = 0;
+
 	private:
 		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
 		inline static std::vector<Model> loadedModels;

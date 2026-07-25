@@ -84,6 +84,10 @@ namespace lte {
 		Con::LogEvent("Init image viewport", TAG_ENGINE);
 		viewport.Init();
 		Con::LogEvent("Init editor viewport", TAG_ENGINE);
+
+		std::cout << "Offset of colorImage: " + std::to_string(offsetof(EditorViewport, colorImage)) << std::endl;
+		std::cout << "Offset of meshes: " + std::to_string(offsetof(EditorViewport, meshes)) << std::endl;
+		std::cout << ("Address of this: " + std::to_string((uintptr_t)this)) << std::endl;
 		editorViewport.Init(ImVec2(800,600),2);
 		layoutloader.Init();
 		//unfinished
@@ -131,8 +135,12 @@ namespace lte {
 		//layoutloader.DrawPopups();
 
 		Iridium::SubmitDrawCommands();
+
+
 		viewport.SubmitGUICommands();
 		layoutloader.SubmitGUICommands();
+
+
 		editorViewport.SubmitGUICommands();
 
 		guiHandler.EndFrame();
