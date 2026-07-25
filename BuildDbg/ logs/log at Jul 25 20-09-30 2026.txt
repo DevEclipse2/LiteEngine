@@ -1,0 +1,58 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+20:09:30.920 info: engine, begin launch bootstrap process
+20:09:33.229 info: engine, user entered selection
+20:09:33.229 info: engine, launch bootstrap process completed with response : continue
+20:09:33.229 info: engine, program to continue execution
+20:09:33.230 info: debug, generic, loaded new path from preferences logs/
+20:09:33.230 success: debug, generic, successfully written to new address :  logs/log at Jul 25 20-09-16 2026.txt
+20:09:33.230 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+20:09:33.391 info: vulkan, validation layer: type { General } msg: --- WELCOME TO LITENGINE ---
+20:09:33.399 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll)
+20:09:33.399 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\graphics-hook64.dll)
+20:09:33.399 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_NV_present" (C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll)
+20:09:33.399 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_NV_optimus" (C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll)
+20:09:33.399 info: vulkan, validation layer: type { General } msg: vkCreateDevice layer callstack setup to:
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    <Application>
+20:09:33.399 info: vulkan, validation layer: type { General } msg:      ||
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    <Loader>
+20:09:33.399 info: vulkan, validation layer: type { General } msg:      ||
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    VK_LAYER_NV_optimus
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+20:09:33.399 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_LAYER_NV_OPTIMUS_1
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Manifest: C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nv-vk64.json
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Library:  C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll
+20:09:33.399 info: vulkan, validation layer: type { General } msg:      ||
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    VK_LAYER_NV_present
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+20:09:33.399 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_LAYER_NV_GR2608_1
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Manifest: C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nv-vk64.json
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Library:  C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll
+20:09:33.399 info: vulkan, validation layer: type { General } msg:      ||
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    VK_LAYER_OBS_HOOK
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+20:09:33.399 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Library:  C:\ProgramData\obs-studio-hook\graphics-hook64.dll
+20:09:33.399 info: vulkan, validation layer: type { General } msg:      ||
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    VK_LAYER_KHRONOS_validation
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Type: Explicit
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Enabled By: By the Application
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Manifest: C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.json
+20:09:33.399 info: vulkan, validation layer: type { General } msg:            Library:  C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll
+20:09:33.399 info: vulkan, validation layer: type { General } msg:      ||
+20:09:33.399 info: vulkan, validation layer: type { General } msg:    <Device>
+20:09:33.401 info: vulkan, validation layer: type { General } msg:        Using "Quadro P4000" with driver: "C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll"
+20:09:33.616 event: undefined, 	vulkan, validation layer: type { Performance } msg: vkCreateGraphicsPipelines(): pCreateInfos[0].pVertexInputState Vertex attribute at location 3 not consumed by vertex shader.
+20:09:33.616 event: engine, Spinning up User Interface...
+20:09:33.627 event: engine, Init image viewport
+20:09:33.652 event: engine, Init editor viewport
+20:09:33.655 info: engine, Making swap image0
+20:09:33.656 info: engine, Making swap image1
+20:09:33.658 info: engine, create desc set layoud
+20:09:33.658 info: engine, create pipeline
+20:09:33.659 event: undefined, 	vulkan, validation layer: type { Performance } msg: vkCreateGraphicsPipelines(): pCreateInfos[0].pVertexInputState Vertex attribute at location 3 not consumed by vertex shader.
+20:09:33.659 info: engine, create skinned pipeline

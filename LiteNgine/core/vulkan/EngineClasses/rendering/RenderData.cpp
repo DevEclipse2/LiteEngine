@@ -37,7 +37,7 @@ namespace lte {
 		}
 		
 		Buffer NewBuffer;
-		Buffers::createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, NewBuffer.buffer, NewBuffer.Allocation, *info.device, device);
+		Buffers::createBuffer(ByteSize, vk::BufferUsageFlagBits::eTransferDst | flagBit, vk::MemoryPropertyFlagBits::eDeviceLocal, NewBuffer.buffer, NewBuffer.Allocation, *info.device, device);
 		NewBuffer.type = type;
 		Buffers[BufferCount] = (std::make_unique<Buffer>(std::move(NewBuffer)));
 		BufferCount++;

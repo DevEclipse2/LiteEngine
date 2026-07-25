@@ -1,7 +1,6 @@
 #pragma once
 #include "../../Reworked/CommandBuffers.h"
 #include "../../Reworked/LtMesh.h"
-#include "vk_mem_alloc.h"
 namespace lte {
 	struct AllocationPosition {
 		uint32_t startindex;

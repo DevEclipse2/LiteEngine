@@ -1,4 +1,5 @@
 #include "Buffers.h"
+#include "LtMesh.h"
 namespace lte {
 
 	void Buffers::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory, vk::raii::Device& device, vk::raii::PhysicalDevice& physDevice)
@@ -14,6 +15,53 @@ namespace lte {
 			allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memRequirements.memoryTypeBits, properties,physDevice);
 		bufferMemory = vk::raii::DeviceMemory(device, allocInfo);
 		buffer.bindMemory(*bufferMemory, 0);
+	}
+	void Buffers::createDynamicUniformBuffers(
+		uint32_t maxSupportedChunks,
+		uint32_t framesInFlight,
+		vk::raii::Device& device,
+		vk::raii::PhysicalDevice& physDev,
+		// Outputs:
+		size_t& outDynamicAlignment,
+		std::vector<vk::raii::Buffer>& outBuffers,
+		std::vector<vk::raii::DeviceMemory>& outMemory,
+		std::vector<void*>& outMappedPtrs)
+	{
+		size_t minAlignment = physDev.getProperties().limits.minUniformBufferOffsetAlignment;
+		outDynamicAlignment = (sizeof(SkinnedUniformBufferObject) + minAlignment - 1) & ~(minAlignment - 1);
+
+		size_t bufferSize = maxSupportedChunks * outDynamicAlignment;
+		if (bufferSize == 0) throw std::runtime_error("Cannot create a Vulkan buffer of size 0!");
+
+		outBuffers.clear();
+		outMemory.clear();
+		outMappedPtrs.clear();
+
+		// 2. Create ONE giant buffer per frame in flight
+		for (size_t i = 0; i < framesInFlight; i++)
+		{
+			vk::BufferCreateInfo bufferInfo{};
+			bufferInfo.size = bufferSize;
+			bufferInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer;
+			bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+
+			vk::raii::Buffer tempBuffer = (vk::raii::Buffer(device,bufferInfo));
+
+			vk::MemoryRequirements memReqs = tempBuffer.getMemoryRequirements();
+			vk::MemoryAllocateInfo allocInfo{};
+			allocInfo.allocationSize = memReqs.size;
+			
+			allocInfo.memoryTypeIndex = DeviceHandler::findMemoryType(memReqs.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, physDev);
+
+			vk::raii::DeviceMemory tempMemory = (vk::raii::DeviceMemory(device,allocInfo)); 
+			tempBuffer.bindMemory(*tempMemory, 0);
+			void* mappedPtr = tempMemory.mapMemory(0, bufferSize);
+
+			outBuffers.push_back(std::move(tempBuffer));
+			outMemory.push_back(std::move(tempMemory));
+			outMappedPtrs.push_back(mappedPtr);
+
+		}
 	}
 	void Buffers::createVertexBuffer(uint32_t size , Vertex* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory ,singleTimeCommandInfo info , vk::raii::PhysicalDevice& device)
 	{

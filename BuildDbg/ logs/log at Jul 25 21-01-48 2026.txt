@@ -1,0 +1,39 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+21:01:48.983 info: engine, begin launch bootstrap process
+21:01:51.426 info: engine, user entered selection
+21:01:51.426 error: low     , 	engine, launch bootstrap process failed with result : unidentified input , retrying...
+21:01:51.426 info: engine, retrying
+21:01:53.742 info: engine, user entered selection
+21:01:53.742 info: engine, launch bootstrap process completed with response : continue
+21:01:53.742 info: engine, program to continue execution
+21:01:53.742 info: debug, generic, loaded new path from preferences logs/
+21:01:53.742 success: debug, generic, successfully written to new address :  logs/log at Jul 25 20-58-59 2026.txt
+21:01:53.742 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+21:01:53.902 info: vulkan, validation layer: type { General } msg: While debugging through RenderDoc, debug output through validation layers is suppressed.
+To show debug output look at the 'DebugOutputMute' capture option in RenderDoc's API, but be aware of false positives from the validation layers.
+21:01:54.177 event: engine, Spinning up User Interface...
+21:01:54.187 event: engine, Init image viewport
+21:01:54.213 event: engine, Init editor viewport
+21:01:54.217 info: engine, Making swap image0
+21:01:54.218 info: engine, Making swap image1
+21:01:54.219 info: engine, create desc set layoud
+21:01:54.219 info: engine, create pipeline
+21:01:54.219 info: engine, create skinned pipeline
+21:01:54.224 info: engine, create synchronization
+21:01:54.224 info: engine, create command buffer
+21:01:54.224 info: engine, load files
+21:01:54.288 info: engine, create sampler
+21:01:54.294 event: engine, profiling, Iridium profiler has been initalised.
+21:01:54.294 event: engine, Preparing to render first frame
+21:01:54.294 error: high    , 	engine, profiling, Invalid frameID, submitted 0 while profiler has completed frame 0
+21:01:54.376 error: medium  , 	engine, profiling, No Frame Has Been Started!
+21:01:54.464 event: engine, CaptureFrame
+21:01:55.419 event: engine, Resize called
+21:01:55.462 event: engine, main window resized
+21:02:15.644 event: engine, Resize called
+21:02:15.676 event: engine, main window resized
+21:02:16.701 event: engine, engine shutdown-------------------------------------------
+21:02:16.701 event: engine, Engine Shutdown initiated
+21:02:17.305 event: engine, engine cleanup-------------------------------------------
+21:02:17.305 event: engine, Engine Cleanup initiated

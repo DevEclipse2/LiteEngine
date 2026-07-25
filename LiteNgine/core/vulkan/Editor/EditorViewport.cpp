@@ -4,7 +4,7 @@
 #include "../EngineClasses/rendering/RenderData.h"
 #include <numbers>
 #include "../EngineClasses/Lt_Mat.h"
-#include "../EngineClasses/rendering/RenderData.h"
+#include "../Reworked/DeviceHandler.h"
 namespace lte {
 	uint8_t deviceID = 0;
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
@@ -20,6 +20,17 @@ namespace lte {
 
 		Con::Log("create desc set layoud", TAG_ENGINE);
 		PipelineDelegate::createDescriptorSetLayout(pipeline.descSetLayout, deviceSet.logicalDevice);
+
+		//for dynamic
+		std::array bindings = {
+			vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+			vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
+		};
+
+		vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings.size(), bindings.data());
+		SkinnedPipeline.descSetLayout = vk::raii::DescriptorSetLayout(deviceSet.logicalDevice, layoutInfo);
+
+		
 		Con::Log("create pipeline", TAG_ENGINE);
 		createPipeline();
 		Con::Log("create synchronization", TAG_ENGINE);
@@ -54,22 +65,28 @@ namespace lte {
 			{
 				//enable later
 
-				/*
+				
 				skinnedModel = model;
 				skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
-				ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);*/
+				ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
+				skinnedMeshes.back().scale *= 0.01f;
+				skinnedMeshes.back().finalBoneMatrices.assign(skinnedModel.bones.size(), glm::mat4(1.0f));
 
 			}
 			else
 			{
 				meshes.emplace_back(LtMeshInfo{});
 				ExtractTransformDegrees(model.transform, meshes.back().position, meshes.back().rotation, meshes.back().scale);
+				meshes.back().scale *= 0.01f;
 			}
 			
 		}
-		Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
+		Buffers::createDynamicUniformBuffers(1024, framesInFlight, deviceSet.logicalDevice, physDev, dynamicAlignment, dynamicSkinnedUBO, dynamicSkinnedMemory, dynamicUBOMappedPtr);
+		DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, deviceSet.logicalDevice, framesInFlight);
+		DeviceHandler::createDynamicDescriptorSets(skinnedMeshes,dynamicDescriptorPool, SkinnedPipeline.descSetLayout,sampler, deviceSet.logicalDevice, framesInFlight, dynamicSkinnedUBO,renderSets);
+		Buffers::createUniformBuffers(&meshes, framesInFlight, deviceSet.logicalDevice, physDev);
 
-		DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
+		DeviceHandler::createDescriptorPool(&descriptorPool, &deviceSet.logicalDevice,meshes.size(), framesInFlight);
 		DeviceHandler::createDescriptorSets(pipeline.descSetLayout,descriptorPool,sampler,meshes,framesInFlight,deviceSet.logicalDevice,renderSets);
 
 
@@ -111,6 +128,9 @@ namespace lte {
 			auto& physDev = Lt_Vulkan::devices[0].physicalDevice;
 			CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 			singleTimeCommandInfo info{ &Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue };
+			Buffers::createDynamicUniformBuffers(1024, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev, dynamicAlignment, dynamicSkinnedUBO, dynamicSkinnedMemory, dynamicUBOMappedPtr);
+			DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
+			DeviceHandler::createDynamicDescriptorSets(skinnedMeshes, dynamicDescriptorPool, SkinnedPipeline.descSetLayout, sampler, Lt_Vulkan::devices[0].logicalDevice, framesInFlight, dynamicSkinnedUBO, renderSets);
 			Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
 			DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
 			DeviceHandler::createDescriptorSets(pipeline.descSetLayout, descriptorPool, sampler, meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, renderSets);
@@ -247,6 +267,8 @@ namespace lte {
 
 		}
 		//for skinned 
+		Con::Log("create skinned pipeline", TAG_ENGINE);
+
 		{
 			std::string vertshaderFilepath = "shaders/skin.spv";
 			std::string fragmentShaderFilepath = "shaders/slang.spv";
@@ -267,8 +289,8 @@ namespace lte {
 
 			vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-			auto bindingDescription = Vertex::getBindingDescription();
-			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			auto bindingDescription = skinnedVertex::getBindingDescription();
+			auto attributeDescriptions = skinnedVertex::getAttributeDescriptions();
 			vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
 			vertexInputInfo.vertexBindingDescriptionCount = 1,
 				vertexInputInfo.pVertexBindingDescriptions = &bindingDescription,
@@ -315,7 +337,7 @@ namespace lte {
 
 			vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 			pipelineLayoutInfo.setLayoutCount = 1,
-				pipelineLayoutInfo.pSetLayouts = &*pipeline.descSetLayout,
+				pipelineLayoutInfo.pSetLayouts = &*SkinnedPipeline.descSetLayout,
 				pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 			vk::Format depthFormat = PipelineDelegate::findDepthFormat(Lt_Vulkan::devices[deviceID].physicalDevice);
@@ -414,7 +436,6 @@ namespace lte {
 		//problem is we have a skinned vertex buffer and a normal one
 		//now what
 
-
 		commandBuffer.bindIndexBuffer(*RenderData::Buffers[renderSets[0].indiceBufferId]->buffer, 0, vk::IndexType::eUint32);
 		uint64_t objectid = 0;
 
@@ -436,7 +457,7 @@ namespace lte {
 
 		//temporarily disabled
 		
-		/*
+		
 		
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *SkinnedPipeline.pipeline);
 		uint16_t skinnedVertId = skinnedModel.skinnedRenderset[0].vertexBufferId;
@@ -445,7 +466,7 @@ namespace lte {
 		commandBuffer.bindVertexBuffers(0, *RenderData::Buffers[skinnedVertId]->buffer, { 0 });
 		commandBuffer.bindIndexBuffer(*RenderData::Buffers[skinnedIndexId]->buffer, 0, vk::IndexType::eUint32);
 		RenderSkinnedMeshes(skinnedMeshes, skinnedModel,commandBuffer);
-		*/
+		
 		commandBuffer.endRendering();
 
 		
@@ -477,7 +498,6 @@ namespace lte {
 			static_cast<float>(size.x) / static_cast<float>(size.y),
 			0.1f, 20.0f);
 
-		ubo.proj[1][1] *= -1;
 		// Update uniform buffers for each object
 		for (auto& gameObject : meshes) {
 			// Get the model matrix for this object
@@ -500,7 +520,7 @@ namespace lte {
 
 		for (auto& instance : activeMeshes)
 		{
-			// (You do this once per character, not per chunk)
+			//  do this once per character, not per chunk
 			//UpdateAnimation(instance, characterAsset);
 
 			for (const auto& renderSet : characterAsset.skinnedRenderset)
@@ -508,6 +528,9 @@ namespace lte {
 				SkinnedUniformBufferObject uboData{};
 				uboData.view = camera.getViewMatrix();
 				uboData.model = instance.getModelMatrix();
+				uboData.proj = glm::perspective(glm::radians(FOV),
+					static_cast<float>(size.x) / static_cast<float>(size.y),
+					0.1f, 20.0f);
 
 				for (size_t p = 0; p < renderSet.bonePalette.size(); p++)
 				{
@@ -516,24 +539,23 @@ namespace lte {
 				}
 
 				// 5. Copy this chunk's data to the giant dynamic buffer
-				uint8_t* offsetPtr = static_cast<uint8_t*>(dynamicUBOMappedPtr) + (currentUBOIndex * dynamicAlignment);
+				uint8_t* offsetPtr = static_cast<uint8_t*>(dynamicUBOMappedPtr[swapFrame]) + (currentUBOIndex * dynamicAlignment);
 				memcpy(offsetPtr, &uboData, sizeof(SkinnedUniformBufferObject));
 
 				uint32_t dynamicOffset = currentUBOIndex * dynamicAlignment;
 				cmdBuffer.bindDescriptorSets(
 					vk::PipelineBindPoint::eGraphics,
 					SkinnedPipeline.PipelineLayout, 0,
-					{ *skinnedDescriptorSet },
+					{ *instance.descriptorSets[swapFrame]},
 					{ dynamicOffset }
 				);
 
 				cmdBuffer.drawIndexed(renderSet.IndiceArraySize, 1, renderSet.IndiceArrayStartIndex, renderSet.vertexArrayStartIndex, 0);
-
+				return;
 				currentUBOIndex++;
 			}
 		}
 	}
-
 	void EditorViewport::SubmitGUICommands() 
 	{
 		if (!Enabled) 

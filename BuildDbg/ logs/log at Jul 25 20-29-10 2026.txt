@@ -1,0 +1,39 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+20:29:10.965 info: engine, begin launch bootstrap process
+20:29:12.948 info: engine, user entered selection
+20:29:12.948 info: engine, launch bootstrap process completed with response : continue
+20:29:12.948 info: engine, program to continue execution
+20:29:12.949 info: debug, generic, loaded new path from preferences logs/
+20:29:12.949 success: debug, generic, successfully written to new address :  logs/log at Jul 25 20-28-37 2026.txt
+20:29:12.950 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+20:29:13.108 info: vulkan, validation layer: type { General } msg: While debugging through RenderDoc, debug output through validation layers is suppressed.
+To show debug output look at the 'DebugOutputMute' capture option in RenderDoc's API, but be aware of false positives from the validation layers.
+20:29:13.374 event: engine, Spinning up User Interface...
+20:29:13.384 event: engine, Init image viewport
+20:29:13.410 event: engine, Init editor viewport
+20:29:13.414 info: engine, Making swap image0
+20:29:13.415 info: engine, Making swap image1
+20:29:13.416 info: engine, create desc set layoud
+20:29:13.416 info: engine, create pipeline
+20:29:13.416 info: engine, create skinned pipeline
+20:29:13.420 info: engine, create synchronization
+20:29:13.420 info: engine, create command buffer
+20:29:13.420 info: engine, load files
+20:29:13.481 info: engine, create sampler
+20:29:13.485 event: engine, profiling, Iridium profiler has been initalised.
+20:29:13.485 event: engine, Preparing to render first frame
+20:29:13.486 error: high    , 	engine, profiling, Invalid frameID, submitted 0 while profiler has completed frame 0
+20:29:13.555 error: medium  , 	engine, profiling, No Frame Has Been Started!
+20:29:13.635 event: engine, CaptureFrame
+20:29:14.609 event: engine, Resize called
+20:29:14.646 event: engine, main window resized
+20:36:56.335 event: engine, vulkan, Recreating Viewport
+20:36:56.335 event: engine, vulkan, recreating scene Viewport with dimensions :1920.000000,1080.000000with 2 frames in flight
+20:36:56.362 info: engine, Making swap image0
+20:36:56.364 info: engine, Making swap image1
+20:36:56.366 info: engine, create skinned pipeline
+20:55:33.300 event: engine, engine shutdown-------------------------------------------
+20:55:33.300 event: engine, Engine Shutdown initiated
+20:55:34.289 event: engine, engine cleanup-------------------------------------------
+20:55:34.289 event: engine, Engine Cleanup initiated

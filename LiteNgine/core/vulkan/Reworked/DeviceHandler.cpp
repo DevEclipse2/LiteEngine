@@ -1,4 +1,5 @@
 #include "DeviceHandler.h"
+#include "LtMesh.h"
 namespace lte {
 	uint32_t DeviceHandler::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice& physicalDevice)
 	{
@@ -306,6 +307,26 @@ namespace lte {
 			gameObject.descriptorSets = device.allocateDescriptorSets(allocInfo);
 			for (size_t i = 0; i < maxFIF; i++) {
 
+				if (i >= gameObject.uniformBuffers.size()) {
+					std::cout<<"CRASH PREVENTED: uniformBuffers is too small!"<<std::endl;
+					break;
+				}
+
+				// 3. Carefully unpack the ImagePool pointers
+				uint32_t imgIndex = rs[meshNo].imageIndex;
+				if (imgIndex >= ImageDelegate::ImagePool.size()) {
+					std::cout<<"CRASH PREVENTED: imageIndex " + std::to_string(imgIndex) + " is out of bounds for ImagePool!"<<std::endl;
+					break;
+				}
+
+				auto& poolItem = ImageDelegate::ImagePool[imgIndex];
+				if (!poolItem) {
+					std::cout << "CRASH PREVENTED: ImagePool[" + std::to_string(imgIndex) + "] is a nullptr!" << std::endl;
+					break;
+				}
+
+
+
 				vk::DescriptorBufferInfo bufferInfo{};
 					bufferInfo.buffer = *gameObject.uniformBuffers[i],
 					bufferInfo.offset = 0,
@@ -335,8 +356,80 @@ namespace lte {
 					descriptorbuffer,
 					descriptorimage
 				};
+				try {
+					device.updateDescriptorSets(descriptorWrites, {});
+				}
+				catch (const std::exception& e) {
+					std::cout << std::string("VULKAN EXCEPTION during updateDescriptorSets: ") + e.what() << std::endl;
+				}
+			}
+			meshNo++;
+		}
+	}
+	void DeviceHandler::createDynamicDescriptorPool(vk::raii::DescriptorPool& outPool, vk::raii::Device& device, uint32_t framesInFlight)
+	{
+		vk::DescriptorPoolSize poolSize{};
+		poolSize.type = vk::DescriptorType::eUniformBufferDynamic;
+		poolSize.descriptorCount = framesInFlight;
 
-				device.updateDescriptorSets(descriptorWrites, {});
+		vk::DescriptorPoolCreateInfo poolInfo{};
+		poolInfo.poolSizeCount = 1;
+		poolInfo.pPoolSizes = &poolSize;
+		// We only need one Descriptor Set per frame in flight
+		poolInfo.maxSets = framesInFlight;
+
+		outPool = vk::raii::DescriptorPool(device,poolInfo);
+	}
+	void DeviceHandler::createDynamicDescriptorSets(std::vector<LtSkinnedMeshInfo>& meshes, vk::raii::DescriptorPool& pool, vk::raii::DescriptorSetLayout& layout, vk::raii::Sampler& sampler, vk::raii::Device& device, uint32_t framesInFlight, const std::vector<vk::raii::Buffer>& dynamicBuffers,std::vector<RenderSet>& rs)
+	{
+
+
+		uint32_t meshNo = 0;
+		for (auto& gameObject : meshes)
+		{
+
+
+			std::vector<vk::DescriptorSetLayout> layouts(framesInFlight, *layout);
+			vk::DescriptorSetAllocateInfo allocInfo{};
+			allocInfo.descriptorPool = *pool,
+				allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
+				allocInfo.pSetLayouts = layouts.data();
+
+			gameObject.descriptorSets.clear();
+			gameObject.descriptorSets = device.allocateDescriptorSets(allocInfo);
+			for (size_t i = 0; i < framesInFlight; i++)
+			{
+				vk::DescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = *dynamicBuffers[i];
+				bufferInfo.offset = 0;
+				// VERY IMPORTANT: Range is the size of ONE chunk, not the whole buffer!
+				bufferInfo.range = sizeof(SkinnedUniformBufferObject);
+
+				vk::WriteDescriptorSet descriptorbuffer{};
+				descriptorbuffer.dstSet = *gameObject.descriptorSets[i],
+					descriptorbuffer.dstBinding = 0,
+					descriptorbuffer.dstArrayElement = 0,
+					descriptorbuffer.descriptorCount = 1,
+					descriptorbuffer.descriptorType = vk::DescriptorType::eUniformBufferDynamic,
+					descriptorbuffer.pBufferInfo = &bufferInfo;
+
+
+				vk::DescriptorImageInfo imageInfo{};
+				imageInfo.sampler = *sampler,
+					imageInfo.imageView = *(*ImageDelegate::ImagePool[rs[meshNo].imageIndex]).imageView,
+					imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+
+				vk::WriteDescriptorSet textureWrite{};
+				textureWrite.dstSet = *gameObject.descriptorSets[i];
+				textureWrite.dstBinding = 1;
+				textureWrite.dstArrayElement = 0;
+				textureWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+				textureWrite.descriptorCount = 1;
+				textureWrite.pImageInfo = &imageInfo;
+
+				// 3. Update BOTH at the same time!
+				device.updateDescriptorSets({ descriptorbuffer, textureWrite }, nullptr);
 			}
 			meshNo++;
 		}

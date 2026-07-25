@@ -34,9 +34,15 @@ namespace lte {
 	private:
 		ImVec2 size = ImVec2(800, 600);
 		uint32_t frameNum = 0;
-		vk::raii::DescriptorPool descriptorPool = nullptr;
 		std::vector<std::unique_ptr<LtImage>> images = {};
+		vk::raii::DescriptorPool descriptorPool = nullptr;
+
 		std::vector<VkDescriptorSet> descriptorSets = {};
+
+		vk::raii::DescriptorPool dynamicDescriptorPool = nullptr;
+
+		std::vector<vk::raii::DescriptorSet> dynamicDescriptorSets = {};
+
 		LtPipeline pipeline;
 		LtPipeline SkinnedPipeline;
 		std::vector<vk::raii::CommandBuffer> commandBuffers = {};
@@ -72,10 +78,12 @@ namespace lte {
 		ImVec2 lastMousePos;
 
 		
+		
 		//this is for skinned vertexes
-		vk::raii::Buffer dynamicSkinnedUBO = nullptr;
-		vk::raii::DeviceMemory dynamicSkinnedMemory = nullptr;
-		void* dynamicUBOMappedPtr;
+		std::vector<vk::raii::Buffer> dynamicSkinnedUBO = {};
+		std::vector<vk::raii::DeviceMemory> dynamicSkinnedMemory = {};
+		std::vector<void*> dynamicUBOMappedPtr;
+
 		Lt_Importer::StrippedModel skinnedModel;
 		vk::raii::DescriptorSet skinnedDescriptorSet = nullptr;
 

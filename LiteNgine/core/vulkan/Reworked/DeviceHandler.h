@@ -34,6 +34,10 @@ namespace lte {
 			static void createTextureSampler(vk::raii::Sampler* sampler, vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device);
 			static void createDescriptorPool(vk::raii::DescriptorPool* descriptorPool, vk::raii::Device* device, uint32_t maxObjects, uint8_t maxFIF);
 			static void createDescriptorSets(vk::raii::DescriptorSetLayout& descriptorSetLayout, vk::raii::DescriptorPool& descriptorPool, vk::raii::Sampler& sampler, std::vector<LtMeshInfo>& meshes, uint8_t maxFIF, vk::raii::Device& device, std::vector<RenderSet>& rs);
-
+			static void createDynamicDescriptorPool(
+				vk::raii::DescriptorPool& outPool,
+				vk::raii::Device& device,
+				uint32_t framesInFlight);
+			static void createDynamicDescriptorSets(std::vector<LtSkinnedMeshInfo>& meshes, vk::raii::DescriptorPool& pool, vk::raii::DescriptorSetLayout& layout, vk::raii::Sampler& sampler, vk::raii::Device& device, uint32_t framesInFlight, const std::vector<vk::raii::Buffer>& dynamicBuffers, std::vector<RenderSet>& rs);
 	};
 }

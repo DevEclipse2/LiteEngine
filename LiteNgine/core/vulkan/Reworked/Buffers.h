@@ -15,7 +15,15 @@ namespace lte {
 		static void createVertexBuffer	(uint32_t size, Vertex* vertex	, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory, singleTimeCommandInfo info, vk::raii::PhysicalDevice& device);
 		static void createIndexBuffer	(uint32_t size, uint32_t* vertex, vk::raii::Buffer* buffer, vk::raii::DeviceMemory* deviceMemory, singleTimeCommandInfo info, vk::raii::PhysicalDevice& device);
 		static void createUniformBuffers(std::vector<LtMeshInfo>* meshes, uint8_t maxFIF, vk::raii::Device& device, vk::raii::PhysicalDevice& physDevice);
-
+		static void createDynamicUniformBuffers(
+			uint32_t maxSupportedChunks,
+			uint32_t framesInFlight,
+			vk::raii::Device& device,
+			vk::raii::PhysicalDevice& physDev,
+			size_t& outDynamicAlignment,
+			std::vector<vk::raii::Buffer>& outBuffers,
+			std::vector<vk::raii::DeviceMemory>& outMemory,
+			std::vector<void*>& outMappedPtrs);
 
 
 	};

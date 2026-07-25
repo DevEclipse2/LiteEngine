@@ -83,8 +83,8 @@ namespace lte {
 		glm::vec3 normal;
 		glm::vec3 color;
 		glm::vec2 texCoord;
-		glm::u8vec4 BoneIDs;
-		glm::vec4 BoneWeights;
+		glm::u8vec4 BoneIDs = glm::u8vec4(0);
+		glm::vec4 BoneWeights = glm::vec4(0);
 
 		static vk::VertexInputBindingDescription getBindingDescription()
 		{
@@ -139,14 +139,41 @@ namespace lte {
 
 		void ResolveWeights(skinnedVertex& vertex)
 		{
-			std::sort(WeightBonePair.begin(), WeightBonePair.end());
-			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+			std::sort(WeightBonePair.begin(), WeightBonePair.end(),
+				[](const std::pair<float, uint32_t>& a, const std::pair<float, uint32_t>& b) {
+					return a.first > b.first;
+				});
+
+			int numBones = std::min(static_cast<int>(WeightBonePair.size()), MAX_BONE_INFLUENCE);
+
+			float sum = 0.0f;
+
+			for (int i = 0; i < numBones; i++)
 			{
 				vertex.BoneWeights[i] = WeightBonePair[i].first;
 				vertex.BoneIDs[i] = WeightBonePair[i].second;
+				sum += WeightBonePair[i].first;
 			}
 
-			//drops everything
+			for (int i = numBones; i < MAX_BONE_INFLUENCE; i++)
+			{
+				vertex.BoneWeights[i] = 0.0f;
+				vertex.BoneIDs[i] = 0;
+			}
+
+			if (sum > 0.0f)
+			{
+				for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+				{
+					vertex.BoneWeights[i] /= sum;
+				}
+			}
+			else
+			{
+				vertex.BoneWeights[0] = 1.0f;
+				vertex.BoneIDs[0] = 0;
+			}
+
 			WeightBonePair.clear();
 			WeightBonePair.shrink_to_fit();
 		}
@@ -197,7 +224,7 @@ namespace lte {
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
 		std::vector<glm::mat4> finalBoneMatrices;
-
+		std::vector<vk::raii::DescriptorSet> descriptorSets;
 		glm::mat4 getModelMatrix() const {
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, position);

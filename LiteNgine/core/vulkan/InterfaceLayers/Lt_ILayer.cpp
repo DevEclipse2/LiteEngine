@@ -98,6 +98,7 @@ namespace lte {
 	}
 	void Lt_ILayer::Loop()
 	{
+
 		Iridium::StartFrame(frameCount);
 		Con::Display();
 
