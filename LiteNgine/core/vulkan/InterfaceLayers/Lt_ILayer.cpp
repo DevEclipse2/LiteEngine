@@ -99,6 +99,8 @@ namespace lte {
 	void Lt_ILayer::Loop()
 	{
 
+		//auto miscGuiCommand = std::chrono::high_resolution_clock::now();
+
 		Iridium::StartFrame(frameCount);
 		Con::Display();
 
@@ -117,7 +119,15 @@ namespace lte {
 			Con::LogEvent("main window resized", TAG_ENGINE);
 		}
 		
+		//1 ms
 		editorViewport.RenderScene(Lt_Vulkan::windows[mainWindowIndex].syncSet.presentCompleteSemaphores[frames]);
+		//auto stopb = std::chrono::high_resolution_clock::now();
+
+		//auto durationb = std::chrono::duration_cast<std::chrono::microseconds>(stopb - miscGuiCommand).count();
+		//std::cout << "stuff took: " << (durationb / 1000.0f) << " ms\n";
+
+		
+
 		guiHandler.StartFrame();
 		if(ImGui::BeginMainMenuBar())
 		{
@@ -137,13 +147,12 @@ namespace lte {
 
 		Iridium::SubmitDrawCommands();
 
-
-		viewport.SubmitGUICommands();
+		//viewport.SubmitGUICommands();
+		
 		layoutloader.SubmitGUICommands();
-
+		
 
 		editorViewport.SubmitGUICommands();
-
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{

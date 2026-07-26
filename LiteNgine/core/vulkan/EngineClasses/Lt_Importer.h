@@ -19,7 +19,11 @@ namespace lte {
 	{
 
 	public:
-		// 2. A struct to represent a material
+		struct SkeletonNode {
+			std::string name;
+			glm::mat4 defaultLocalTransform;
+			std::vector<SkeletonNode> children;
+		};
 		struct Lt_Material {
 			uint32_t diffuseTextureIndex = -1; // in
 			uint32_t normalTextureIndex = -1;
@@ -27,13 +31,14 @@ namespace lte {
 
 		struct StrippedModel// model with only relevant transforms and stuff
 		{
+			SkeletonNode rootNode;
 			std::vector<RenderSet> staticRenderset;
 			std::vector<RenderSet> skinnedRenderset;
 			glm::mat4 transform;
 			std::vector<glm::mat4> transforms;
 			std::vector<glm::mat4> skinnedTransforms;
-			std::unordered_map<std::string, uint16_t> BoneIndexes;
-			std::vector<Bone> bones;
+			 
+			Rig modelRig;
 			std::string name;
 		};
 
@@ -58,18 +63,45 @@ namespace lte {
 
 		struct Model {
 			glm::mat4 transform;
+			SkeletonNode rootNode;
 			std::vector<Lt_MeshData> subMeshes;
 			std::vector<Lt_SkinnedMeshData> skinnedSubMeshes;
 			std::vector<glm::mat4> transforms;
 			std::vector<glm::mat4> skinnedTransforms;
+			Rig modelRig;
 			std::unordered_map<std::string, uint16_t> BoneIndexes;
-			std::vector<Bone> bones;
 			uint32_t VertexCount;
 			uint32_t IndexCount;
 			std::string name;
-			std::vector<Lt_Material> materials;
+		};
+		struct PositionKey {
+			glm::vec3 position;
+			float timeStamp;
 		};
 
+		struct RotationKey {
+			glm::quat orientation;
+			float timeStamp;
+		};
+
+		struct ScaleKey {
+			glm::vec3 scale;
+			float timeStamp;
+		};
+
+		// All keyframes for a single bone
+		struct BoneTransformTrack {
+			std::string boneName;
+			std::vector<PositionKey> positions;
+			std::vector<RotationKey> rotations;
+			std::vector<ScaleKey> scales;
+		};
+		struct Animation {
+			std::string name;
+			float duration;
+			float ticksPerSecond;
+			std::vector<BoneTransformTrack> boneTracks;
+		};
 	public:
 		static inline glm::mat4 ConvertAssimpMatrixToGLM(const aiMatrix4x4& from) {
 			glm::mat4 to;
@@ -83,19 +115,29 @@ namespace lte {
 		static uint8_t ParseMesh(aiMesh* mesh,Lt_MeshData& data);
 		static uint8_t ParseSkinnedMesh(aiMesh* mesh, std::vector<Lt_SkinnedMeshData>& outSubMeshes,Model& model );
 		static void ParseNode(aiNode* node, const aiScene* scene, Model& currentModel, glm::mat4 parentTransform);
-		static void ParseBoneHeirarchy(const aiNode* node, int parentBoneID, Model& model);
+		static void ParseNodeHierarchy(const aiNode* node, SkeletonNode& engineNode);
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
 		//uint8_t Unpack();
 		static uint8_t ParseScene(const aiScene* pScene, const std::string& directory);
-
+		static void LoadAnimation(const aiScene* scene, Animation& outAnimation, int animIndex = 0);
 		static uint8_t GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice);
 		static uint8_t RemoveModels();
 		inline static std::vector<RenderSet> renderSets;
 		inline static std::vector<StrippedModel> strippedModels;
-
-		inline static uint32_t fallBackImageIndex = 0;
+		static int GetPositionIndex(float animationTime, const BoneTransformTrack& track);
+		static int GetRotationIndex(float animationTime, const BoneTransformTrack& track);
+		static int GetScaleIndex(float animationTime, const BoneTransformTrack& track);
+		static glm::vec3 InterpolatePosition(float animationTime, const BoneTransformTrack& track);
+		static glm::quat InterpolateRotation(float animationTime, const BoneTransformTrack& track);
+		static glm::vec3 InterpolateScale(float animationTime, const BoneTransformTrack& track);
+		static std::string ResolveTexturePath(const std::string& assimpPathStr);
+		inline static uint32_t fallBackImageIndex =-1;
+		inline static Animation animation;
+		static void UpdateHierarchy(const SkeletonNode& node, const glm::mat4& parentTransform, float animationTime, StrippedModel& model, LtSkinnedMeshInfo& meshInfo, const Animation& animation);
+		static const BoneTransformTrack* FindBoneTrack(const Animation& animation, const std::string& nodeName);
+		static std::string RemovePrefix(std::string name, std::vector<std::string>& filterWords);
 
 	private:
 		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
@@ -106,5 +148,6 @@ namespace lte {
 		inline static std::vector<Lt_Material> sceneMaterials;
 		inline static std::unordered_map<std::string, int> loadedTextureMap;
 		inline static uint32_t renderSetOffset = 0;
+		static bool HasSkinnedMeshes(const aiNode* node, const aiScene* scene);
 	};
 }

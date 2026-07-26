@@ -1,0 +1,34 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+11:03:52.045 info: engine, begin launch bootstrap process
+11:03:54.751 info: engine, user entered selection
+11:03:54.751 info: engine, launch bootstrap process completed with response : continue
+11:03:54.751 info: engine, program to continue execution
+11:03:54.751 info: debug, generic, loaded new path from preferences logs/
+11:03:54.752 success: debug, generic, successfully written to new address :  logs/log at Jul 25 23-45-20 2026.txt
+11:03:54.752 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+11:03:54.918 info: vulkan, validation layer: type { General } msg: While debugging through RenderDoc, debug output through validation layers is suppressed.
+To show debug output look at the 'DebugOutputMute' capture option in RenderDoc's API, but be aware of false positives from the validation layers.
+11:03:55.271 event: engine, Spinning up User Interface...
+11:03:55.280 event: engine, Init image viewport
+11:03:55.308 event: engine, Init editor viewport
+11:03:55.312 info: engine, Making swap image0
+11:03:55.314 info: engine, Making swap image1
+11:03:55.315 info: engine, create desc set layoud
+11:03:55.315 info: engine, create pipeline
+11:03:55.320 info: engine, create skinned pipeline
+11:03:55.335 info: engine, create synchronization
+11:03:55.335 info: engine, create command buffer
+11:03:55.336 info: engine, load files
+11:03:55.780 info: engine, create sampler
+11:03:55.787 event: engine, profiling, Iridium profiler has been initalised.
+11:03:55.787 event: engine, Preparing to render first frame
+11:03:55.792 error: high    , 	engine, profiling, Invalid frameID, submitted 0 while profiler has completed frame 0
+11:03:55.887 error: medium  , 	engine, profiling, No Frame Has Been Started!
+11:03:55.973 event: engine, CaptureFrame
+11:03:57.256 event: engine, Resize called
+11:03:57.297 event: engine, main window resized
+11:04:06.531 event: engine, engine shutdown-------------------------------------------
+11:04:06.531 event: engine, Engine Shutdown initiated
+11:04:06.791 event: engine, engine cleanup-------------------------------------------
+11:04:06.791 event: engine, Engine Cleanup initiated

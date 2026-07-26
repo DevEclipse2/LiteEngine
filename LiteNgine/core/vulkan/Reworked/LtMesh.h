@@ -188,7 +188,10 @@ namespace lte {
 		std::vector<uint16_t> children;//points to different boneids
 	};
 	
-
+	struct Rig {
+		std::vector<Bone> bones;
+		glm::mat4 globalInverseTransform; // The inverse transform of the entire scene root
+	};
 	//struct LtSkinnedMeshInfo {
 
 	//	// Transform properties

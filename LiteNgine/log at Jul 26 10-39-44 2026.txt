@@ -1,0 +1,67 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+10:39:45.138 info: engine, begin launch bootstrap process
+10:39:46.678 info: engine, user entered selection
+10:39:46.678 error: low     , 	engine, launch bootstrap process failed with result : unidentified input , retrying...
+10:39:46.679 info: engine, retrying
+10:39:50.824 info: engine, user entered selection
+10:39:50.824 info: engine, launch bootstrap process completed with response : continue
+10:39:50.824 info: engine, program to continue execution
+10:39:50.824 info: debug, generic, loaded new path from preferences logs/
+10:39:50.825 success: debug, generic, successfully written to new address :  logs/log at Jul 26 10-38-58 2026.txt
+10:39:50.825 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+10:39:51.090 info: vulkan, validation layer: type { General } msg: --- WELCOME TO LITENGINE ---
+10:39:51.098 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_KHRONOS_validation" (C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll)
+10:39:51.098 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\graphics-hook64.dll)
+10:39:51.098 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_NV_present" (C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll)
+10:39:51.098 info: vulkan, validation layer: type { General } msg: Inserted device layer "VK_LAYER_NV_optimus" (C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll)
+10:39:51.098 info: vulkan, validation layer: type { General } msg: vkCreateDevice layer callstack setup to:
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    <Application>
+10:39:51.098 info: vulkan, validation layer: type { General } msg:      ||
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    <Loader>
+10:39:51.098 info: vulkan, validation layer: type { General } msg:      ||
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    VK_LAYER_NV_optimus
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+10:39:51.098 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_LAYER_NV_OPTIMUS_1
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Manifest: C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nv-vk64.json
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Library:  C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll
+10:39:51.098 info: vulkan, validation layer: type { General } msg:      ||
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    VK_LAYER_NV_present
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+10:39:51.098 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_LAYER_NV_GR2608_1
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Manifest: C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nv-vk64.json
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Library:  C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll
+10:39:51.098 info: vulkan, validation layer: type { General } msg:      ||
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    VK_LAYER_OBS_HOOK
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Type: Implicit
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Enabled By: Implicit Layer
+10:39:51.098 info: vulkan, validation layer: type { General } msg:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Library:  C:\ProgramData\obs-studio-hook\graphics-hook64.dll
+10:39:51.098 info: vulkan, validation layer: type { General } msg:      ||
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    VK_LAYER_KHRONOS_validation
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Type: Explicit
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Enabled By: By the Application
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Manifest: C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.json
+10:39:51.098 info: vulkan, validation layer: type { General } msg:            Library:  C:\VulkanSDK\1.4.341.1\Bin\VkLayer_khronos_validation.dll
+10:39:51.098 info: vulkan, validation layer: type { General } msg:      ||
+10:39:51.098 info: vulkan, validation layer: type { General } msg:    <Device>
+10:39:51.099 info: vulkan, validation layer: type { General } msg:        Using "Quadro P4000" with driver: "C:\Windows\System32\DriverStore\FileRepository\nv_dispwi.inf_amd64_36bb8311c64d75ec\nvoglv64.dll"
+10:39:51.339 event: engine, Spinning up User Interface...
+10:39:51.350 event: engine, Init image viewport
+10:39:51.376 event: engine, Init editor viewport
+10:39:51.380 info: engine, Making swap image0
+10:39:51.382 info: engine, Making swap image1
+10:39:51.384 info: engine, create desc set layoud
+10:39:51.384 info: engine, create pipeline
+10:39:51.384 info: engine, create skinned pipeline
+10:39:51.385 info: engine, create synchronization
+10:39:51.385 info: engine, create command buffer
+10:39:51.385 info: engine, load files
+10:39:51.830 info: engine, create sampler
+10:39:51.836 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCreateDescriptorPool(): pCreateInfo->pPoolSizes[0].descriptorCount is zero.
+The Vulkan spec states: descriptorCount must be greater than 0 (https://docs.vulkan.org/spec/latest/chapters/descriptorsets.html#VUID-VkDescriptorPoolSize-descriptorCount-00302)
+10:39:51.836 error: undefined, 	vulkan, validation layer: type { Validation } msg: vkCreateDescriptorPool(): pCreateInfo->pPoolSizes[1].descriptorCount is zero.
+The Vulkan spec states: descriptorCount must be greater than 0 (https://docs.vulkan.org/spec/latest/chapters/descriptorsets.html#VUID-VkDescriptorPoolSize-descriptorCount-00302)

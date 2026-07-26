@@ -89,8 +89,7 @@ namespace lte {
 
 		size_t dynamicAlignment;
 
-
-
+		float animPlayHead = 0;
 
 		int objectID		= 0;
 		int SelectedObject	= -1;

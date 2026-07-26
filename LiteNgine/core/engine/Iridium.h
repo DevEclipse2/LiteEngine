@@ -9,6 +9,7 @@
 #include <functional>
 #include <thread>
 #include <mutex>
+#include <iostream>
 //the iridium profiler
 //its gud
 //image snapshot
@@ -104,6 +105,27 @@ namespace lte {
 			static void CheckExist(uint8_t command,const char* thread, const char* name);
 			
 	};
+
+
+	class ScopeTimer {
+	public:
+		ScopeTimer(const std::string& timerName) : name(timerName) {
+			start = std::chrono::high_resolution_clock::now();
+		}
+
+		~ScopeTimer() {
+			auto end = std::chrono::high_resolution_clock::now();
+			// Get microseconds for high precision, then divide by 1000 for milliseconds
+			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+			std::cout << "[Profiler] " << name << " took " << (duration / 1000.0f) << " ms\n";
+		}
+
+	private:
+		std::string name;
+		std::chrono::time_point<std::chrono::high_resolution_clock> start;
+	};
+
 }
 //a frame is started, and on a separate thread,the profiler calculate average, writes to disk, and performs screen caps
 //

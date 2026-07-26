@@ -46,7 +46,7 @@ namespace lte {
         stbi_image_free(pixels);
         
         ImageDelegate::createImage(ImageIndex,width, height,mipLevels,vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal,device,physicalDevice);
-        ImageDelegate::createImageView(ImageIndex, vk::Format::eR8G8B8A8Srgb,vk::ImageAspectFlagBits::eColor,1,device);
+        ImageDelegate::createImageView(ImageIndex, vk::Format::eR8G8B8A8Srgb,vk::ImageAspectFlagBits::eColor,mipLevels,device);
         ImageDelegate::createSampler(ImageIndex,device);
         /*transitionImageLayout(textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
         copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
@@ -116,7 +116,7 @@ namespace lte {
         uint32_t mipLevels = 0;
         stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channel, STBI_rgb_alpha);
         vk::DeviceSize imageSize = width * height * 4;
-        mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+        mipLevels = 1;
         if (!pixels) {
             throw std::runtime_error("failed to load texture image!");
             return false;

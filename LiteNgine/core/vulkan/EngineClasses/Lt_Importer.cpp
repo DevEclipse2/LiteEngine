@@ -20,6 +20,8 @@ namespace lte
 			pFlags = aiProcess_CalcTangentSpace |
 				aiProcess_Triangulate |
 				aiProcess_JoinIdenticalVertices |
+				aiProcess_FlipUVs |
+				aiProcess_PopulateArmatureData |
 				aiProcess_SortByPType;
 		}
 		Assimp::Importer importer;
@@ -40,10 +42,14 @@ namespace lte
 
 		data.VertexCount = mesh->mNumVertices;
 		data.IndexCount = mesh->mNumFaces * 3;
+		data.materialIndex = mesh->mMaterialIndex;
+
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 			Vertex v;
 
 			v.pos = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+
+
 			if (mesh->HasNormals()) {
 				v.normal.x = mesh->mNormals[i].x;
 				v.normal.y = mesh->mNormals[i].y;
@@ -265,43 +271,29 @@ namespace lte
 		}
 	}
 
-	void Lt_Importer::ParseBoneHeirarchy(const aiNode* node, int parentBoneID, Model& model)
-	{
+	void parseBoneHierarchy(aiNode* node, int parentBoneId) {
 		std::string nodeName = node->mName.C_Str();
-		int currentBoneID = parentBoneID;
+		int currentBoneId = parentBoneId; // Default to parent's ID
 
-		// Check if this node is actually a bone we care about
-		if (model.BoneIndexes.find(nodeName) != model.BoneIndexes.end())
-		{
-			currentBoneID = model.BoneIndexes[nodeName];
-			Bone& currentBone = model.bones[currentBoneID];
+		// 1. Is this node actually a bone?
+		if (boneNameToId.find(nodeName) != boneNameToId.end()) {
 
-			// 1. Assign the local space transform (Bind Pose)
-			currentBone.localTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
+			currentBoneId = boneNameToId[nodeName];
 
-			// 2. Link to parent
-			currentBone.parentId = parentBoneID;
+			// 2. Link it to its parent
+			bones[currentBoneId].parentId = parentBoneId;
 
-			// 3. Tell the parent that it has a new child
-			if (parentBoneID != -1)
-			{
-				model.bones[parentBoneID].children.push_back(currentBoneID);
-			}
+			// 3. (Optional) Grab the local transform if you haven't already
+			// bones[currentBoneId].localBindTransform = convertAssimpMatrix(node->mTransformation);
 		}
 
-		// Recursively walk down the tree
-		for (unsigned int i = 0; i < node->mNumChildren; i++)
-		{
-			ParseBoneHeirarchy(node->mChildren[i], currentBoneID, model);
+		// 4. Recurse down to all children, passing this node as the new parent
+		for (unsigned int i = 0; i < node->mNumChildren; i++) {
+			parseBoneHierarchy(node->mChildren[i], currentBoneId);
 		}
 	}
-
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
 	{
-
-		//only ever do this once
-
-
 
 
 		printf("*******************************************************\n");
@@ -313,12 +305,16 @@ namespace lte
 
 		
 		//load the random file only once
-		LtImage fallbackImage{};
-		FileLoader::createTextureImage("textures/texture.png", fallbackImage,device,PhysicalDevice,cmdInfo);
-		fallBackImageIndex = ImageDelegate::requestImageCreation(fallbackImage);
+		if (fallBackImageIndex == -1)
+		{
+			LtImage fallbackImage{};
+			FileLoader::createTextureImage("textures/texture.png", fallbackImage,device,PhysicalDevice,cmdInfo);
+			fallBackImageIndex = ImageDelegate::requestImageCreation(fallbackImage);
+		}
+		
 
 
-
+		LoadAnimation(pScene, animation, 0);
 		for (unsigned int i = 0; i < pScene->mNumMaterials; i++)
 		{
 			aiMaterial* aiMat = pScene->mMaterials[i];
@@ -370,8 +366,16 @@ namespace lte
 					}
 					else
 					{
-						std::string fullPath = texPath;
-						pixels = stbi_load(fullPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+						std::string fullPath = "";
+						if (!texPath.starts_with("C:\\") && !texPath.starts_with("c:\\")) {
+							fullPath = directory + "/" + texPath;
+						}
+						else 
+						{
+							fullPath = texPath;
+						}
+						
+						pixels = stbi_load(ResolveTexturePath(fullPath).c_str(), &width, &height, &channels, STBI_rgb_alpha);
 					}
 					vk::DeviceSize imageSize = width * height * 4;
 					mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
@@ -390,7 +394,7 @@ namespace lte
 					LtImage tmpImg{};
 
 					ImageDelegate::createImage(tmpImg, width, height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, device, PhysicalDevice);
-					ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, 1, device);
+					ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, mipLevels, device);
 					ImageDelegate::createSampler(tmpImg, device);
 
 
@@ -399,36 +403,284 @@ namespace lte
 					Buffers::copyBufferToImage(stagingBuffer, tmpImg.image, tmpImg.width, tmpImg.height, cmdInfo);
 					//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
 					ImageDelegate::generateMipmaps(tmpImg, vk::Format::eR8G8B8A8Srgb, PhysicalDevice, cmdInfo);
-
-					ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, tmpImg.mipLevels, device);
 					uint32_t imgIndex = ImageDelegate::requestImageCreation(tmpImg);
 					newMaterial.diffuseTextureIndex = imgIndex;
+				}
+
+				if (newMaterial.diffuseTextureIndex == -1)
+				{
+					Con::LogWarning("invalid material index!", TAG_ENGINE);
+					newMaterial.diffuseTextureIndex = fallBackImageIndex;
 				}
 			}
 			sceneMaterials.push_back(newMaterial);
 		}
 
 		aiNode* rootNode = pScene->mRootNode;
-	
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
-		//ParseNode(rootNode, pScene);
+		Model SceneRoot;
+		ParseNodeHierarchy(rootNode, SceneRoot.rootNode);
 
 		for (unsigned int i = 0; i < rootNode->mNumChildren; i++)
 		{
 			aiNode* topLevelNode = rootNode->mChildren[i];
 
+			if (HasSkinnedMeshes(topLevelNode, pScene))
+			{
+				Model characterModel;
+				characterModel.name = topLevelNode->mName.C_Str();
 
-			Model newObject;
-			LtMeshInfo meshInfo;
-			newObject.name = topLevelNode->mName.C_Str();
-			glm::mat4 localTransform = ConvertAssimpMatrixToGLM(topLevelNode->mTransformation);
-			newObject.transform = rootTransform * localTransform;
+				// Parse the hierarchy starting exactly at this character's top node
+				ParseNodeHierarchy(topLevelNode, characterModel.rootNode);
 
-			ParseNode(topLevelNode, pScene, newObject,rootTransform);
-			ParseBoneHeirarchy(topLevelNode, -1, newObject);
-			loadedModels.push_back(newObject);
+				// Optional: Pre-multiply the scene's global root transform into this character's root
+				characterModel.rootNode.defaultLocalTransform = rootTransform * characterModel.rootNode.defaultLocalTransform;
+
+				// Extract vertices, weights, inverse bind matrices...
+				ParseNode(topLevelNode, pScene, characterModel,rootTransform);
+
+				loadedModels.push_back(characterModel);
+			}
+			else
+			{
+				Model staticProp;
+
+				staticProp.name = topLevelNode->mName.C_Str();
+
+				glm::mat4 localTransform = ConvertAssimpMatrixToGLM(topLevelNode->mTransformation);
+				staticProp.rootNode.defaultLocalTransform = rootTransform * localTransform;
+
+				ParseNode(topLevelNode, pScene, staticProp,rootTransform);
+
+				loadedModels.push_back(staticProp);
+			}
+		}
+		
+		return 0;
+	}
+
+	int Lt_Importer::GetPositionIndex(float animationTime, const BoneTransformTrack& track) {
+		for (int i = 0; i < track.positions.size() - 1; ++i) {
+			if (animationTime < track.positions[i + 1].timeStamp)
+				return i;
 		}
 		return 0;
+	}
+
+	int Lt_Importer::GetRotationIndex(float animationTime, const BoneTransformTrack& track) {
+		for (int i = 0; i < track.rotations.size() - 1; ++i) {
+			if (animationTime < track.rotations[i + 1].timeStamp)
+				return i;
+		}
+		return 0;
+	}
+
+	int Lt_Importer::GetScaleIndex(float animationTime, const BoneTransformTrack& track) {
+		for (int i = 0; i < track.scales.size() - 1; ++i) {
+			if (animationTime < track.scales[i + 1].timeStamp)
+				return i;
+		}
+		return 0;
+	}
+
+	glm::vec3 Lt_Importer::InterpolatePosition(float animationTime, const BoneTransformTrack& track) {
+		if (track.positions.size() == 1) return track.positions[0].position;
+
+		int p0Index = GetPositionIndex(animationTime, track);
+		int p1Index = p0Index + 1;
+
+		float scaleFactor = (animationTime - track.positions[p0Index].timeStamp) /
+			(track.positions[p1Index].timeStamp - track.positions[p0Index].timeStamp);
+
+		return glm::mix(track.positions[p0Index].position, track.positions[p1Index].position, scaleFactor);
+	}
+
+	glm::quat Lt_Importer::InterpolateRotation(float animationTime, const BoneTransformTrack& track) {
+		if (track.rotations.size() == 1) return glm::normalize(track.rotations[0].orientation);
+
+		int p0Index = GetRotationIndex(animationTime, track);
+		int p1Index = p0Index + 1;
+
+		float scaleFactor = (animationTime - track.rotations[p0Index].timeStamp) /
+			(track.rotations[p1Index].timeStamp - track.rotations[p0Index].timeStamp);
+
+		// SLERP (Spherical Linear Interpolation) is required for quaternions
+		glm::quat finalRot = glm::slerp(track.rotations[p0Index].orientation, track.rotations[p1Index].orientation, scaleFactor);
+		return glm::normalize(finalRot);
+	}
+
+	glm::vec3 Lt_Importer::InterpolateScale(float animationTime, const BoneTransformTrack& track) {
+		if (track.scales.size() == 1) return track.scales[0].scale;
+
+		int p0Index = GetScaleIndex(animationTime, track);
+		int p1Index = p0Index + 1;
+
+		float scaleFactor = (animationTime - track.scales[p0Index].timeStamp) /
+			(track.scales[p1Index].timeStamp - track.scales[p0Index].timeStamp);
+
+		return glm::mix(track.scales[p0Index].scale, track.scales[p1Index].scale, scaleFactor);
+	}
+
+	std::string Lt_Importer::ResolveTexturePath(const std::string& assimpPathStr)
+	{
+		namespace fs = std::filesystem;
+		fs::path requestedPath = assimpPathStr;
+
+		if (fs::exists(requestedPath)) {
+			return requestedPath.string();
+		}
+
+		fs::path directory = requestedPath.parent_path();
+		fs::path targetStem = requestedPath.stem();
+
+		if (directory.empty()) {
+			directory = ".";
+		}
+
+		if (!fs::exists(directory) || !fs::is_directory(directory)) {
+			return assimpPathStr;
+		}
+
+		for (const auto& entry : fs::directory_iterator(directory)) {
+			if (!entry.is_regular_file()) continue;
+
+			if (entry.path().stem() == targetStem) {
+				std::string foundExt = entry.path().extension().string();
+
+				std::transform(foundExt.begin(), foundExt.end(), foundExt.begin(), ::tolower);
+
+				if (foundExt == ".jpg" || foundExt == ".jpeg" || foundExt == ".png" || foundExt == ".tga" || foundExt == ".bmp") {
+					return entry.path().string();
+				}
+			}
+		}
+
+		// 4. If no alternative was found, return the original string so stb_image can fail gracefully.
+		return assimpPathStr;
+	}
+
+	void Lt_Importer::UpdateHierarchy(const SkeletonNode& node, const glm::mat4& parentTransform, float animationTime, StrippedModel& model, LtSkinnedMeshInfo& meshInfo , const Animation& animation)
+	{
+		glm::mat4 nodeTransform = node.defaultLocalTransform;
+		std::cout << "Trying to animate node: " << node.name << '\n';
+		//If animated, override with interpolated keyframes
+		const BoneTransformTrack* track = FindBoneTrack(animation, node.name);
+		if (track)
+		{
+			glm::vec3 pos = InterpolatePosition(animationTime, *track);
+			glm::quat rot = InterpolateRotation(animationTime, *track);
+			glm::vec3 scl = InterpolateScale(animationTime, *track);
+
+			glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
+			glm::mat4 rotation = glm::mat4(rot);
+			glm::mat4 scale = glm::scale(glm::mat4(1.0f), scl);
+
+			nodeTransform = translation * rotation * scale;
+		}
+
+		//Accumulate global transform
+		glm::mat4 globalTransform = parentTransform * nodeTransform;
+
+		//Calculate Final Bone Matrix for the Shader
+		if (model.BoneIndexes.find(node.name) != model.BoneIndexes.end())
+		{
+			uint32_t boneIndex = model.BoneIndexes[node.name];
+
+			meshInfo.finalBoneMatrices[boneIndex] = globalTransform * model.bones[boneIndex].offsetMatrix;
+		}
+
+		//Pass to children
+		for (const auto& childNode : node.children)
+		{
+			UpdateHierarchy(childNode, globalTransform, animationTime, model,meshInfo, animation);
+		}
+	}
+
+	const Lt_Importer::BoneTransformTrack* Lt_Importer::FindBoneTrack(const Animation& animation, const std::string& nodeName)
+	{
+		for (const auto& track : animation.boneTracks) {
+			if (track.boneName == nodeName) {
+				return &track;
+			}
+		}
+		return nullptr;
+	}
+
+	std::string Lt_Importer::RemovePrefix(std::string inName, std::vector<std::string>& prefixes)
+	{
+		std::string name = inName;
+		for (const std::string& prefix : prefixes) {
+			if (name.find(prefix) == 0) {
+				return name.substr(prefix.length());
+			}
+		}
+		return name;
+	}
+
+	bool Lt_Importer::HasSkinnedMeshes(const aiNode* node, const aiScene* scene)
+	{
+		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			if (mesh->HasBones()) {
+				return true;
+			}
+		}
+
+		// Recursively check all children (e.g., if this is the root of an Armature)
+		for (unsigned int i = 0; i < node->mNumChildren; i++) {
+			if (HasSkinnedMeshes(node->mChildren[i], scene)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Lt_Importer::LoadAnimation(const aiScene* scene, Animation& outAnimation, int animIndex)
+	{
+		if (!scene || !scene->HasAnimations()) {
+			// Handle error: No animations found
+			return;
+		}
+
+		aiAnimation* aiAnim = scene->mAnimations[animIndex];
+
+		outAnimation.name = aiAnim->mName.C_Str();
+		outAnimation.duration = static_cast<float>(aiAnim->mDuration);
+
+		outAnimation.ticksPerSecond = aiAnim->mTicksPerSecond != 0.0 ?
+			static_cast<float>(aiAnim->mTicksPerSecond) : 24.0f;
+
+		for (unsigned int i = 0; i < aiAnim->mNumChannels; i++) {
+			aiNodeAnim* channel = aiAnim->mChannels[i];
+			BoneTransformTrack track;
+			track.boneName = channel->mNodeName.C_Str();
+
+			for (unsigned int p = 0; p < channel->mNumPositionKeys; p++) {
+				aiVectorKey posKey = channel->mPositionKeys[p];
+				track.positions.push_back({
+					glm::vec3(posKey.mValue.x, posKey.mValue.y, posKey.mValue.z),
+					static_cast<float>(posKey.mTime)
+					});
+			}
+
+			for (unsigned int r = 0; r < channel->mNumRotationKeys; r++) {
+				aiQuatKey rotKey = channel->mRotationKeys[r];
+				track.rotations.push_back({
+					glm::quat(rotKey.mValue.w, rotKey.mValue.x, rotKey.mValue.y, rotKey.mValue.z),
+					static_cast<float>(rotKey.mTime)
+					});
+			}
+			for (unsigned int s = 0; s < channel->mNumScalingKeys; s++) {
+				aiVectorKey scaleKey = channel->mScalingKeys[s];
+				track.scales.push_back({
+					glm::vec3(scaleKey.mValue.x, scaleKey.mValue.y, scaleKey.mValue.z),
+					static_cast<float>(scaleKey.mTime)
+					});
+			}
+
+			outAnimation.boneTracks.push_back(track);
+		}
 	}
 	uint8_t Lt_Importer::GenerateRenderSets(singleTimeCommandInfo info, vk::raii::PhysicalDevice& physicalDevice)
 	{
@@ -449,13 +701,14 @@ namespace lte
 					AllocationPositions.emplace_back(std::pair (AllocationPosition{}, AllocationPosition{}));
 					VertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 					IndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
-					if (mesh.materials.size() == 0)
+					if( sceneMaterials.size() == 0 || submesh.materialIndex >= sceneMaterials.size())
 					{
 						meshMaterials.emplace_back(fallBackImageIndex);
 					}
 					else
 					{
-						meshMaterials.emplace_back(mesh.materials[submesh.materialIndex].diffuseTextureIndex);
+						
+						meshMaterials.emplace_back(sceneMaterials[submesh.materialIndex].diffuseTextureIndex);
 					}
 				}
 			}
@@ -494,14 +747,20 @@ namespace lte
 					skinnedVertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 					skinnedIndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
 
-					// Extract Texture and Palette
-					if (mesh.materials.size() == 0)
+					if (sceneMaterials.size() == 0 || submesh.materialIndex >= sceneMaterials.size())
 					{
 						meshMaterials.emplace_back(fallBackImageIndex);
 					}
 					else
 					{
-						meshMaterials.emplace_back(mesh.materials[submesh.materialIndex].diffuseTextureIndex);
+						if (sceneMaterials[submesh.materialIndex].diffuseTextureIndex == -1)
+						{
+							meshMaterials.emplace_back(fallBackImageIndex);
+						}
+						else {
+							meshMaterials.emplace_back(sceneMaterials[submesh.materialIndex].diffuseTextureIndex);
+						}
+						
 					}
 					meshBonePalettes.emplace_back(submesh.bonePalette);
 				}
@@ -537,14 +796,14 @@ namespace lte
 		uint32_t staticOffset = 0;
 		uint32_t skinnedOffset = 0;
 
-		// 2. Find out where the skinned rendersets begin in the global array
+		// Find out where the skinned rendersets begin in the global array
 		// (It begins exactly after all the static rendersets finish)
 		for (const auto& model : loadedModels)
 		{
 			skinnedOffset += model.subMeshes.size();
 		}
 
-		// 3. Extract the models
+		//Extract the models
 		for (auto& model : loadedModels)
 		{
 			StrippedModel newModel;
@@ -553,8 +812,8 @@ namespace lte
 			newModel.name = model.name;
 			newModel.transform = model.transform;
 			newModel.transforms = model.transforms;
-
-			// Grab Static RenderSets
+			newModel.rootNode = model.rootNode;
+			//Grab Static RenderSets
 			if (model.subMeshes.size() > 0)
 			{
 				newModel.staticRenderset = std::vector<RenderSet>(
@@ -564,7 +823,7 @@ namespace lte
 				staticOffset += model.subMeshes.size();
 			}
 
-			// Grab Skinned RenderSets (FIX: assigned to skinnedRenderset!)
+			//Grab Skinned RenderSets
 			if (model.skinnedSubMeshes.size() > 0)
 			{
 				newModel.skinnedRenderset = std::vector<RenderSet>(
@@ -583,8 +842,5 @@ namespace lte
 		loadedModels.shrink_to_fit();
 
 		return 0;
-		//since models are loaded linearly,with static rendersets first, you can just load the amount of rendersets = staticmeshes into rendersets.
-
-		//remove all loaded models and frees a bunch of memory
 	}
 }

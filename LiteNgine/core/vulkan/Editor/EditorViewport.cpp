@@ -5,6 +5,7 @@
 #include <numbers>
 #include "../EngineClasses/Lt_Mat.h"
 #include "../Reworked/DeviceHandler.h"
+#include "../../engine/Iridium.h"
 namespace lte {
 	uint8_t deviceID = 0;
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
@@ -69,24 +70,22 @@ namespace lte {
 				skinnedModels.emplace_back(model);
 				skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
 				ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
-				skinnedMeshes.back().scale *= 0.01f;
 				skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
 
 			}
-			else
+			else if(model.staticRenderset.size() > 0)
 			{
 				meshes.emplace_back(LtMeshInfo{});
 				ExtractTransformDegrees(model.transform, meshes.back().position, meshes.back().rotation, meshes.back().scale);
-				meshes.back().scale *= 0.01f;
 			}
-			
+			//some may have zero of both
 		}
 		Buffers::createDynamicUniformBuffers(1024, framesInFlight, deviceSet.logicalDevice, physDev, dynamicAlignment, dynamicSkinnedUBO, dynamicSkinnedMemory, dynamicUBOMappedPtr);
-		DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, deviceSet.logicalDevice, framesInFlight);
+		DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, deviceSet.logicalDevice, framesInFlight,skinnedMeshes.size() + 120);
 		DeviceHandler::createDynamicDescriptorSets(skinnedMeshes,dynamicDescriptorPool, SkinnedPipeline.descSetLayout,sampler, deviceSet.logicalDevice, framesInFlight, dynamicSkinnedUBO,renderSets);
 		Buffers::createUniformBuffers(&meshes, framesInFlight, deviceSet.logicalDevice, physDev);
 
-		DeviceHandler::createDescriptorPool(&descriptorPool, &deviceSet.logicalDevice,meshes.size(), framesInFlight);
+		DeviceHandler::createDescriptorPool(&descriptorPool, &deviceSet.logicalDevice,meshes.size() + 1, framesInFlight);
 		DeviceHandler::createDescriptorSets(pipeline.descSetLayout,descriptorPool,sampler,meshes,framesInFlight,deviceSet.logicalDevice,renderSets);
 
 
@@ -129,7 +128,7 @@ namespace lte {
 			CommandBuffers::createCommandBuffer(&commandBuffers, &Lt_Vulkan::commandPool, &Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
 			singleTimeCommandInfo info{ &Lt_Vulkan::devices[0].logicalDevice, &Lt_Vulkan::commandPool ,&Lt_Vulkan::devices[0].queue };
 			Buffers::createDynamicUniformBuffers(1024, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev, dynamicAlignment, dynamicSkinnedUBO, dynamicSkinnedMemory, dynamicUBOMappedPtr);
-			DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, Lt_Vulkan::devices[0].logicalDevice, framesInFlight);
+			DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, Lt_Vulkan::devices[0].logicalDevice, framesInFlight, skinnedMeshes.size() + 120);
 			DeviceHandler::createDynamicDescriptorSets(skinnedMeshes, dynamicDescriptorPool, SkinnedPipeline.descSetLayout, sampler, Lt_Vulkan::devices[0].logicalDevice, framesInFlight, dynamicSkinnedUBO, renderSets);
 			Buffers::createUniformBuffers(&meshes, framesInFlight, Lt_Vulkan::devices[0].logicalDevice, physDev);
 			DeviceHandler::createDescriptorPool(&descriptorPool, &Lt_Vulkan::devices[0].logicalDevice, 2, framesInFlight);
@@ -364,6 +363,7 @@ namespace lte {
 
 	void EditorViewport::SubmitCommands(vk::raii::CommandBuffer& commandBuffer)
 	{
+
 		commandBuffer.begin({});
 		ImageDelegate::transition_image_layout(
 			*(images[swapFrame]->image),
@@ -486,6 +486,8 @@ namespace lte {
 
 	void EditorViewport::UpdateUniformBuffers()
 	{
+
+
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -511,6 +513,24 @@ namespace lte {
 			// Copy the UBO data to the mapped memory
 			memcpy(gameObject.uniformBuffersMapped[swapFrame], &ubo, sizeof(ubo));
 		}
+
+		animPlayHead += frameTime;
+		if (animPlayHead > Lt_Importer::animation.duration)
+		{
+			animPlayHead = 0;
+		}
+		float timeInTicks = animPlayHead * Lt_Importer::animation.ticksPerSecond;
+		float animationTime = fmod(timeInTicks, Lt_Importer::animation.duration);
+
+		uint32_t modelindex = 0;
+		for (auto& gameobject : skinnedMeshes)
+		{
+			auto& skinnedModel =skinnedModels[modelindex];
+			//for each skinned model for each bone get track
+			Lt_Importer::UpdateHierarchy(skinnedModel.rootNode, glm::mat4(1.0f), animationTime, skinnedModel, gameobject , Lt_Importer::animation);
+			modelindex++;
+		}
+		uint32_t handIndex = skinnedModels[0].BoneIndexes["RightForeArm"]; // Use a real bone name
 		prevtime = time;
 	}
 
@@ -551,7 +571,6 @@ namespace lte {
 				);
 
 				cmdBuffer.drawIndexed(renderSet.IndiceArraySize, 1, renderSet.IndiceArrayStartIndex, renderSet.vertexArrayStartIndex, 0);
-				return;
 				currentUBOIndex++;
 			}
 			objIndex++;

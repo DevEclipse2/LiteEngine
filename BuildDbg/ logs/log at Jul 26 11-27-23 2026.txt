@@ -1,0 +1,38 @@
+
+LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
+11:27:23.259 info: engine, begin launch bootstrap process
+11:27:25.727 info: engine, user entered selection
+11:27:25.727 info: engine, launch bootstrap process completed with response : continue
+11:27:25.727 info: engine, program to continue execution
+11:27:25.727 info: debug, generic, loaded new path from preferences logs/
+11:27:25.727 success: debug, generic, successfully written to new address :  logs/log at Jul 26 11-20-12 2026.txt
+11:27:25.728 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
+11:27:25.892 info: vulkan, validation layer: type { General } msg: While debugging through RenderDoc, debug output through validation layers is suppressed.
+To show debug output look at the 'DebugOutputMute' capture option in RenderDoc's API, but be aware of false positives from the validation layers.
+11:27:26.189 event: engine, Spinning up User Interface...
+11:27:26.200 event: engine, Init image viewport
+11:27:26.228 event: engine, Init editor viewport
+11:27:26.232 info: engine, Making swap image0
+11:27:26.233 info: engine, Making swap image1
+11:27:26.233 info: engine, create desc set layoud
+11:27:26.233 info: engine, create pipeline
+11:27:26.234 info: engine, create skinned pipeline
+11:27:26.235 info: engine, create synchronization
+11:27:26.235 info: engine, create command buffer
+11:27:26.236 info: engine, load files
+11:27:26.691 info: engine, create sampler
+11:27:26.694 event: engine, profiling, Iridium profiler has been initalised.
+11:27:26.694 event: engine, Preparing to render first frame
+11:27:26.695 error: high    , 	engine, profiling, Invalid frameID, submitted 0 while profiler has completed frame 0
+11:27:26.773 error: medium  , 	engine, profiling, No Frame Has Been Started!
+11:27:26.876 event: engine, CaptureFrame
+11:27:28.489 event: engine, Resize called
+11:27:28.523 event: engine, main window resized
+11:27:38.207 event: engine, Resize called
+11:27:38.207 event: engine, Minimize
+11:28:30.670 event: engine, Resize called
+11:28:30.719 event: engine, main window resized
+11:28:32.865 event: engine, engine shutdown-------------------------------------------
+11:28:32.865 event: engine, Engine Shutdown initiated
+11:28:33.716 event: engine, engine cleanup-------------------------------------------
+11:28:33.716 event: engine, Engine Cleanup initiated

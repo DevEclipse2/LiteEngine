@@ -366,22 +366,20 @@ namespace lte {
 			meshNo++;
 		}
 	}
-	void DeviceHandler::createDynamicDescriptorPool(vk::raii::DescriptorPool& outPool, vk::raii::Device& device, uint32_t framesInFlight)
+	void DeviceHandler::createDynamicDescriptorPool(vk::raii::DescriptorPool& outPool, vk::raii::Device& device, uint32_t framesInFlight, uint32_t max_meshes)
 	{
 		std::array<vk::DescriptorPoolSize, 2> poolSizes{};
-
-		// 1. Space for the Dynamic UBOs
+		std::cout << "Creating pool for max_meshes: " << max_meshes << "\n";
 		poolSizes[0].type = vk::DescriptorType::eUniformBufferDynamic;
-		poolSizes[0].descriptorCount = framesInFlight;
+		poolSizes[0].descriptorCount = framesInFlight * max_meshes;
 
-		// 2. Space for the Textures (Image Samplers)
 		poolSizes[1].type = vk::DescriptorType::eCombinedImageSampler;
-		poolSizes[1].descriptorCount = framesInFlight;
+		poolSizes[1].descriptorCount = framesInFlight * max_meshes;
 
 		vk::DescriptorPoolCreateInfo poolInfo{};
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = framesInFlight;
+		poolInfo.maxSets = framesInFlight * max_meshes;
 
 		outPool = vk::raii::DescriptorPool(device,poolInfo);
 	}
@@ -401,7 +399,23 @@ namespace lte {
 				allocInfo.pSetLayouts = layouts.data();
 
 			gameObject.descriptorSets.clear();
-			gameObject.descriptorSets = device.allocateDescriptorSets(allocInfo);
+			try
+			{
+				gameObject.descriptorSets = device.allocateDescriptorSets(allocInfo);
+			}
+			catch (const vk::SystemError& err)
+			{
+				std::cout << "\n[VULKAN FATAL ERROR] allocateDescriptorSets failed!\n";
+				std::cout << "Error code: " << err.code() << "\n";
+				std::cout << "Error message: " << err.what() << "\n";
+
+				// Print out what we were TRYING to allocate so we can do the math
+				std::cout << "Attempted to allocate " << allocInfo.descriptorSetCount << " sets.\n";
+
+				// Pause the console so you can read it before the engine dies
+				system("pause");
+				exit(-1);
+			}
 			for (size_t i = 0; i < framesInFlight; i++)
 			{
 				vk::DescriptorBufferInfo bufferInfo{};
