@@ -368,14 +368,19 @@ namespace lte {
 	}
 	void DeviceHandler::createDynamicDescriptorPool(vk::raii::DescriptorPool& outPool, vk::raii::Device& device, uint32_t framesInFlight)
 	{
-		vk::DescriptorPoolSize poolSize{};
-		poolSize.type = vk::DescriptorType::eUniformBufferDynamic;
-		poolSize.descriptorCount = framesInFlight;
+		std::array<vk::DescriptorPoolSize, 2> poolSizes{};
+
+		// 1. Space for the Dynamic UBOs
+		poolSizes[0].type = vk::DescriptorType::eUniformBufferDynamic;
+		poolSizes[0].descriptorCount = framesInFlight;
+
+		// 2. Space for the Textures (Image Samplers)
+		poolSizes[1].type = vk::DescriptorType::eCombinedImageSampler;
+		poolSizes[1].descriptorCount = framesInFlight;
 
 		vk::DescriptorPoolCreateInfo poolInfo{};
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &poolSize;
-		// We only need one Descriptor Set per frame in flight
+		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = framesInFlight;
 
 		outPool = vk::raii::DescriptorPool(device,poolInfo);

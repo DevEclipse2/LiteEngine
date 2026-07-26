@@ -59,6 +59,19 @@ namespace lte
 			{
 				v.texCoord = { 0.0f, 0.0f };
 			}
+			if (mesh->HasVertexColors(0))
+			{
+				v.color = glm::vec3(
+					mesh->mColors[0][i].r,
+					mesh->mColors[0][i].g,
+					mesh->mColors[0][i].b
+				);
+			}
+			else
+			{
+				// NO VERTEX COLORS FOUND: Default to pure white!
+				v.color = glm::vec3(1.0f, 1.0f, 1.0f);
+			}
 			data.vertexBuffer.push_back(v);
 		}
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
@@ -323,7 +336,6 @@ namespace lte
 				else
 				{
 
-					std::string fullPath = directory + "/" + texPath;
 			
 					int width, height, channels = 0;
 					uint32_t mipLevels = 0;
@@ -358,7 +370,7 @@ namespace lte
 					}
 					else
 					{
-						std::string fullPath = directory + "/" + texPath;
+						std::string fullPath = texPath;
 						pixels = stbi_load(fullPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 					}
 					vk::DeviceSize imageSize = width * height * 4;

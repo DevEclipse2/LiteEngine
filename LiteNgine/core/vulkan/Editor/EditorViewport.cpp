@@ -66,11 +66,11 @@ namespace lte {
 				//enable later
 
 				
-				skinnedModel = model;
+				skinnedModels.emplace_back(model);
 				skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
 				ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
 				skinnedMeshes.back().scale *= 0.01f;
-				skinnedMeshes.back().finalBoneMatrices.assign(skinnedModel.bones.size(), glm::mat4(1.0f));
+				skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
 
 			}
 			else
@@ -460,12 +460,12 @@ namespace lte {
 		
 		
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *SkinnedPipeline.pipeline);
-		uint16_t skinnedVertId = skinnedModel.skinnedRenderset[0].vertexBufferId;
-		uint16_t skinnedIndexId = skinnedModel.skinnedRenderset[0].indiceBufferId;
+		uint16_t skinnedVertId = skinnedModels[0].skinnedRenderset[0].vertexBufferId;
+		uint16_t skinnedIndexId = skinnedModels[0].skinnedRenderset[0].indiceBufferId;
 
 		commandBuffer.bindVertexBuffers(0, *RenderData::Buffers[skinnedVertId]->buffer, { 0 });
 		commandBuffer.bindIndexBuffer(*RenderData::Buffers[skinnedIndexId]->buffer, 0, vk::IndexType::eUint32);
-		RenderSkinnedMeshes(skinnedMeshes, skinnedModel,commandBuffer);
+		RenderSkinnedMeshes(skinnedMeshes, skinnedModels,commandBuffer);
 		
 		commandBuffer.endRendering();
 
@@ -514,16 +514,16 @@ namespace lte {
 		prevtime = time;
 	}
 
-	void EditorViewport::RenderSkinnedMeshes(std::vector<LtSkinnedMeshInfo>& activeMeshes, const Lt_Importer::StrippedModel& characterAsset, vk::raii::CommandBuffer& cmdBuffer)
+	void EditorViewport::RenderSkinnedMeshes(std::vector<LtSkinnedMeshInfo>& activeMeshes, const std::vector<Lt_Importer::StrippedModel>& characterAsset, vk::raii::CommandBuffer& cmdBuffer)
 	{
 		uint32_t currentUBOIndex = 0;
-
+		uint32_t objIndex = 0;
 		for (auto& instance : activeMeshes)
 		{
 			//  do this once per character, not per chunk
 			//UpdateAnimation(instance, characterAsset);
-
-			for (const auto& renderSet : characterAsset.skinnedRenderset)
+			const auto subAsset = characterAsset[objIndex];
+			for (const auto& renderSet : subAsset.skinnedRenderset)
 			{
 				SkinnedUniformBufferObject uboData{};
 				uboData.view = camera.getViewMatrix();
@@ -554,6 +554,7 @@ namespace lte {
 				return;
 				currentUBOIndex++;
 			}
+			objIndex++;
 		}
 	}
 	void EditorViewport::SubmitGUICommands() 

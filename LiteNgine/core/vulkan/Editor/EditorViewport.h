@@ -54,7 +54,7 @@ namespace lte {
 		void createPipeline();//idk something here
 		void SubmitCommands(vk::raii::CommandBuffer& commandBuffer);//maybe reference simpledraw
 		void UpdateUniformBuffers();
-		void RenderSkinnedMeshes(std::vector<LtSkinnedMeshInfo>& activeMeshes, const Lt_Importer::StrippedModel& characterAsset, vk::raii::CommandBuffer& cmdBuffer);
+		void RenderSkinnedMeshes(std::vector<LtSkinnedMeshInfo>& activeMeshes, const std::vector<Lt_Importer::StrippedModel>& characterAsset, vk::raii::CommandBuffer& cmdBuffer);
 		/*void recreateImages();
 		void createSyncSets();*/
 		//??????
@@ -84,7 +84,7 @@ namespace lte {
 		std::vector<vk::raii::DeviceMemory> dynamicSkinnedMemory = {};
 		std::vector<void*> dynamicUBOMappedPtr;
 
-		Lt_Importer::StrippedModel skinnedModel;
+		std::vector <Lt_Importer::StrippedModel> skinnedModels = {};
 		vk::raii::DescriptorSet skinnedDescriptorSet = nullptr;
 
 		size_t dynamicAlignment;

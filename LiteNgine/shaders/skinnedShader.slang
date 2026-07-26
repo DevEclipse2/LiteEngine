@@ -19,9 +19,11 @@ ConstantBuffer<UniformBuffer> ubo;
 
 struct VSOutput {
     float4 pos          : SV_Position;
-    float3 fragColor    : COLOR0;
-    float3 normal       : NORMAL0;
-    float2 fragTexCoord : TEXCOORD0;
+
+    [[vk::location(0)]] float3 fragColor;
+    [[vk::location(1)]] float3 normal;
+    [[vk::location(2)]] float2 fragTexCoord;
+    [[vk::location(3)]] float3 worldPos;
 };
 [shader("vertex")]
 VSOutput vertSkinned(VSInput input) {
@@ -37,12 +39,11 @@ VSOutput vertSkinned(VSInput input) {
     float4 worldPos = mul(ubo.model, localPos);
     float4 viewPos  = mul(ubo.view, worldPos);
     output.pos      = mul(ubo.proj, viewPos);
-    
+    output.worldPos = worldPos.xyz;
     output.fragColor = input.inColor;
     output.fragTexCoord = input.inTexCoord;
-    
-    float3 localNormal = mul((float3x3)boneTransform, input.inNormal);
-    output.normal = normalize(mul((float3x3)ubo.model, localNormal));
+    float4 localNormal = mul(boneTransform, float4(input.inNormal, 0.0));
+    output.normal = normalize(mul(ubo.model, localNormal).xyz);
     
     return output;
 }
