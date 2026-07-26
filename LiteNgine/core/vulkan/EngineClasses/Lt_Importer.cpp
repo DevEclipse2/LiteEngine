@@ -271,27 +271,11 @@ namespace lte
 		}
 	}
 
-	void parseBoneHierarchy(aiNode* node, int parentBoneId) {
-		std::string nodeName = node->mName.C_Str();
-		int currentBoneId = parentBoneId; // Default to parent's ID
-
-		// 1. Is this node actually a bone?
-		if (boneNameToId.find(nodeName) != boneNameToId.end()) {
-
-			currentBoneId = boneNameToId[nodeName];
-
-			// 2. Link it to its parent
-			bones[currentBoneId].parentId = parentBoneId;
-
-			// 3. (Optional) Grab the local transform if you haven't already
-			// bones[currentBoneId].localBindTransform = convertAssimpMatrix(node->mTransformation);
-		}
-
-		// 4. Recurse down to all children, passing this node as the new parent
-		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			parseBoneHierarchy(node->mChildren[i], currentBoneId);
-		}
+	void Lt_Importer::ParseNodeHierarchy(const aiNode* node, SkeletonNode& engineNode)
+	{
 	}
+
+	
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
 	{
 
@@ -415,6 +399,8 @@ namespace lte
 			}
 			sceneMaterials.push_back(newMaterial);
 		}
+
+
 
 		aiNode* rootNode = pScene->mRootNode;
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);

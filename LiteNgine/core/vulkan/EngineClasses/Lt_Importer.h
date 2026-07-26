@@ -37,8 +37,8 @@ namespace lte {
 			glm::mat4 transform;
 			std::vector<glm::mat4> transforms;
 			std::vector<glm::mat4> skinnedTransforms;
-			 
-			Rig modelRig;
+			std::unordered_map<std::string, uint16_t> BoneIndexes;
+			std::vector<Bone> bones;
 			std::string name;
 		};
 
@@ -68,8 +68,8 @@ namespace lte {
 			std::vector<Lt_SkinnedMeshData> skinnedSubMeshes;
 			std::vector<glm::mat4> transforms;
 			std::vector<glm::mat4> skinnedTransforms;
-			Rig modelRig;
 			std::unordered_map<std::string, uint16_t> BoneIndexes;
+			std::vector<Bone> bones;
 			uint32_t VertexCount;
 			uint32_t IndexCount;
 			std::string name;
