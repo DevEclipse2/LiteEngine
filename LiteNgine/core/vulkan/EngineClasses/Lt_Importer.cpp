@@ -273,6 +273,14 @@ namespace lte
 
 	void Lt_Importer::ParseNodeHierarchy(const aiNode* node, SkeletonNode& engineNode)
 	{
+		engineNode.name = node->mName.data;
+		engineNode.defaultLocalTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
+		engineNode.children.resize(node->mNumChildren);
+
+		for (unsigned int i = 0; i < node->mNumChildren; i++) {
+			// Recursively build the child nodes
+			ParseNodeHierarchy( node->mChildren[i],engineNode.children[i]);
+		}
 	}
 
 	
@@ -404,8 +412,7 @@ namespace lte
 
 		aiNode* rootNode = pScene->mRootNode;
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
-		Model SceneRoot;
-		ParseNodeHierarchy(rootNode, SceneRoot.rootNode);
+		ParseNodeHierarchy(rootNode, node);
 
 		for (unsigned int i = 0; i < rootNode->mNumChildren; i++)
 		{
@@ -415,10 +422,6 @@ namespace lte
 			{
 				Model characterModel;
 				characterModel.name = topLevelNode->mName.C_Str();
-
-				// Parse the hierarchy starting exactly at this character's top node
-				ParseNodeHierarchy(topLevelNode, characterModel.rootNode);
-
 				// Optional: Pre-multiply the scene's global root transform into this character's root
 				characterModel.rootNode.defaultLocalTransform = rootTransform * characterModel.rootNode.defaultLocalTransform;
 

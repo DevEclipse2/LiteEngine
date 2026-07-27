@@ -530,7 +530,6 @@ namespace lte {
 			Lt_Importer::UpdateHierarchy(skinnedModel.rootNode, glm::mat4(1.0f), animationTime, skinnedModel, gameobject , Lt_Importer::animation);
 			modelindex++;
 		}
-		uint32_t handIndex = skinnedModels[0].BoneIndexes["RightForeArm"]; // Use a real bone name
 		prevtime = time;
 	}
 

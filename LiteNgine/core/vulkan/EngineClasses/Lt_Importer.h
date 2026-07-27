@@ -148,6 +148,7 @@ namespace lte {
 		inline static std::vector<Lt_Material> sceneMaterials;
 		inline static std::unordered_map<std::string, int> loadedTextureMap;
 		inline static uint32_t renderSetOffset = 0;
+		inline static SkeletonNode node;
 		static bool HasSkinnedMeshes(const aiNode* node, const aiScene* scene);
 	};
 }
