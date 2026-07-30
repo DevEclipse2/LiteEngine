@@ -9,6 +9,8 @@ working on stl imports and animation engine
 working on engine programmable pipelines using nodesystem (thanks github node system for ImGui )
 </h1>
 
+current status : im in shanghai and my current laptop has genuinely ZERO vulkan support so expect subpar coding or me adding opengl support.ALSO, great firewall got me thinking some unpatriotic thoughts, and cloning the repo took longer than expected (500 errors) but we're finally here and the laptop is on its last legs (the screen edges are fading like a burning memory)
+
 
 ok whatever
 
