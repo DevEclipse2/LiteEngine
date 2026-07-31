@@ -9,6 +9,9 @@ namespace lte
     std::string Con::newFilename = "";
     std::string Con::oldLogContent = "";
     const std::time_t Con::now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::unordered_map<std::string, uint16_t> Con::SuboperatorIndexes = {};
+    std::vector<std::string> Con::Suboperators = {};
+    std::vector<std::string> notes = { "" };
 
 	void Con::Init() 
 	{
@@ -51,31 +54,71 @@ namespace lte
                 convertTime(outputline, logentry.time);
                 if (logentry.code != 0)
                 {
+                    std::string outputMsg = "";
+                    if (logentry.SubOpID != -1)
+                    {
+                        outputMsg += "suboperator " + Suboperators[logentry.SubOpID];
+                    }
+                    if (logentry.AdditionalNotes != -1 && logentry.AdditionalNotes != 0)
+                    {
+                        outputMsg += "note :" + notes[logentry.AdditionalNotes];
+                    }
+                    outputMsg += logentry.message;
                     switch (logentry.type) {
                     case TYPE_ERROR:
-                        outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[31m" + outputline + "\033[0m" << std::endl;
+                        break;
+                    case TYPE_EVENT:
+                        outputline += " event: " + convertTags(logentry.tags) + logentry.message;
+                        std::cout << "\033[105m" + outputline + "\033[0m" << std::endl;
                         break;
                     case TYPE_FAILURE:
-                        outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[41m" + outputline + "\033[0m" << std::endl;
+
+                        break;
+                    case TYPE_INFORMATION:
+                        outputline += " info: " + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[4:2m" + outputline + "\033[0m" << std::endl;
                         break;
                     case TYPE_SUBOPTIMAL:
-                        outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[4:4m" + outputline + "\033[0m" << std::endl;
+                        break;
+                    case TYPE_SUCCESS:
+                        outputline += " success: " + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[32m" + outputline + "\033[0m" << std::endl;
                         break;
                     case TYPE_WARNING:
-                        outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[33m" + outputline + "\033[0m" << std::endl;
+
                         break;
                     default:
                         std::cerr << "unhandled exception : log type handling failed" << std::endl;
                         LogError("failed to handle log type, please submit ticket" + logentry.type, HIGH_SEVERITY, TAG_ENGINE);
-                        outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                        outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
+                        std::cout << "\033[106m" + outputline + "\033[0m" << std::endl;
+
                         break;
                     }
                 }
                 else
                 {
+                    std::string outputMsg = "";
+                    if (logentry.SubOpID != -1)
+                    {
+                        outputMsg += "suboperator " + Suboperators[logentry.SubOpID];
+                    }
+                    if (logentry.AdditionalNotes != -1 && logentry.AdditionalNotes != 0)
+                    {
+                        outputMsg += "note :" + notes[logentry.AdditionalNotes];
+                    }
+                    outputMsg += logentry.message;
                     switch (logentry.type) {
                         case TYPE_ERROR:
-                            outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            outputline += " error: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
                             std::cout<< "\033[31m" + outputline + "\033[0m" << std::endl;
                         break;
                         case TYPE_EVENT:
@@ -83,31 +126,31 @@ namespace lte
                             std::cout << "\033[105m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_FAILURE:
-                            outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            outputline += " failed: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
                             std::cout << "\033[41m" + outputline + "\033[0m" << std::endl;
 
                             break;
                         case TYPE_INFORMATION:
-                            outputline += " info: " + convertTags(logentry.tags) + logentry.message;
+                            outputline += " info: " + convertTags(logentry.tags) + outputMsg;
                             std::cout << "\033[4:2m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_SUBOPTIMAL:
-                            outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            outputline += " suboptimal usage: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
                             std::cout << "\033[4:4m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_SUCCESS:
-                            outputline += " success: " + convertTags(logentry.tags) + logentry.message;
+                            outputline += " success: " + convertTags(logentry.tags) + outputMsg;
                             std::cout << "\033[32m" + outputline + "\033[0m" << std::endl;
                             break;
                         case TYPE_WARNING:
-                            outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            outputline += " event: " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
                             std::cout << "\033[33m" + outputline + "\033[0m" << std::endl;
 
                             break;
                         default:
                             std::cerr << "unhandled exception : log type handling failed" << std::endl;
                             LogError("failed to handle log type, please submit ticket" + logentry.type, HIGH_SEVERITY, TAG_ENGINE);
-                            outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + logentry.message;
+                            outputline += "unknown : " + convertSeverity(logentry.severity) + "\t" + convertTags(logentry.tags) + outputMsg;
                             std::cout << "\033[106m" + outputline + "\033[0m" << std::endl;
 
                             break;
@@ -177,6 +220,33 @@ namespace lte
         }
     }
 
+    void Con::AddSubOpLogs(std::vector<logEntry> entries, std::string name, std::string Notes)
+    {
+        uint16_t nameIndex = 0;
+        uint16_t noteIndex = 0;
+        if (!SuboperatorIndexes.contains(name))
+        {
+            nameIndex = Suboperators.size();
+            Suboperators.emplace_back(name);
+        }
+        else
+        {
+            nameIndex = SuboperatorIndexes[name];
+        }
+        if (Notes != "")
+        {
+            noteIndex = notes.size();
+            notes.emplace_back(Notes);
+        }
+        for(auto & entry : entries)
+        {
+            entry.SubOpID = nameIndex;
+            entry.AdditionalNotes = noteIndex;
+        }
+        Con::entries.insert(Con::entries.end(), entries.begin(), entries.end());
+        //this can be faster but i am lazy
+    }
+
     void Con::BootstrapDone()
     {
         std::ifstream file(newFilename);
@@ -232,6 +302,147 @@ namespace lte
     void Con::loadErrorCodes()
     {
 
+    }
+
+    SubOp::SubOp(std::string designator,std::string notes)
+    {
+        Designation = designator;
+        Notes = notes;
+    }
+    SubOp::~SubOp()
+    {
+        Con::AddSubOpLogs(entries, Designation, Notes);
+    }
+
+    void SubOp::Log(std::string message, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_INFORMATION;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogEvent(std::string message, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_EVENT;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogWarning(std::string message, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_WARNING;
+        entries.emplace_back(entry);
+    }
+    void SubOp::LogSuccess(std::string message, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = UDEF_SEVERITY;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_SUCCESS;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogError(std::string message, uint8_t severity, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_ERROR;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogFailure(std::string message, uint8_t severity, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_FAILURE;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogSuboptimal(std::string message, uint8_t severity, uint64_t tags)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = 0;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_SUBOPTIMAL;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogError(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_ERROR;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogWarning(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_WARNING;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogFailure(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_FAILURE;
+        entries.emplace_back(entry);
+    }
+
+    void SubOp::LogSuboptimal(std::string message, uint8_t severity, uint64_t tags, uint16_t code)
+    {
+        logEntry entry;
+        entry.time = std::chrono::system_clock::now();
+        entry.code = code;
+        entry.severity = severity;
+        entry.tags = tags;
+        entry.message = message;
+        entry.type = TYPE_SUBOPTIMAL;
+        entries.emplace_back(entry);
     }
 
     void Con::AddLog(std::string data)

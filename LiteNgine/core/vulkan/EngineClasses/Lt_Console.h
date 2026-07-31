@@ -6,6 +6,7 @@
 #include <iostream>
 #include <filesystem>
 #include <map>
+#include <unordered_map>
 #include "../InterfaceLayers/Bootstrapper.h"
 
 
@@ -55,6 +56,10 @@ struct logEntry
 	uint8_t									type;
 	uint64_t								tags;
 	uint16_t								code;
+
+	//suboperator stuff
+	uint16_t								SubOpID = -1;
+	uint16_t								AdditionalNotes = -1;
 };
 
 
@@ -95,6 +100,8 @@ namespace lte {
 		static void OutputFile();// log files are stored using time and build version
 		static void RenameFile(std::ifstream& data);
 
+
+		static void AddSubOpLogs(std::vector<logEntry> entries, std::string name, std::string notes);
 		static void BootstrapDone();
 	private:
 		static void loadErrorCodes();
@@ -111,6 +118,36 @@ namespace lte {
 		static std::string newFilename;
 		static std::string oldLogContent;
 
-	};
 
+		//for suboperators, one unordered map to eliminate duplicates
+		static std::unordered_map<std::string, uint16_t> SuboperatorIndexes;
+		static std::vector<std::string> Suboperators;
+		static std::vector<std::string> notes;
+	};
+	class SubOp 
+	{
+		//suboperations class
+	public:
+		SubOp(std::string designation, std::string notes);
+		~SubOp();
+		//basically a subtask, helps with sorting debug stuff
+		//subtasks should fit within a single frame and have their logs submitted all at once.
+		void Log							(std::string message, uint64_t tags);
+		void LogEvent						(std::string message, uint64_t tags);
+		void LogWarning						(std::string message, uint64_t tags);
+		void LogSuccess						(std::string message, uint64_t tags);
+		void LogError						(std::string message, uint8_t severity, uint64_t tags);
+		void LogFailure						(std::string message, uint8_t severity, uint64_t tags);
+		void LogSuboptimal					(std::string message, uint8_t severity, uint64_t tags);
+
+		void LogError						(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+		void LogWarning						(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+		void LogFailure						(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+		void LogSuboptimal					(std::string message, uint8_t severity, uint64_t tags, uint16_t code);
+	private:
+		std::string Designation;
+		std::string Notes;
+		static std::vector<logEntry> entries;
+		
+	};
 }

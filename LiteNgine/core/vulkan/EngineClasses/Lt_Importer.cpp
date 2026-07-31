@@ -4,6 +4,7 @@
 #include "../Reworked/Buffers.h"
 #include "Lt_Vulkan.h"
 #include "../Reworked/FileLoader.h"
+#include "Lt_Console.h"
 #define Load_Success 0
 #define Load_Fail_Generic 1
 #define Load_Fail_UnsupportedFile	2
@@ -14,9 +15,11 @@ namespace lte
 {
 	uint8_t Lt_Importer::Load(const std::string& path, unsigned int pFlags)
 	{
+		Con::LogEvent("Begin loading model from path :" + path, TAG_ENGINE);
 		if (pFlags == 0) 
 		{
 			//no flags provided
+			Con::LogWarning("No loading flags given, using defaults!" + path, TAG_ENGINE);
 			pFlags = aiProcess_CalcTangentSpace |
 				aiProcess_Triangulate |
 				aiProcess_JoinIdenticalVertices |
@@ -287,7 +290,7 @@ namespace lte
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
 	{
 
-
+		SubOp op{"parse assimp scene" , ""};
 		printf("*******************************************************\n");
 		printf("Parsing %d meshes\n\n", pScene->mNumMeshes);
 
@@ -305,10 +308,12 @@ namespace lte
 		}
 		
 
-
+		op.LogEvent("loading animation...", TAG_ENGINE);
 		LoadAnimation(pScene, animation, 0);
+		op.LogEvent("loading materials...", TAG_ENGINE);
 		for (unsigned int i = 0; i < pScene->mNumMaterials; i++)
 		{
+			SubOp materialOperand{ "Assimp material operand",  "" };
 			aiMaterial* aiMat = pScene->mMaterials[i];
 			Lt_Material newMaterial;
 
@@ -319,21 +324,20 @@ namespace lte
 				std::string texPath = str.C_Str();
 				if (loadedTextureMap.find(texPath) != loadedTextureMap.end())
 				{
+					materialOperand.Log("texture already loaded", TAG_ENGINE);
 					newMaterial.diffuseTextureIndex = loadedTextureMap[texPath];
 				}
 				else
 				{
-
-			
 					int width, height, channels = 0;
 					uint32_t mipLevels = 0;
-
 					const aiTexture* embeddedTexture = pScene->GetEmbeddedTexture(texPath.c_str());
 					uint8_t* pixels;
 					if (embeddedTexture)
 					{
 						if (embeddedTexture->mHeight == 0)
 						{
+							materialOperand.Log("embedded texture", TAG_ENGINE);
 							pixels = stbi_load_from_memory(
 								reinterpret_cast<const stbi_uc*>(embeddedTexture->pcData),
 								embeddedTexture->mWidth,
@@ -347,6 +351,7 @@ namespace lte
 						{
 							//data is uncompresed
 							//rare
+							materialOperand.Log("rare uncompressed embedded texture, its like a shiny!", TAG_ENGINE);
 							size_t imageByteSize = embeddedTexture->mWidth * embeddedTexture->mHeight * 4;
 							width = embeddedTexture->mWidth;
 							height = embeddedTexture->mHeight;
@@ -366,49 +371,56 @@ namespace lte
 						{
 							fullPath = texPath;
 						}
-						
+						materialOperand.Log("loading texture from path : " + fullPath +  " !", TAG_ENGINE);
+
 						pixels = stbi_load(ResolveTexturePath(fullPath).c_str(), &width, &height, &channels, STBI_rgb_alpha);
 					}
 					vk::DeviceSize imageSize = width * height * 4;
 					mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 					if (!pixels) {
-						throw std::runtime_error("failed to load texture image!");
+						materialOperand.LogFailure("failed to load texture image!",HIGH_SEVERITY,TAG_ENGINE);
 					}
-					vk::raii::Buffer stagingBuffer = nullptr;
-					vk::raii::DeviceMemory stagingBufferMemory = nullptr;
-					Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, device, PhysicalDevice);
+					else
+					{
+						materialOperand.LogEvent("creating vulkan image...", TAG_ENGINE);
+						vk::raii::Buffer stagingBuffer = nullptr;
+						vk::raii::DeviceMemory stagingBufferMemory = nullptr;
+						Buffers::createBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory, device, PhysicalDevice);
 
-					void* data = stagingBufferMemory.mapMemory(0, imageSize);
-					memcpy(data, pixels, imageSize);
-					stagingBufferMemory.unmapMemory();
+						void* data = stagingBufferMemory.mapMemory(0, imageSize);
+						memcpy(data, pixels, imageSize);
+						stagingBufferMemory.unmapMemory();
 
-					stbi_image_free(pixels);
-					LtImage tmpImg{};
+						stbi_image_free(pixels);
+						LtImage tmpImg{};
 
-					ImageDelegate::createImage(tmpImg, width, height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, device, PhysicalDevice);
-					ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, mipLevels, device);
-					ImageDelegate::createSampler(tmpImg, device);
+						ImageDelegate::createImage(tmpImg, width, height, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, device, PhysicalDevice);
+						ImageDelegate::createImageView(tmpImg, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, mipLevels, device);
+						ImageDelegate::createSampler(tmpImg, device);
 
 
 
-					ImageDelegate::transitionImageLayout(tmpImg.image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, tmpImg.mipLevels, cmdInfo);
-					Buffers::copyBufferToImage(stagingBuffer, tmpImg.image, tmpImg.width, tmpImg.height, cmdInfo);
-					//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
-					ImageDelegate::generateMipmaps(tmpImg, vk::Format::eR8G8B8A8Srgb, PhysicalDevice, cmdInfo);
-					uint32_t imgIndex = ImageDelegate::requestImageCreation(tmpImg);
-					newMaterial.diffuseTextureIndex = imgIndex;
+						ImageDelegate::transitionImageLayout(tmpImg.image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, tmpImg.mipLevels, cmdInfo);
+						Buffers::copyBufferToImage(stagingBuffer, tmpImg.image, tmpImg.width, tmpImg.height, cmdInfo);
+						//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmap
+						ImageDelegate::generateMipmaps(tmpImg, vk::Format::eR8G8B8A8Srgb, PhysicalDevice, cmdInfo);
+						uint32_t imgIndex = ImageDelegate::requestImageCreation(tmpImg);
+						newMaterial.diffuseTextureIndex = imgIndex;
+					}
 				}
 
 				if (newMaterial.diffuseTextureIndex == -1)
 				{
-					Con::LogWarning("invalid material index!", TAG_ENGINE);
+					materialOperand.LogWarning("invalid material index!, using fallback!", TAG_ENGINE);
 					newMaterial.diffuseTextureIndex = fallBackImageIndex;
 				}
 			}
+			else
+			{
+				materialOperand.LogWarning("material possesses no diffuse texture", TAG_ENGINE);
+			}
 			sceneMaterials.push_back(newMaterial);
 		}
-
-
 
 		aiNode* rootNode = pScene->mRootNode;
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);

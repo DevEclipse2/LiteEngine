@@ -33,6 +33,8 @@ namespace lte {
 			inline static uint8_t maximumSearch = 128;
 			inline static uint8_t maximumTrial = 14;
 		};
-		
+		struct Engine {
+			inline static bool IsDebug; //production builds will have this off,  leading to things such as no debug logs to save memory
+		};
 	};
 }
