@@ -216,6 +216,7 @@
     <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp" />
     <ClCompile Include="core\engine\Lt_PipelineNodes.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\rendering\RenderData.cpp" />
+    <ClCompile Include="core\engine\ImageEditor\ImageEditor.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
@@ -272,6 +273,7 @@
     <ClInclude Include="core\vulkan\Editor\LtUiWindow.h" />
     <ClInclude Include="core\vulkan\EngineClasses\rendering\RenderData.h" />
     <ClInclude Include="dep\vk_mem_alloc.h" />
+    <ClInclude Include="core\engine\ImageEditor\ImageEditor.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />

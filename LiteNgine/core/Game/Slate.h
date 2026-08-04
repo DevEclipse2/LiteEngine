@@ -1,5 +1,7 @@
 #pragma once
-class Slate
-{
-};
+namespace lte {
+	class Slate
+	{
+	};
+}
 
