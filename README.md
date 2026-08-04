@@ -4,11 +4,17 @@ liteNgine : the engine for everything but not for you
 <h1> intro : </h1>
 if i had to count the times i said, there’s probably a software for that and came out empty handed (or with a software that last had an active forum when club penguin’s was relevant) i’d hit the integer overflow. hence liteNgine. it’s a general purpose 3d engine written in vulkan with advanced techniques only i know well enough to use. 
 
+
+demo video:
+
+https://drive.google.com/file/d/1HSde0zeQrxcJ0TBBIv9N01f5XfMftKHP/view?usp=sharing
+
 i’m tired boss just approve it
 current status : im in shanghai and my current laptop has genuinely ZERO vulkan support so expect subpar coding or me adding opengl support.ALSO, great firewall got me thinking some unpatriotic thoughts, and cloning the repo took longer than expected (500 errors) but we're finally here and the laptop is on its last legs (the screen edges are fading like a burning memory)
 ok whatever
 
-thesis: what it is now?
+<h2>thesis: what it is now?</h2>
+
 nothing much really, but here’s a rundown
 1. vulkan 1.4 dynamic rendering (it’s fast!)
 2. cutting edge vulkan implementation
@@ -28,7 +34,7 @@ nothing much really, but here’s a rundown
 16. fps tracker . lets you see how incredibly fast vulkan is 
 17. loading of texture images ( i’m sorry jd vance but someone has to be sacrificed)
 
-what’s in store?
+<h3> what’s in store? </h3>
 
 great question. whatever places my adhd takes me.
 1. modular loading of stuff. easy with assimp. just spin up a dll and voila
@@ -45,7 +51,7 @@ great question. whatever places my adhd takes me.
 12. blend file loading ???
 
 
-where are we going? no clue
+<h3>where are we going? no clue. </h3>
 as it stands, liteNgine is heading towards murky waters as i’m heading to college, but i hope to steer it towards more flexible animation / game engine with a focus on non photorealistic rendering techniques. animation engine probably for a small series just to see how good it gets.  i’m also planning to combine 2d and 3d animation and see how well that goes
 
 <h1> how do i see it / use it? </h1>
