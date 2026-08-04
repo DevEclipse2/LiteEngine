@@ -1,10 +1,10 @@
 #include "Lt_Importer.h"
-#include "rendering/RenderData.h"
+#include "../rendering/RenderData.h"
 #include <stb_image.h>
-#include "../Reworked/Buffers.h"
-#include "Lt_Vulkan.h"
-#include "../Reworked/FileLoader.h"
-#include "Lt_Console.h"
+#include "../../Reworked/Buffers.h"
+#include "../Lt_Vulkan.h"
+#include "../../Reworked/FileLoader.h"
+#include "../Lt_Console.h"
 #define Load_Success 0
 #define Load_Fail_Generic 1
 #define Load_Fail_UnsupportedFile	2
@@ -274,17 +274,6 @@ namespace lte
 		}
 	}
 
-	void Lt_Importer::ParseNodeHierarchy(const aiNode* node, SkeletonNode& engineNode)
-	{
-		engineNode.name = node->mName.data;
-		engineNode.defaultLocalTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
-		engineNode.children.resize(node->mNumChildren);
-
-		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			// Recursively build the child nodes
-			ParseNodeHierarchy( node->mChildren[i],engineNode.children[i]);
-		}
-	}
 
 	
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)

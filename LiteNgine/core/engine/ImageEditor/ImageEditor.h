@@ -32,7 +32,7 @@ namespace lte {
 		void ExportImage();
 		void ParseFinalSize();
 		void Init();// creates pipeline and stuff
-
+		void DumpImageToMemory(); // to save memory, you can dump the images
 		/*inline void CheckPixel(uint8_t* dataPtr, uint8_t channels, glm::u8vec4 pixel, uint16_t width, glm::u16vec2 position)
 		{
 			//from the top down

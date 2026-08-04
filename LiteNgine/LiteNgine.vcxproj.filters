@@ -108,7 +108,7 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\vulkan\EngineClasses\Lt_Importer.cpp">
+    <ClCompile Include="core\vulkan\EngineClasses\Assimp\Lt_Importer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp">
@@ -151,6 +151,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\vulkan\EngineClasses\rendering\RenderData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\engine\ImageEditor\ImageEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Assimp\Heirarchy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -254,7 +260,7 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\vulkan\EngineClasses\Lt_Importer.h">
+    <ClInclude Include="core\vulkan\EngineClasses\Assimp\Lt_Importer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h">
@@ -315,6 +321,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Mat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\ImageEditor\ImageEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

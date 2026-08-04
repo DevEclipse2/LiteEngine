@@ -9,9 +9,9 @@
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
-#include "../Reworked/ltMesh.h"
-#include "../EngineClasses/Lt_Console.h"
-#include "../Reworked/CommandBuffers.h"
+#include "../../Reworked/ltMesh.h"
+#include "../../EngineClasses/Lt_Console.h"
+#include "../../Reworked/CommandBuffers.h"
 //asset importer shennanigans
 namespace lte {
 
@@ -19,10 +19,12 @@ namespace lte {
 	{
 
 	public:
-		struct SkeletonNode {
+
+		struct Node {
 			std::string name;
 			glm::mat4 defaultLocalTransform;
-			std::vector<SkeletonNode> children;
+			std::vector<Node> children;
+			uint16_t AttachedModelIndex;
 		};
 		struct Lt_Material {
 			uint32_t diffuseTextureIndex = -1; // in
@@ -31,7 +33,7 @@ namespace lte {
 
 		struct StrippedModel// model with only relevant transforms and stuff
 		{
-			SkeletonNode rootNode;
+			Node rootNode;
 			std::vector<RenderSet> staticRenderset;
 			std::vector<RenderSet> skinnedRenderset;
 			glm::mat4 transform;
@@ -63,11 +65,8 @@ namespace lte {
 
 		struct Model {
 			glm::mat4 transform;
-			SkeletonNode rootNode;
-			std::vector<Lt_MeshData> subMeshes;
-			std::vector<Lt_SkinnedMeshData> skinnedSubMeshes;
-			std::vector<glm::mat4> transforms;
-			std::vector<glm::mat4> skinnedTransforms;
+			std::vector<uint16_t> subMeshes;
+			std::vector<uint16_t> skinnedSubMeshes;
 			std::unordered_map<std::string, uint16_t> BoneIndexes;
 			std::vector<Bone> bones;
 			uint32_t VertexCount;
@@ -115,7 +114,7 @@ namespace lte {
 		static uint8_t ParseMesh(aiMesh* mesh,Lt_MeshData& data);
 		static uint8_t ParseSkinnedMesh(aiMesh* mesh, std::vector<Lt_SkinnedMeshData>& outSubMeshes,Model& model );
 		static void ParseNode(aiNode* node, const aiScene* scene, Model& currentModel, glm::mat4 parentTransform);
-		static void ParseNodeHierarchy(const aiNode* node, SkeletonNode& engineNode);
+		static void ParseNodeHierarchy(const aiNode* node, Node& engineNode);
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
@@ -135,20 +134,43 @@ namespace lte {
 		static std::string ResolveTexturePath(const std::string& assimpPathStr);
 		inline static uint32_t fallBackImageIndex =-1;
 		inline static Animation animation;
-		static void UpdateHierarchy(const SkeletonNode& node, const glm::mat4& parentTransform, float animationTime, StrippedModel& model, LtSkinnedMeshInfo& meshInfo, const Animation& animation);
 		static const BoneTransformTrack* FindBoneTrack(const Animation& animation, const std::string& nodeName);
 		static std::string RemovePrefix(std::string name, std::vector<std::string>& filterWords);
 
+		static void ParseHeirarchy(const aiNode* Parent);
+
+
+
+
+
+
+
+
 	private:
-		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
+
+
+		//new version
+		//scene contains nodes,
+		//meshes
 		inline static std::vector<Model> loadedModels;
+		inline static Node loadedSceneRootNode; // scene root node
+		inline static std::vector<Lt_MeshData> meshes;
+		inline static std::vector<Lt_SkinnedMeshData> skinnedMeshes;
+
+
+
+
+
+
+
+		//std::unordered_map<uint16_t, std::vector<Vertex>> vtx;
+		
 		inline static Model m_currentStaticModel;
 		inline static uint32_t totalVertices;
 		inline static uint32_t totalIndices;
 		inline static std::vector<Lt_Material> sceneMaterials;
 		inline static std::unordered_map<std::string, int> loadedTextureMap;
 		inline static uint32_t renderSetOffset = 0;
-		inline static SkeletonNode node;
 		static bool HasSkinnedMeshes(const aiNode* node, const aiScene* scene);
 	};
 }
