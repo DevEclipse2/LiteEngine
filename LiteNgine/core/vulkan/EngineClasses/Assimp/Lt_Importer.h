@@ -19,12 +19,15 @@ namespace lte {
 	{
 
 	public:
-
 		struct Node {
-			std::string name;
-			glm::mat4 defaultLocalTransform;
-			std::vector<Node> children;
-			uint16_t AttachedModelIndex;
+			std::string name = "";
+			glm::mat4 defaultLocalTransform = glm::mat4{};
+			glm::mat4 AccumulatedTransform = glm::mat4{};
+			std::vector<uint16_t> children;
+			std::vector<uint16_t> referencedModels;
+			uint16_t AttachedModelIndex = 0;
+			uint16_t selfIndex = -1;
+			uint16_t parent = -1;
 		};
 		struct Lt_Material {
 			uint32_t diffuseTextureIndex = -1; // in
@@ -113,8 +116,6 @@ namespace lte {
 		}
 		static uint8_t ParseMesh(aiMesh* mesh,Lt_MeshData& data);
 		static uint8_t ParseSkinnedMesh(aiMesh* mesh, std::vector<Lt_SkinnedMeshData>& outSubMeshes,Model& model );
-		static void ParseNode(aiNode* node, const aiScene* scene, Model& currentModel, glm::mat4 parentTransform);
-		static void ParseNodeHierarchy(const aiNode* node, Node& engineNode);
 		static uint8_t Load(const std::string& path,unsigned int pFlags); //loads model
 		//static unsigned int GetPreset(uint8_t presets);
 		//uint8_t CreateIndexFile();
@@ -137,9 +138,9 @@ namespace lte {
 		static const BoneTransformTrack* FindBoneTrack(const Animation& animation, const std::string& nodeName);
 		static std::string RemovePrefix(std::string name, std::vector<std::string>& filterWords);
 
-		static void ParseHeirarchy(const aiNode* Parent);
-
-
+		static void ParseHeirarchy(const aiNode* Parent, glm::mat4 ParentTransform, Node CurrentNode);
+		static void UpdateTransforms(Node CurrentNode);
+		static void SortBones();
 
 
 
@@ -153,10 +154,9 @@ namespace lte {
 		//scene contains nodes,
 		//meshes
 		inline static std::vector<Model> loadedModels;
-		inline static Node loadedSceneRootNode; // scene root node
 		inline static std::vector<Lt_MeshData> meshes;
 		inline static std::vector<Lt_SkinnedMeshData> skinnedMeshes;
-
+		inline static std::vector<Node> SceneNodes;
 
 
 
@@ -172,5 +172,6 @@ namespace lte {
 		inline static std::unordered_map<std::string, int> loadedTextureMap;
 		inline static uint32_t renderSetOffset = 0;
 		static bool HasSkinnedMeshes(const aiNode* node, const aiScene* scene);
+		static bool IsSkinnedMesh(const uint16_t index, const aiScene* scene);
 	};
 }

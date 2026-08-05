@@ -181,11 +181,9 @@ namespace lte {
 
 	struct Bone
 	{
-		std::string name = "";
-		int parentId = -1;
+		uint16_t parentId = -1;
 		glm::mat4 offsetMatrix;
 		glm::mat4 localTransform;
-		std::vector<uint16_t> children;//points to different boneids
 	};
 	
 	struct Rig {

@@ -234,46 +234,6 @@ namespace lte
 		return 0;
 	}
 
-	void Lt_Importer::ParseNode(aiNode* node, const aiScene* scene, Model& model, glm::mat4 parentTransform)
-	{
-		glm::mat4 nodeTransform = ConvertAssimpMatrixToGLM(node->mTransformation);
-		glm::mat4 accumulatedTransform = parentTransform * nodeTransform;
-
-		for (unsigned int i = 0; i < node->mNumMeshes; i++)
-		{
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-
-			if (mesh->HasBones()) {
-				std::vector<Lt_SkinnedMeshData> data;
-				model.skinnedTransforms.emplace_back(accumulatedTransform);
-				ParseSkinnedMesh(mesh, data,model);
-				model.skinnedSubMeshes.reserve(data.size());
-				for (auto& submesh : data)
-				{
-					submesh.materialIndex = mesh->mMaterialIndex;
-					model.skinnedSubMeshes.emplace_back(submesh);
-					model.VertexCount += submesh.VertexCount;
-					model.IndexCount += submesh.IndexCount;
-				}
-			}
-			else
-			{
-				model.transforms.emplace_back(accumulatedTransform);
-				Lt_MeshData data;
-				ParseMesh(mesh, data);
-				data.materialIndex = mesh->mMaterialIndex;
-				model.subMeshes.push_back(data);
-				model.IndexCount	+= data.IndexCount;
-				model.VertexCount	+= data.VertexCount;
-			}
-		}
-
-		for (unsigned int i = 0; i < node->mNumChildren; i++)
-		{
-			ParseNode(node->mChildren[i], scene,model,nodeTransform);
-		}
-	}
-
 
 	
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
@@ -413,39 +373,55 @@ namespace lte
 
 		aiNode* rootNode = pScene->mRootNode;
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
-		ParseNodeHierarchy(rootNode, node);
-
-		for (unsigned int i = 0; i < rootNode->mNumChildren; i++)
+		SceneNodes.emplace_back(Node{});
+		SceneNodes[0].selfIndex = 0;
+		ParseHeirarchy(rootNode, glm::mat4{}, SceneNodes[0]);
+		loadedModels.clear();
+		//here parse meshes
+		for (int i = 0; i < pScene->mNumMeshes; i++)
 		{
-			aiNode* topLevelNode = rootNode->mChildren[i];
-
-			if (HasSkinnedMeshes(topLevelNode, pScene))
+			loadedModels.emplace_back(new Model{});
+			aiMesh* mesh = pScene->mMeshes[i];
+			if (IsSkinnedMesh(i, pScene))
 			{
-				Model characterModel;
-				characterModel.name = topLevelNode->mName.C_Str();
-				// Optional: Pre-multiply the scene's global root transform into this character's root
-				characterModel.rootNode.defaultLocalTransform = rootTransform * characterModel.rootNode.defaultLocalTransform;
-
-				// Extract vertices, weights, inverse bind matrices...
-				ParseNode(topLevelNode, pScene, characterModel,rootTransform);
-
-				loadedModels.push_back(characterModel);
+					
+				std::vector<Lt_SkinnedMeshData> data;
+				ParseSkinnedMesh(mesh, data, loadedModels[i]);
+				skinnedMeshes.reserve(data.size());
+				for (auto& submesh : data)
+				{
+					submesh.materialIndex = mesh->mMaterialIndex;
+					loadedModels[i].VertexCount += submesh.VertexCount;
+					loadedModels[i].IndexCount += submesh.IndexCount;
+				}
+				for(int j = skinnedMeshes.size(); j < skinnedMeshes.size() + data.size(); j++)
+				{
+					loadedModels[i].skinnedSubMeshes.emplace_back(j);
+				}
+				skinnedMeshes.insert(skinnedMeshes.end(), data.begin(), data.end());
 			}
-			else
+			else 
 			{
-				Model staticProp;
-
-				staticProp.name = topLevelNode->mName.C_Str();
-
-				glm::mat4 localTransform = ConvertAssimpMatrixToGLM(topLevelNode->mTransformation);
-				staticProp.rootNode.defaultLocalTransform = rootTransform * localTransform;
-
-				ParseNode(topLevelNode, pScene, staticProp,rootTransform);
-
-				loadedModels.push_back(staticProp);
+				Lt_MeshData data;
+				ParseMesh(mesh, data);
+				data.materialIndex = mesh->mMaterialIndex;
+				loadedModels[i].subMeshes.push_back(meshes.size());
+				meshes.emplace_back(data);
+				loadedModels[i].IndexCount += data.IndexCount;
+				loadedModels[i].VertexCount += data.VertexCount;
 			}
 		}
 		
+		//here sort the skeletons
+		
+		//for each stripped model, goto parent until parent bone id is -1
+		//then recursively search
+		for (const auto& model : loadedModels)
+		{
+
+		}
+
+
 		return 0;
 	}
 
@@ -624,6 +600,20 @@ namespace lte
 		}
 
 		return false;
+	}
+
+	bool Lt_Importer::IsSkinnedMesh(const uint16_t index, const aiScene* scene)
+	{
+		if (index >= scene->mNumMeshes)
+		{
+			Con::LogError("Index exceeded scene mesh count", HIGH_SEVERITY, TAG_ENGINE);
+			return false;
+		}
+		aiMesh* mesh = scene->mMeshes[index];
+		if (mesh->HasBones()) {
+			return true;
+		}
+		return false;	
 	}
 
 	void Lt_Importer::LoadAnimation(const aiScene* scene, Animation& outAnimation, int animIndex)
