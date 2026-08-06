@@ -141,9 +141,6 @@
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\Game\Slate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -157,6 +154,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Heirarchy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Assimp\Anim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\Game\Registry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\engine\Ui\Blueprints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -299,9 +305,6 @@
     <ClInclude Include="core\vulkan\Editor\ViewportCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\Game\Slate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\vulkan\Editor\LayoutLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -324,6 +327,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\engine\ImageEditor\ImageEditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Game\Registry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\Ui\Blueprints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

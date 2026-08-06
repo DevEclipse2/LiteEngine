@@ -173,6 +173,8 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\engine\Ui\Blueprints.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Assimp\Anim.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Heirarchy.cpp" />
     <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp" />
     <ClCompile Include="core\vulkan\Reworked\CommandBuffers.cpp" />
@@ -213,16 +215,18 @@
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor_api.cpp" />
     <ClCompile Include="core\vulkan\Editor\EditorViewport.cpp" />
     <ClCompile Include="core\engine\Iridium.cpp" />
-    <ClCompile Include="core\Game\Slate.cpp" />
     <ClCompile Include="core\vulkan\Editor\LayoutLoader.cpp" />
     <ClCompile Include="core\engine\Lt_PipelineNodes.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\rendering\RenderData.cpp" />
     <ClCompile Include="core\engine\ImageEditor\ImageEditor.cpp" />
+    <ClCompile Include="core\Game\Registry.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h" />
+    <ClInclude Include="core\engine\Ui\Blueprints.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Mat.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Preferences.h" />
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
@@ -268,13 +272,13 @@
     <ClInclude Include="dep\imGuiNodes\imgui_node_editor_internal.h" />
     <ClInclude Include="core\vulkan\Editor\EditorViewport.h" />
     <ClInclude Include="core\engine\Iridium.h" />
-    <ClInclude Include="core\Game\Slate.h" />
     <ClInclude Include="core\vulkan\Editor\LayoutLoader.h" />
     <ClInclude Include="core\engine\Lt_PipelineNodes.h" />
     <ClInclude Include="core\vulkan\Editor\LtUiWindow.h" />
     <ClInclude Include="core\vulkan\EngineClasses\rendering\RenderData.h" />
     <ClInclude Include="dep\vk_mem_alloc.h" />
     <ClInclude Include="core\engine\ImageEditor\ImageEditor.h" />
+    <ClInclude Include="core\Game\Registry.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />
