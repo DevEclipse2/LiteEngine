@@ -116,7 +116,6 @@ namespace lte {
 
 			meshInfo.finalBoneMatrices[boneIndex] = rootNode.AccumulatedTransform * model.bones[boneIndex].offsetMatrix;
 		}
-
 		//Pass to children
 		for (const auto& childNode : rootNode.children)
 		{
