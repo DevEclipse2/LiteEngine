@@ -53,6 +53,7 @@ namespace lte {
 			model = glm::scale(model, -scale);
 			return model;
 		}
+		uint16_t NodeIndex = -1;
 	};
 	struct Vertex
 	{
@@ -235,6 +236,7 @@ namespace lte {
 			model = glm::scale(model, -scale);
 			return model;
 		}
+		uint16_t NodeIndex = -1;
 	};
 	
 	

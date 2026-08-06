@@ -6,6 +6,8 @@
 #include "../EngineClasses/Lt_Mat.h"
 #include "../Reworked/DeviceHandler.h"
 #include "../../engine/Iridium.h"
+#include "../EngineClasses/Lt_Mat.h"
+#include <queue>
 namespace lte {
 	uint8_t deviceID = 0;
 	void EditorViewport::Init(ImVec2 Size, uint8_t FramesInFlight)
@@ -60,26 +62,37 @@ namespace lte {
 
 		Buffers::createIndexBuffer(FileLoader::IndicesSize, FileLoader::IndicesArray, &indexBuffer, &indexBufferMemory, info, physDev);*/
 		//fix this later
-		for (auto& model : Lt_Importer::strippedModels)
+
+		Lt_Importer::UpdateTransforms(Lt_Importer::SceneNodes[0]);
+
+		//load into rendersets
+		//including transforms btw
+		for (int i = 0; i < Lt_Importer::SceneNodes.size(); i++)
 		{
-			if (model.bones.size() != 0)
+			if(Lt_Importer::SceneNodes[i].referencedModels.size() == 0)continue;
+			//sort the referenced models 
+			for (auto& modelIndex : Lt_Importer::SceneNodes[i].referencedModels)
 			{
-				//enable later
-
-				
-				skinnedModels.emplace_back(model);
-				skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
-				ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
-				skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
-
+				auto& model = Lt_Importer::strippedModels[modelIndex];
+				if (model.bones.size() != 0)
+				{
+					//skinned mesh
+					skinnedModels.emplace_back(model);
+					skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
+					ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
+					skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
+					skinnedMeshes.back().NodeIndex = i;
+				}
+				else 
+				{
+					//static mesh
+					meshes.emplace_back(LtMeshInfo{});
+					ExtractTransformDegrees(model.transform, meshes.back().position, meshes.back().rotation, meshes.back().scale);
+					meshes.back().NodeIndex = i;
+				}
 			}
-			else if(model.staticRenderset.size() > 0)
-			{
-				meshes.emplace_back(LtMeshInfo{});
-				ExtractTransformDegrees(model.transform, meshes.back().position, meshes.back().rotation, meshes.back().scale);
-			}
-			//some may have zero of both
 		}
+
 		Buffers::createDynamicUniformBuffers(1024, framesInFlight, deviceSet.logicalDevice, physDev, dynamicAlignment, dynamicSkinnedUBO, dynamicSkinnedMemory, dynamicUBOMappedPtr);
 		DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, deviceSet.logicalDevice, framesInFlight,skinnedMeshes.size() + 120);
 		DeviceHandler::createDynamicDescriptorSets(skinnedMeshes,dynamicDescriptorPool, SkinnedPipeline.descSetLayout,sampler, deviceSet.logicalDevice, framesInFlight, dynamicSkinnedUBO,renderSets);
@@ -500,20 +513,7 @@ namespace lte {
 			static_cast<float>(size.x) / static_cast<float>(size.y),
 			0.1f, 20.0f);
 
-		// Update uniform buffers for each object
-		for (auto& gameObject : meshes) {
-			// Get the model matrix for this object
-			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
-			// Create and update the UBO
-			UniformBufferObject ubo{};
-			ubo.model = model,
-				ubo.view = view,
-				ubo.proj = proj;
-			// Copy the UBO data to the mapped memory
-			memcpy(gameObject.uniformBuffersMapped[swapFrame], &ubo, sizeof(ubo));
-		}
-
+		//first update transforms reading from the animation and queues changes to update transforms, leaving other stuff untouched
 		animPlayHead += frameTime;
 		if (animPlayHead > Lt_Importer::animation.duration)
 		{
@@ -521,15 +521,82 @@ namespace lte {
 		}
 		float timeInTicks = animPlayHead * Lt_Importer::animation.ticksPerSecond;
 		float animationTime = fmod(timeInTicks, Lt_Importer::animation.duration);
+		std::set<uint16_t> updatedList;
+		Lt_Importer::UpdateAnimation(animationTime, Lt_Importer::animation, updatedList);
 
+		//if node parent is -1 , use mat4 1x position rotation scale
+		//here it updates the transforms
+		std::set<uint16_t> processedNodes;
+
+		// use queue to safely push children without breaking the loop
+		std::queue<uint16_t> nodesToProcess;
+
+		// Initialize the queue with your starting nodes
+		for (uint16_t startNodeId : updatedList) {
+			nodesToProcess.push(startNodeId);
+		}
+
+		while (!nodesToProcess.empty())
+		{
+			uint16_t currentNodeId = nodesToProcess.front();
+			nodesToProcess.pop();
+
+			// Skip if we already handled this child earlier
+			if (processedNodes.count(currentNodeId) > 0) {
+				continue;
+			}
+			processedNodes.insert(currentNodeId);
+
+			Lt_Importer::Node& node = Lt_Importer::SceneNodes[currentNodeId];
+
+			// Compute matrices
+			if (node.parent == -1)
+			{
+				node.AccumulatedTransform = node.defaultLocalTransform; // Simplified mat4(1.0f) * X
+			}
+			else {
+				node.AccumulatedTransform = Lt_Importer::SceneNodes[node.parent].AccumulatedTransform * node.defaultLocalTransform;
+			}
+
+			// Queue up the children for processing later
+			for (uint16_t childId : node.children) {
+				nodesToProcess.push(childId);
+			}
+		}
+
+		//update uniform buffers
+		for (auto& gameObject : meshes) {
+			// Get the model matrix for this object
+			// Update transforms for each object using aggregate node offsets
+
+			glm::vec3 Scale = glm::vec3(1);
+			glm::vec3 Position = glm::vec3(0);
+			glm::vec3 Rotation = glm::vec3(0);
+			ExtractTransformDegrees(Lt_Importer::SceneNodes[gameObject.NodeIndex].AccumulatedTransform, Position, Rotation, Scale);
+			gameObject.position = Position;
+			gameObject.rotation = Rotation;
+			gameObject.scale	= Scale;
+
+			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
+			// Create and update the UBO
+			UniformBufferObject ubo{};
+			ubo.model = model,
+			ubo.view = view,
+			ubo.proj = proj;
+			// Copy the UBO data to the mapped memory
+			memcpy(gameObject.uniformBuffersMapped[swapFrame], &ubo, sizeof(ubo));
+		}
+		//update the skinned meshes
 		uint32_t modelindex = 0;
 		for (auto& gameobject : skinnedMeshes)
 		{
-			auto& skinnedModel =skinnedModels[modelindex];
+			auto& skinnedModel = skinnedModels[modelindex];
 			//for each skinned model for each bone get track
-			Lt_Importer::UpdateHierarchy(skinnedModel.rootNode, glm::mat4(1.0f), animationTime, skinnedModel, gameobject , Lt_Importer::animation);
+			Lt_Importer::UpdateBoneMatrices(Lt_Importer::SceneNodes[gameobject.NodeIndex], skinnedModel, gameobject);
 			modelindex++;
 		}
+
 		prevtime = time;
 	}
 

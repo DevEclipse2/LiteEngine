@@ -12,6 +12,7 @@
 #include "../../Reworked/ltMesh.h"
 #include "../../EngineClasses/Lt_Console.h"
 #include "../../Reworked/CommandBuffers.h"
+#include <set>
 //asset importer shennanigans
 namespace lte {
 
@@ -28,6 +29,8 @@ namespace lte {
 			uint16_t AttachedModelIndex = 0;
 			uint16_t selfIndex = -1;
 			uint16_t parent = -1;
+			
+			uint16_t boneModelRef = -1;
 		};
 		struct Lt_Material {
 			uint32_t diffuseTextureIndex = -1; // in
@@ -40,8 +43,6 @@ namespace lte {
 			std::vector<RenderSet> staticRenderset;
 			std::vector<RenderSet> skinnedRenderset;
 			glm::mat4 transform;
-			std::vector<glm::mat4> transforms;
-			std::vector<glm::mat4> skinnedTransforms;
 			std::unordered_map<std::string, uint16_t> BoneIndexes;
 			std::vector<Bone> bones;
 			std::string name;
@@ -139,13 +140,17 @@ namespace lte {
 		static std::string RemovePrefix(std::string name, std::vector<std::string>& filterWords);
 
 		static void ParseHeirarchy(const aiNode* Parent, glm::mat4 ParentTransform, Node CurrentNode);
-		static void UpdateTransforms(Node CurrentNode);
+		inline static void UpdateTransform(glm::mat4 parentTransform, Node& currentNode)
+		{
+			currentNode.AccumulatedTransform = parentTransform * currentNode.defaultLocalTransform;
+		}
+		static void UpdateHierarchy(const Node& node, const glm::mat4& parentTransform, float animationTime, StrippedModel& model, LtSkinnedMeshInfo& meshInfo, const Animation& animation);
+		static void UpdateAnimation(float animationTime, const Animation& animation, std::set<uint16_t>& updatedNodes);
+		static void UpdateBoneMatrices(const Node& rootNode, StrippedModel& model, LtSkinnedMeshInfo& meshInfo);
+		static void UpdateTransforms(Node& CurrentNode);
 		static void SortBones();
 
-
-
-
-
+		inline static std::vector<Node> SceneNodes;
 
 	private:
 
@@ -156,7 +161,6 @@ namespace lte {
 		inline static std::vector<Model> loadedModels;
 		inline static std::vector<Lt_MeshData> meshes;
 		inline static std::vector<Lt_SkinnedMeshData> skinnedMeshes;
-		inline static std::vector<Node> SceneNodes;
 
 
 

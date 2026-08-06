@@ -8,7 +8,7 @@
 #include "../EngineClasses/Lt_Console.h"
 #include "ViewportCamera.h"
 #include "LtUiWindow.h"
-#include "../EngineClasses/Lt_Importer.h"
+#include "../EngineClasses/Assimp/Lt_Importer.h"
 
 namespace lte {
 	class EditorViewport : LtUiWindow

@@ -1,6 +1,6 @@
 #include "Lt_Importer.h"
 #include "../rendering/RenderData.h"
-#include <stb_image.h>
+#include "stb_image.h"
 #include "../../Reworked/Buffers.h"
 #include "../Lt_Vulkan.h"
 #include "../../Reworked/FileLoader.h"
@@ -233,9 +233,6 @@ namespace lte
 
 		return 0;
 	}
-
-
-	
 	uint8_t Lt_Importer::ParseScene(const aiScene* pScene,const std::string& directory)
 	{
 
@@ -416,75 +413,76 @@ namespace lte
 		
 		//for each stripped model, goto parent until parent bone id is -1
 		//then recursively search
+		uint16_t loadedModelIndex = 0;
 		for (const auto& model : loadedModels)
 		{
+			if (model.bones.size() == 0) { loadedModelIndex++; continue; }
+			std::vector<uint16_t> circularRefCheck;
+			Bone t_currentBone = model.bones[0];
+			uint16_t iterator = 0; 
+			while (t_currentBone.parentId != -1 )
+			{
+			
+				iterator = t_currentBone.parentId;
+				t_currentBone = model.bones[iterator];
+			}
 
+			// we found the bone!
+			//make sure to get the iterator
+			std::string rootBoneNode = "";
+			for (auto& pair : model.BoneIndexes)
+			{
+				if (pair.second == iterator)
+				{
+					rootBoneNode = pair.first;
+					break;
+					//we found the bone name!
+				}
+			}
+			if (rootBoneNode != "")
+			{
+				//search in the node tree using breath first search
+				bool searching = true;
+				int nodeIndex = -1;
+				std::vector<uint16_t> SearchArea = {0};
+				std::vector<uint16_t> ExpandedSearch = {};
+				while (searching)
+				{
+					for (auto& node : SearchArea)
+					{
+						if (SceneNodes[node].name != rootBoneNode)
+						{
+							//nope, add children to the expanded search list
+							ExpandedSearch.insert(ExpandedSearch.end(), SceneNodes[node].children.begin(), SceneNodes[node].children.end());
+						}
+						else 
+						{
+							searching = false;
+							nodeIndex = node;
+							break;
+						}
+					}
+					SearchArea = ExpandedSearch;
+					if (SearchArea.size() == 0)
+					{
+						searching = false;
+					}
+				}
+				if (nodeIndex != -1)
+				{
+					//found bone , somehow link to uh the thing
+					SceneNodes[nodeIndex].boneModelRef = loadedModelIndex;
+				}
+				else 
+				{
+					Con::LogError("Failed to find bone!", HIGH_SEVERITY,TAG_ENGINE);
+				}
+			}
+			loadedModelIndex++;
 		}
 
 
 		return 0;
-	}
-
-	int Lt_Importer::GetPositionIndex(float animationTime, const BoneTransformTrack& track) {
-		for (int i = 0; i < track.positions.size() - 1; ++i) {
-			if (animationTime < track.positions[i + 1].timeStamp)
-				return i;
-		}
-		return 0;
-	}
-
-	int Lt_Importer::GetRotationIndex(float animationTime, const BoneTransformTrack& track) {
-		for (int i = 0; i < track.rotations.size() - 1; ++i) {
-			if (animationTime < track.rotations[i + 1].timeStamp)
-				return i;
-		}
-		return 0;
-	}
-
-	int Lt_Importer::GetScaleIndex(float animationTime, const BoneTransformTrack& track) {
-		for (int i = 0; i < track.scales.size() - 1; ++i) {
-			if (animationTime < track.scales[i + 1].timeStamp)
-				return i;
-		}
-		return 0;
-	}
-
-	glm::vec3 Lt_Importer::InterpolatePosition(float animationTime, const BoneTransformTrack& track) {
-		if (track.positions.size() == 1) return track.positions[0].position;
-
-		int p0Index = GetPositionIndex(animationTime, track);
-		int p1Index = p0Index + 1;
-
-		float scaleFactor = (animationTime - track.positions[p0Index].timeStamp) /
-			(track.positions[p1Index].timeStamp - track.positions[p0Index].timeStamp);
-
-		return glm::mix(track.positions[p0Index].position, track.positions[p1Index].position, scaleFactor);
-	}
-
-	glm::quat Lt_Importer::InterpolateRotation(float animationTime, const BoneTransformTrack& track) {
-		if (track.rotations.size() == 1) return glm::normalize(track.rotations[0].orientation);
-
-		int p0Index = GetRotationIndex(animationTime, track);
-		int p1Index = p0Index + 1;
-
-		float scaleFactor = (animationTime - track.rotations[p0Index].timeStamp) /
-			(track.rotations[p1Index].timeStamp - track.rotations[p0Index].timeStamp);
-
-		// SLERP (Spherical Linear Interpolation) is required for quaternions
-		glm::quat finalRot = glm::slerp(track.rotations[p0Index].orientation, track.rotations[p1Index].orientation, scaleFactor);
-		return glm::normalize(finalRot);
-	}
-
-	glm::vec3 Lt_Importer::InterpolateScale(float animationTime, const BoneTransformTrack& track) {
-		if (track.scales.size() == 1) return track.scales[0].scale;
-
-		int p0Index = GetScaleIndex(animationTime, track);
-		int p1Index = p0Index + 1;
-
-		float scaleFactor = (animationTime - track.scales[p0Index].timeStamp) /
-			(track.scales[p1Index].timeStamp - track.scales[p0Index].timeStamp);
-
-		return glm::mix(track.scales[p0Index].scale, track.scales[p1Index].scale, scaleFactor);
 	}
 
 	std::string Lt_Importer::ResolveTexturePath(const std::string& assimpPathStr)
@@ -523,53 +521,6 @@ namespace lte
 
 		// 4. If no alternative was found, return the original string so stb_image can fail gracefully.
 		return assimpPathStr;
-	}
-
-	void Lt_Importer::UpdateHierarchy(const SkeletonNode& node, const glm::mat4& parentTransform, float animationTime, StrippedModel& model, LtSkinnedMeshInfo& meshInfo , const Animation& animation)
-	{
-		glm::mat4 nodeTransform = node.defaultLocalTransform;
-		std::cout << "Trying to animate node: " << node.name << '\n';
-		//If animated, override with interpolated keyframes
-		const BoneTransformTrack* track = FindBoneTrack(animation, node.name);
-		if (track)
-		{
-			glm::vec3 pos = InterpolatePosition(animationTime, *track);
-			glm::quat rot = InterpolateRotation(animationTime, *track);
-			glm::vec3 scl = InterpolateScale(animationTime, *track);
-
-			glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
-			glm::mat4 rotation = glm::mat4(rot);
-			glm::mat4 scale = glm::scale(glm::mat4(1.0f), scl);
-
-			nodeTransform = translation * rotation * scale;
-		}
-
-		//Accumulate global transform
-		glm::mat4 globalTransform = parentTransform * nodeTransform;
-
-		//Calculate Final Bone Matrix for the Shader
-		if (model.BoneIndexes.find(node.name) != model.BoneIndexes.end())
-		{
-			uint32_t boneIndex = model.BoneIndexes[node.name];
-
-			meshInfo.finalBoneMatrices[boneIndex] = globalTransform * model.bones[boneIndex].offsetMatrix;
-		}
-
-		//Pass to children
-		for (const auto& childNode : node.children)
-		{
-			UpdateHierarchy(childNode, globalTransform, animationTime, model,meshInfo, animation);
-		}
-	}
-
-	const Lt_Importer::BoneTransformTrack* Lt_Importer::FindBoneTrack(const Animation& animation, const std::string& nodeName)
-	{
-		for (const auto& track : animation.boneTracks) {
-			if (track.boneName == nodeName) {
-				return &track;
-			}
-		}
-		return nullptr;
 	}
 
 	std::string Lt_Importer::RemovePrefix(std::string inName, std::vector<std::string>& prefixes)
@@ -676,8 +627,9 @@ namespace lte
 			for (const auto& mesh : loadedModels)
 			{
 				if (mesh.subMeshes.size() == 0)continue;
-				for (const auto& submesh : mesh.subMeshes)
+				for (const auto& submeshIndex : mesh.subMeshes)
 				{
+					auto& submesh = meshes[submeshIndex];
 					AllocationPositions.emplace_back(std::pair (AllocationPosition{}, AllocationPosition{}));
 					VertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.vertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 					IndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition * >((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
@@ -721,8 +673,9 @@ namespace lte
 			for (const auto& mesh : loadedModels)
 			{
 				if (mesh.skinnedSubMeshes.size() == 0) continue;
-				for (const auto& submesh : mesh.skinnedSubMeshes)
+				for (const auto& submeshIndex : mesh.skinnedSubMeshes)
 				{
+					auto& submesh = skinnedMeshes[submeshIndex];
 					AllocationPositions.emplace_back(std::pair(AllocationPosition{}, AllocationPosition{}));
 					skinnedVertexAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.skinnedVertexBuffer.data(), submesh.VertexCount, &AllocationPositions.back().first));
 					skinnedIndiceAllocators.emplace_back(std::tuple<void*, uint32_t, AllocationPosition*>((void*)submesh.indexBuffer.data(), submesh.IndexCount, &AllocationPositions.back().second));
@@ -791,8 +744,6 @@ namespace lte
 			newModel.BoneIndexes = model.BoneIndexes;
 			newModel.name = model.name;
 			newModel.transform = model.transform;
-			newModel.transforms = model.transforms;
-			newModel.rootNode = model.rootNode;
 			//Grab Static RenderSets
 			if (model.subMeshes.size() > 0)
 			{
@@ -813,7 +764,7 @@ namespace lte
 				skinnedOffset += model.skinnedSubMeshes.size();
 			}
 
-			// Save the stripped model to your engine's permanent asset list
+			// Save the stripped model to the engine's permanent asset list
 			strippedModels.push_back(std::move(newModel));
 		}
 

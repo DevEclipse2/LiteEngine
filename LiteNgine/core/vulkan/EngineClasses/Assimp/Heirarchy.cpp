@@ -23,7 +23,7 @@ namespace lte {
 			ParseHeirarchy(CurrentNode->mChildren[i],accumulatedTransform,SceneNodes.back());
 		}
 	}
-	void Lt_Importer::UpdateTransforms(Node CurrentNode)
+	void Lt_Importer::UpdateTransforms(Node& CurrentNode)
 	{
 		//multithread this later
 		if (CurrentNode.parent != -1)
