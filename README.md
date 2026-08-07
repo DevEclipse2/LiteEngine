@@ -36,14 +36,24 @@ nothing much really, but here’s a rundown
 17. loading of texture images ( i’m sorry jd vance but someone has to be sacrificed)
 18. intergrated lua support ( inaccessible from the engine as its still being implemented but you can tell it's there because the exe is a lot bigger)
 
-<h1>planned features and technology</h1>
+<h1>WIP features and technology</h1>
 <h2>F.E.N.T</h2>
 short for Fragmented Execution Node Tree, FENT combines the incredible flow control and readability given by node graphs with the easy going sequential execution of lua in a new way to experience speed.
+alternatively,build block based code into web assembly, and run at native speeds!
 <h2>Joint custody</h2>
 hate the lack of atom families , star families and other families representation other than one parent and multiple children? introducing joint custody! now, children can have multiple parents, with the ability for changing influences (during weekends they stay with the other one)
 <h2>Babie's first multithread</h2>
 with the node graph,multithreading, mutexes, and synchronisation is a simple as chaining fence nodes together to ensure data arrives properly!
-
+<h2>volute bone technology</h2>
+volumetric bones allow for more flexible soft body shapes to be expressed by bones that can flex , bend and deform
+<h2>everywhere, anywhere, all at a cache friendly order</h2>
+dynamically drop models in and out of a single continuous scene by keying disk read and writes, ensuring something like 30 gigabytes of ram usage from hundreds of models never happen
+<h2>arsonic</h2>
+imagine if nanite wasn't so ass. yeah keep dreaming. Arsonic is a highly aggressive gpu based optimisation system that combines the polygon decimation of nanite and SUPER. INTENSE. dynamic resolution. also as a benefit it *screams* at the dev to encourage optimisation
+<h2>cutout shaders</h2>
+wanted to render 2 mirrors facing each other but was too afraid of 50+ hour render times? well now you can! special cutout image marks an image for destruction and replacement,which recursively inserts into itself, providing accurate visuals for ever and ever!
+<h2>cubist cubemaps</h2>
+in the past, you only get one cubemap per room. now you get an entire volume area!
 <h3> what’s in store? </h3>
 
 check the "documentas" folder for my todo list.
