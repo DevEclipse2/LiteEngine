@@ -51,18 +51,18 @@ great question. whatever places my adhd takes me.
 2. obscure input device support. like styluses and my palantir plasma ball
 3. undo/ redo system. essential for anything really. 
 4. the branching multiverse undo timeline. even more confusing for anything but its cool
-4. simple model making
-5. custom graphics pipeline
-6. texture preview (easy thing)
-7. animations ( working on it) 
-8. node editor ( i just need to read someone else’s code)
-9. image editor / animator (it’s for tigersoul)
-10. vulkan memory allocator ( it’s really important)
-11. very simple art program that will for sure balloon out of proportion 
-12. blend file loading ???
-13. shadow stencils > ray tr@cing 
-14. unknowable descriptor heap bs
-15. opengl loading option ( for my benefit really)
+5. simple model making
+6. custom graphics pipeline
+7. texture preview (easy thing)
+8. animations ( working on it) 
+9. node editor ( i just need to read someone else’s code)
+10. image editor / animator (it’s for tigersoul)
+11. vulkan memory allocator ( it’s really important)
+12. very simple art program that will for sure balloon out of proportion 
+13. blend file loading ???
+14. shadow stencils > ray tr@cing 
+15. unknowable descriptor heap bs
+16. opengl loading option ( for my benefit really)
 
 <h3>where are we going? no clue. </h3>
 as it stands, liteNgine is heading towards murky waters as i’m heading to college, but i hope to steer it towards more flexible animation / game engine with a focus on non photorealistic rendering techniques. animation engine probably for a small series just to see how good it gets.  i’m also planning to combine 2d and 3d animation and see how well that goes
