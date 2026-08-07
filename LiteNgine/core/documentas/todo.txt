@@ -24,9 +24,10 @@ layout loading
 
 vma
 
-
 split ubos and large ubos
 
+
+descriptor heap
 
 add multiple texture support
 add missing texture fallback
@@ -35,5 +36,8 @@ add missing texture fallback
 
 switch LtMeshInfo to use mat4s 
 
+lua engine
+node editor
+blueprints
 
 im in shanghai rn and uh yeah
