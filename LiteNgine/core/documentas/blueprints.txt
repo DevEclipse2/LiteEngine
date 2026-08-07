@@ -1,0 +1,25 @@
+codegraphs and stuff
+
+codegraphs can be saved as chunks with inputs and outputs (untethered mode)
+
+codegraphs can work with codeblocks.
+
+under the hood, they are compiled into webassembly and executed fast 
+or they run bytecode virtual machine i dont care too much
+lua is also supported
+
+codegraphs and codeblocks share the same things for the same functions because im not a cunt
+coodegraphs have more functionality in terms of fixed pipeline rendering while codeblocks is more for moving shit around and stuff
+
+
+
+
+
+
+
+
+codeblocks are using blueprints as a reference to create a large space
+
+codeblocks are drawn using fucking magic i guess
+
+a stack of blocks can be plugged into a node and executed sequentially

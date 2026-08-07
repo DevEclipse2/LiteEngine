@@ -23,9 +23,10 @@ int main()
         lte::Con::LogError(e.what(), FATAL_SEVERITY, TAG_ENGINE);
         lte::Con::OutputFile();
         std::cerr << e.what() << std::endl;
+        std::cin.get();
         return EXIT_FAILURE;
     }
-
+    std::cin.get(); // pause before program closes 
     return EXIT_SUCCESS;
 }
 
