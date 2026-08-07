@@ -45,14 +45,17 @@ hate the lack of atom families , star families and other families representation
 with the node graph,multithreading, mutexes, and synchronisation is a simple as chaining fence nodes together to ensure data arrives properly!
 
 <h3> what’s in store? </h3>
+
 check the "documentas" folder for my todo list.
+
 great question. whatever places my adhd takes me.
+
 1. modular loading of stuff. easy with assimp. just spin up a dll and voila
 2. obscure input device support. like styluses and my palantir plasma ball
 3. undo/ redo system. essential for anything really. 
-4. the branching multiverse undo timeline. even more confusing for anything but its cool
+4. 5d undo system with multiversal time travel. for the benefit of someone. surely.
 5. simple model making
-6. custom graphics pipeline
+6. custom graphics pipeline creation
 7. texture preview (easy thing)
 8. animations ( working on it) 
 9. node editor ( i just need to read someone else’s code)
@@ -60,10 +63,11 @@ great question. whatever places my adhd takes me.
 11. vulkan memory allocator ( it’s really important)
 12. very simple art program that will for sure balloon out of proportion 
 13. blend file loading ???
-14. shadow stencils > ray tr@cing 
-15. unknowable descriptor heap bs
-16. opengl loading option ( for my benefit really)
-
+14. shadow stencils > ray tracing 
+15. vulkan descriptor heap ( unknowable stuff)
+16. since people love ai so much might as well add a call ai function 
+17. fuck ai.
+18. opengl for my benefit
 <h3>where are we going? no clue. </h3>
 as it stands, liteNgine is heading towards murky waters as i’m heading to college, but i hope to steer it towards more flexible animation / game engine with a focus on non photorealistic rendering techniques. animation engine probably for a small series just to see how good it gets.  i’m also planning to combine 2d and 3d animation and see how well that goes
 
