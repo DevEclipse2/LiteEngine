@@ -138,7 +138,7 @@ namespace lte {
 		inline static Animation animation;
 		static const BoneTransformTrack* FindBoneTrack(const Animation& animation, const std::string& nodeName);
 		static std::string RemovePrefix(std::string name, std::vector<std::string>& filterWords);
-
+		static void BindBoneParents(Model& rootbone,Node& rootNode);
 		static void ParseHeirarchy(const aiNode* Parent, glm::mat4 ParentTransform, size_t CurrentNode);
 		inline static void UpdateTransform(glm::mat4 parentTransform, Node& currentNode)
 		{
@@ -146,7 +146,7 @@ namespace lte {
 		}
 		static void UpdateHierarchy(const Node& node, const glm::mat4& parentTransform, float animationTime, StrippedModel& model, LtSkinnedMeshInfo& meshInfo, const Animation& animation);
 		static void UpdateAnimation(float animationTime, const Animation& animation, std::set<uint16_t>& updatedNodes);
-		static void UpdateBoneMatrices(const Node& rootNode, StrippedModel& model, LtSkinnedMeshInfo& meshInfo);
+		static void UpdateBoneMatrices(StrippedModel& model, LtSkinnedMeshInfo& meshInfo);
 		static void UpdateTransforms(Node& CurrentNode);
 		static void SortBones();
 

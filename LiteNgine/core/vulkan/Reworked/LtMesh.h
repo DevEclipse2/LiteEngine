@@ -184,7 +184,6 @@ namespace lte {
 	{
 		uint16_t parentId = -1;
 		glm::mat4 offsetMatrix;
-		glm::mat4 localTransform;
 	};
 	
 	struct Rig {

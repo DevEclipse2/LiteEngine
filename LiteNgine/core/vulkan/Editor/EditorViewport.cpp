@@ -80,6 +80,7 @@ namespace lte {
 					skinnedModels.emplace_back(model);
 					skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
 					ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
+					skinnedMeshes.back().scale *= 0.01f;
 					skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
 					skinnedMeshes.back().NodeIndex = i;
 					//node index will become the root bone, as given by
@@ -514,7 +515,7 @@ namespace lte {
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 proj = glm::perspective(glm::radians(FOV),
 			static_cast<float>(size.x) / static_cast<float>(size.y),
-			0.1f, 20.0f);
+			0.1f, 2000.0f);
 
 		//first update transforms reading from the animation and queues changes to update transforms, leaving other stuff untouched
 		animPlayHead += frameTime;
@@ -596,7 +597,7 @@ namespace lte {
 		{
 			auto& skinnedModel = skinnedModels[modelindex];
 			//for each skinned model for each bone get track
-			Lt_Importer::UpdateBoneMatrices(Lt_Importer::SceneNodes[gameobject.NodeIndex], skinnedModel, gameobject);
+			Lt_Importer::UpdateBoneMatrices(skinnedModel, gameobject);
 			modelindex++;
 		}
 

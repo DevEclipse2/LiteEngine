@@ -108,18 +108,21 @@ namespace lte {
 		}
 	}
 
-	void Lt_Importer::UpdateBoneMatrices(const Node& rootNode, StrippedModel& model, LtSkinnedMeshInfo& meshInfo)
+	void Lt_Importer::UpdateBoneMatrices(StrippedModel& model, LtSkinnedMeshInfo& meshInfo)
 	{
-		if (model.BoneIndexes.find(rootNode.name) != model.BoneIndexes.end())
+		//for each bone use node graph to find transforms
+		uint32_t index = 0;
+		for (auto& it : model.bones)
 		{
-			uint32_t boneIndex = model.BoneIndexes[rootNode.name];
-
-			meshInfo.finalBoneMatrices[boneIndex] = rootNode.AccumulatedTransform * model.bones[boneIndex].offsetMatrix;
-		}
-		//Pass to children
-		for (const auto& childNode : rootNode.children)
-		{
-			UpdateBoneMatrices(SceneNodes[childNode],model, meshInfo);
+			if (it.parentId == static_cast<uint16_t>(-1))
+			{
+				meshInfo.finalBoneMatrices[index] = it.offsetMatrix;
+			}
+			else 
+			{
+				meshInfo.finalBoneMatrices[index] = Lt_Importer::SceneNodes[it.parentId].AccumulatedTransform * it.offsetMatrix;
+			}
+			index++;
 		}
 	}
 

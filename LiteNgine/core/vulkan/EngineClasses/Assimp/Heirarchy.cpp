@@ -1,5 +1,6 @@
 #pragma once
 #include "Lt_Importer.h"
+#include <queue>
 namespace lte {
 	void Lt_Importer::ParseHeirarchy(const aiNode* CurrentNode,glm::mat4 parentTransform,size_t nodeIndex)
 	{
@@ -24,6 +25,42 @@ namespace lte {
 			ParseHeirarchy(CurrentNode->mChildren[i],accumulatedTransform,SceneNodes.size() - 1);
 		}
 	}
+
+	void Lt_Importer::BindBoneParents(Model& rootbone, Node& rootNode)
+	{
+		//rootbone.parentId = rootNode.selfIndex;
+		
+		std::unordered_map<std::string, uint16_t> indexes;
+		std::queue<uint16_t> nodesToProcess;
+
+		// Initialize the queue with your starting nodes
+		for (uint16_t startNodeId : rootNode.children) {
+			nodesToProcess.push(startNodeId);
+		}
+		//dump entire heirarchy
+		while (!nodesToProcess.empty())
+		{
+			uint16_t currentNodeId = nodesToProcess.front();
+			nodesToProcess.pop();
+			Lt_Importer::Node& node = Lt_Importer::SceneNodes[currentNodeId];
+			indexes[node.name] = currentNodeId;
+			// Queue up the children for processing later
+			for (uint16_t childId : node.children) {
+				nodesToProcess.push(childId);
+			}
+		}
+
+		for (auto& it : rootbone.BoneIndexes)
+		{
+			if (indexes.find(it.first) != indexes.end())
+			{
+				rootbone.bones[it.second].parentId = indexes[it.first];
+			}
+		}
+
+	}
+
+
 	void Lt_Importer::UpdateTransforms(Node& CurrentNode)
 	{
 		//multithread this later

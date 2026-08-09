@@ -317,6 +317,8 @@ namespace lte
 						{
 							fullPath = texPath;
 						}
+						std::vector<std::string> prefixes = { "C:\\Users\\Eclipse\\Desktop\\vibe coding my ass\\ltEngine\\BuildDbg\\models\\" };
+						fullPath = "models\\" + RemovePrefix(fullPath, prefixes);
 						materialOperand.Log("loading texture from path : " + fullPath +  " !", TAG_ENGINE);
 
 						pixels = stbi_load(ResolveTexturePath(fullPath).c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -324,7 +326,7 @@ namespace lte
 					vk::DeviceSize imageSize = width * height * 4;
 					mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 					if (!pixels) {
-						materialOperand.LogFailure("failed to load texture image!",HIGH_SEVERITY,TAG_ENGINE);
+						materialOperand.LogFailure(" failed to load texture image!",HIGH_SEVERITY,TAG_ENGINE);
 					}
 					else
 					{
@@ -415,11 +417,11 @@ namespace lte
 		//for each stripped model, goto parent until parent bone id is -1
 		//then recursively search
 		uint16_t loadedModelIndex = 0;
-		for (const auto& model : loadedModels)
+		for (auto& model : loadedModels)
 		{
 			if (model.bones.size() == 0) { loadedModelIndex++; continue; }
 			std::vector<uint16_t> circularRefCheck;
-			Bone t_currentBone = model.bones[0];
+			Bone& t_currentBone = model.bones[0];
 			uint16_t iterator = 0; 
 			while (t_currentBone.parentId != static_cast<uint16_t>(-1))
 			{
@@ -483,6 +485,12 @@ namespace lte
 				{
 					// Found bone, linkin park
 					SceneNodes[nodeIndex].boneModelRef = loadedModelIndex;
+					//for 
+					t_currentBone.parentId = nodeIndex;
+					BindBoneParents(model, SceneNodes[nodeIndex]);
+					
+
+
 				}
 				else 
 				{
