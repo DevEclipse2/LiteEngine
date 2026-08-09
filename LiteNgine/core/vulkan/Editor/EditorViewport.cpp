@@ -82,6 +82,9 @@ namespace lte {
 					ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
 					skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
 					skinnedMeshes.back().NodeIndex = i;
+					//node index will become the root bone, as given by
+					//bone i forgot to assign bone parents
+					//now bones are auto parsing where bone parents are the nodes bones come from
 				}
 				else 
 				{
@@ -550,7 +553,7 @@ namespace lte {
 			Lt_Importer::Node& node = Lt_Importer::SceneNodes[currentNodeId];
 
 			// Compute matrices
-			if (node.parent == -1)
+			if (node.parent == static_cast<uint16_t>(-1))
 			{
 				node.AccumulatedTransform = node.defaultLocalTransform; // Simplified mat4(1.0f) * X
 			}

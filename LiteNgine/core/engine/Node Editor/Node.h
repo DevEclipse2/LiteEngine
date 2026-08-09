@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+#include <variant>
+#include <string>
 namespace NodeEditor
 {
     // generic Data Tree for stuff

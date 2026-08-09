@@ -165,6 +165,12 @@
     <ClCompile Include="core\engine\Ui\Blueprints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\engine\Node Editor\Decompose.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\FileManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">
@@ -338,6 +344,15 @@
     <ClInclude Include="core\engine\Ui\Blueprints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="core\engine\Node Editor\Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\engine\scripting\FENTdealer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\Editor\DockingWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
@@ -363,5 +378,6 @@
     <Text Include="core\documentas\bootprefs.txt" />
     <Text Include="core\documentas\todo.txt" />
     <Text Include="core\documentas\iridium.txt" />
+    <Text Include="core\documentas\blueprints.txt" />
   </ItemGroup>
 </Project>

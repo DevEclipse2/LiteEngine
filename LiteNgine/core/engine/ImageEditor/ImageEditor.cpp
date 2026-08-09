@@ -1,6 +1,5 @@
 #include "ImageEditor.h"
 #include <algorithm>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 #include <iostream>
 
@@ -69,10 +68,10 @@ namespace lte
 	}
 	void ImageEditor::ParseFinalSize()
 	{
-		uint32_t minHeight;
-		uint32_t maxHeight;
-		uint32_t maxLength;
-		uint32_t minLength;
+		uint32_t minHeight = 0;
+		uint32_t maxHeight = 0;
+		uint32_t maxLength = 0;
+		uint32_t minLength = 0;
 		//this finds the dimensions of the thingy
 		for (const auto& layer : Layers)
 		{

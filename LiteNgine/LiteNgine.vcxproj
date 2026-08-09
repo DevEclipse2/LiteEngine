@@ -81,12 +81,14 @@
     <OutDir>..\build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;C:\git\LiteEngine\LiteNgine\dep;C:\github\LiteNgine\LiteEngine\LiteNgine\dep;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
+    <ExternalIncludePath>$(ProjectDir)dep\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;C:\git\LiteEngine\LiteNgine\dep;C:\github\LiteNgine\LiteEngine\LiteNgine\dep;$(IncludePath)</IncludePath>
+    <IncludePath>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\stb-master;C:\VulkanLibraries\objloader;C:\VulkanLibraries\tinygltf-release;C:\VulkanLibraries\json-develop\include;C:\VulkanLibraries\tinyobjloader-release;C:\Program Files\Assimp\include;$(IncludePath)</IncludePath>
     <OutDir>..\BuildDbg\</OutDir>
+    <ExternalIncludePath>$(ProjectDir)dep\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,6 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm\glm;C:\VulkanLibraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,6 +117,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm\glm;C:\VulkanLibraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,14 +133,15 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;$(ProjectDir)dep;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
       <Optimization>Custom</Optimization>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Program Files\Assimp\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Shell32.lib;assimp-vc145-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Program Files\Assimp\lib\x64;$(ProjectDir)dep\luajit\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Ole32.lib;Shell32.lib;assimp-vc145-mt.lib;lua51.lib</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:library</IgnoreSpecificDefaultLibraries>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -155,14 +160,15 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;C:\Users\Eclipse\Desktop\vibe coding my ass\ltEngine\LiteNgine\imGui;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glm;$(ProjectDir)dep;C:\Program Files\Assimp\include</AdditionalIncludeDirectories>
       <Optimization>Custom</Optimization>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Program Files\Assimp\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Shell32.lib;assimp-vc145-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.341.1\Lib;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Program Files\Assimp\lib\x64;$(ProjectDir)dep\luajit\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;vulkan-1.lib;user32.lib;Gdi32.lib;Ole32.lib;Shell32.lib;assimp-vc145-mt.lib;lua51.lib</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:library</IgnoreSpecificDefaultLibraries>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -173,7 +179,9 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\engine\Node Editor\Decompose.cpp" />
     <ClCompile Include="core\engine\Ui\Blueprints.cpp" />
+    <ClCompile Include="core\vulkan\Editor\FileManager.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Anim.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Heirarchy.cpp" />
     <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp" />
@@ -226,7 +234,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h" />
+    <ClInclude Include="core\engine\Node Editor\Node.h" />
+    <ClInclude Include="core\engine\scripting\FENTdealer.h" />
     <ClInclude Include="core\engine\Ui\Blueprints.h" />
+    <ClInclude Include="core\vulkan\Editor\DockingWindows.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Mat.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Preferences.h" />
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
@@ -295,6 +306,7 @@
     <None Include="shaders\shader.slang" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="core\documentas\blueprints.txt" />
     <Text Include="core\documentas\bootprefs.txt" />
     <Text Include="core\documentas\class guide.txt" />
     <Text Include="core\documentas\engine formatting.txt" />

@@ -147,7 +147,7 @@ namespace lte {
 	private:
 		std::string Designation;
 		std::string Notes;
-		static std::vector<logEntry> entries;
+		std::vector<logEntry> entries;
 		
 	};
 }

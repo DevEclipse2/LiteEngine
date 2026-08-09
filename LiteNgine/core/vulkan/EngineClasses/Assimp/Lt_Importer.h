@@ -27,14 +27,14 @@ namespace lte {
 			std::vector<uint16_t> children;
 			std::vector<uint16_t> referencedModels;
 			uint16_t AttachedModelIndex = 0;
-			uint16_t selfIndex = -1;
-			uint16_t parent = -1;
+			uint16_t selfIndex = static_cast<uint16_t>(-1);
+			uint16_t parent = static_cast<uint16_t>(-1);
 			
-			uint16_t boneModelRef = -1;
+			uint16_t boneModelRef = static_cast<uint16_t>(-1);
 		};
 		struct Lt_Material {
-			uint32_t diffuseTextureIndex = -1; // in
-			uint32_t normalTextureIndex = -1;
+			uint32_t diffuseTextureIndex = static_cast<uint16_t>(-1); // in
+			uint32_t normalTextureIndex = static_cast<uint16_t>(-1);
 		};
 
 		struct StrippedModel// model with only relevant transforms and stuff
@@ -139,7 +139,7 @@ namespace lte {
 		static const BoneTransformTrack* FindBoneTrack(const Animation& animation, const std::string& nodeName);
 		static std::string RemovePrefix(std::string name, std::vector<std::string>& filterWords);
 
-		static void ParseHeirarchy(const aiNode* Parent, glm::mat4 ParentTransform, Node CurrentNode);
+		static void ParseHeirarchy(const aiNode* Parent, glm::mat4 ParentTransform, size_t CurrentNode);
 		inline static void UpdateTransform(glm::mat4 parentTransform, Node& currentNode)
 		{
 			currentNode.AccumulatedTransform = parentTransform * currentNode.defaultLocalTransform;

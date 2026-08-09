@@ -372,12 +372,13 @@ namespace lte
 		glm::mat4 rootTransform = ConvertAssimpMatrixToGLM(rootNode->mTransformation);
 		SceneNodes.emplace_back(Node{});
 		SceneNodes[0].selfIndex = 0;
-		ParseHeirarchy(rootNode, glm::mat4{}, SceneNodes[0]);
+		ParseHeirarchy(rootNode, glm::mat4{}, 0);
 		loadedModels.clear();
 		//here parse meshes
 		for (int i = 0; i < pScene->mNumMeshes; i++)
 		{
-			loadedModels.emplace_back(new Model{});
+			
+			loadedModels.emplace_back(Model{});
 			aiMesh* mesh = pScene->mMeshes[i];
 			if (IsSkinnedMesh(i, pScene))
 			{
@@ -420,14 +421,14 @@ namespace lte
 			std::vector<uint16_t> circularRefCheck;
 			Bone t_currentBone = model.bones[0];
 			uint16_t iterator = 0; 
-			while (t_currentBone.parentId != -1 )
+			while (t_currentBone.parentId != static_cast<uint16_t>(-1))
 			{
 			
 				iterator = t_currentBone.parentId;
 				t_currentBone = model.bones[iterator];
 			}
 
-			// we found the bone!
+			//we found the bone!
 			//make sure to get the iterator
 			std::string rootBoneNode = "";
 			for (auto& pair : model.BoneIndexes)
@@ -444,33 +445,43 @@ namespace lte
 				//search in the node tree using breath first search
 				bool searching = true;
 				int nodeIndex = -1;
-				std::vector<uint16_t> SearchArea = {0};
-				std::vector<uint16_t> ExpandedSearch = {};
-				while (searching)
+
+				std::vector<uint16_t> SearchArea = { 0 };
+				std::vector<uint16_t> ExpandedSearch;
+				ExpandedSearch.reserve(32); // Pre-allocate to prevent reallocation
+
+				while (!SearchArea.empty())
 				{
-					for (auto& node : SearchArea)
+					for (uint16_t node : SearchArea)
 					{
-						if (SceneNodes[node].name != rootBoneNode)
+						if (SceneNodes[node].name == rootBoneNode)
 						{
-							//nope, add children to the expanded search list
-							ExpandedSearch.insert(ExpandedSearch.end(), SceneNodes[node].children.begin(), SceneNodes[node].children.end());
-						}
-						else 
-						{
-							searching = false;
 							nodeIndex = node;
-							break;
+							break; // Breaks the inner 'for' loop
 						}
+
+						// Add children to the next layer
+						ExpandedSearch.insert(ExpandedSearch.end(),
+							SceneNodes[node].children.begin(),
+							SceneNodes[node].children.end());
 					}
-					SearchArea = ExpandedSearch;
-					if (SearchArea.size() == 0)
+
+					// If we found it, break the outer 'while' loop immediately
+					if (nodeIndex != -1)
 					{
-						searching = false;
+						break;
 					}
+
+					// MAGIC HAT FROM PEGGLE: 
+					// This makes SearchArea take ExpandedSearch's data, and ExpandedSearch takes 
+					// SearchArea's empty shell, then we clear ExpandedSearch.
+					// this reuses the already-allocated memory capacity. zero new allocations!
+					SearchArea.swap(ExpandedSearch);
+					ExpandedSearch.clear();
 				}
 				if (nodeIndex != -1)
 				{
-					//found bone , somehow link to uh the thing
+					// Found bone, linkin park
 					SceneNodes[nodeIndex].boneModelRef = loadedModelIndex;
 				}
 				else 
@@ -639,8 +650,13 @@ namespace lte
 					}
 					else
 					{
-						
-						meshMaterials.emplace_back(sceneMaterials[submesh.materialIndex].diffuseTextureIndex);
+						if (sceneMaterials[submesh.materialIndex].diffuseTextureIndex == static_cast<uint16_t>(-1))
+						{
+							meshMaterials.emplace_back(fallBackImageIndex);
+						}
+						else {
+							meshMaterials.emplace_back(sceneMaterials[submesh.materialIndex].diffuseTextureIndex);
+						}
 					}
 				}
 			}
@@ -686,7 +702,7 @@ namespace lte
 					}
 					else
 					{
-						if (sceneMaterials[submesh.materialIndex].diffuseTextureIndex == -1)
+						if (sceneMaterials[submesh.materialIndex].diffuseTextureIndex == static_cast<uint16_t>( - 1))
 						{
 							meshMaterials.emplace_back(fallBackImageIndex);
 						}

@@ -1,32 +1,33 @@
 #pragma once
 #include "Lt_Importer.h"
 namespace lte {
-	void Lt_Importer::ParseHeirarchy(const aiNode* CurrentNode,glm::mat4 parentTransform,Node LtNode)
+	void Lt_Importer::ParseHeirarchy(const aiNode* CurrentNode,glm::mat4 parentTransform,size_t nodeIndex)
 	{
 
 		glm::mat4 nodeTransform = ConvertAssimpMatrixToGLM(CurrentNode->mTransformation);
 		glm::mat4 accumulatedTransform = parentTransform * nodeTransform;
-		LtNode.defaultLocalTransform = nodeTransform;
-		LtNode.name = CurrentNode->mName.C_Str();
-		LtNode.children.reserve(CurrentNode->mNumChildren);
-		LtNode.referencedModels.reserve(CurrentNode->mNumMeshes);
-		LtNode.AccumulatedTransform = accumulatedTransform;
+		SceneNodes[nodeIndex].defaultLocalTransform = nodeTransform;
+		SceneNodes[nodeIndex].name = CurrentNode->mName.C_Str();
+		SceneNodes[nodeIndex].children.reserve(CurrentNode->mNumChildren);
+		SceneNodes[nodeIndex].referencedModels.reserve(CurrentNode->mNumMeshes);
+		SceneNodes[nodeIndex].AccumulatedTransform = accumulatedTransform;
 		for (int i = 0; i < CurrentNode->mNumMeshes; i++)
 		{
-			LtNode.referencedModels.emplace_back(CurrentNode->mMeshes[i]);
+			SceneNodes[nodeIndex].referencedModels.emplace_back(CurrentNode->mMeshes[i]);
 		}
 		for (unsigned int i = 0; i < CurrentNode->mNumChildren; i++)
 		{
 			SceneNodes.emplace_back(Node{});
-			SceneNodes.back().parent = LtNode.selfIndex;
+			SceneNodes.back().parent = SceneNodes[nodeIndex].selfIndex;
 			SceneNodes.back().selfIndex = SceneNodes.size() - 1;
-			ParseHeirarchy(CurrentNode->mChildren[i],accumulatedTransform,SceneNodes.back());
+			SceneNodes[nodeIndex].children.emplace_back(SceneNodes.size() - 1);
+			ParseHeirarchy(CurrentNode->mChildren[i],accumulatedTransform,SceneNodes.size() - 1);
 		}
 	}
 	void Lt_Importer::UpdateTransforms(Node& CurrentNode)
 	{
 		//multithread this later
-		if (CurrentNode.parent != -1)
+		if (CurrentNode.parent != static_cast<uint16_t>(-1))
 		{
 			CurrentNode.AccumulatedTransform = CurrentNode.defaultLocalTransform * SceneNodes[CurrentNode.parent].AccumulatedTransform;
 		}

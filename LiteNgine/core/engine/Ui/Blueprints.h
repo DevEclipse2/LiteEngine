@@ -30,25 +30,6 @@ class Blueprints
         ed::PinId StartPinID;
         ed::PinId EndPinID;
     };
-    struct Node
-    {
-        ed::NodeId ID;
-        std::string Name;
-        std::vector<Pin> Inputs;
-        std::vector<Pin> Outputs;
-        ImColor Color;
-        NodeType Type;
-        ImVec2 Size;
-
-        std::string State;
-        std::string SavedState;
-
-        Node(int id, const char* name, ImColor color = ImColor(255, 255, 255)) :
-            ID(id), Name(name), Color(color), Type(NodeType::Blueprint), Size(0, 0)
-        {
-        }
-    };
-	
 
 };
 

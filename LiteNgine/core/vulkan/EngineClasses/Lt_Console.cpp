@@ -11,10 +11,10 @@ namespace lte
     const std::time_t Con::now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::unordered_map<std::string, uint16_t> Con::SuboperatorIndexes = {};
     std::vector<std::string> Con::Suboperators = {};
-    std::vector<std::string> notes = { "" };
-
+    std::vector<std::string> Con::notes = {};
 	void Con::Init() 
 	{
+        notes.emplace_back("");
         std::ifstream file("latest_log.txt");
 
         if (!file.is_open()) {
@@ -55,11 +55,11 @@ namespace lte
                 if (logentry.code != 0)
                 {
                     std::string outputMsg = "";
-                    if (logentry.SubOpID != -1)
+                    if (logentry.SubOpID != static_cast<uint16_t> (-1))
                     {
                         outputMsg += "suboperator " + Suboperators[logentry.SubOpID];
                     }
-                    if (logentry.AdditionalNotes != -1 && logentry.AdditionalNotes != 0)
+                    if (logentry.AdditionalNotes != static_cast<uint16_t> (-1) && logentry.AdditionalNotes != 0)
                     {
                         outputMsg += "note :" + notes[logentry.AdditionalNotes];
                     }
@@ -107,11 +107,11 @@ namespace lte
                 else
                 {
                     std::string outputMsg = "";
-                    if (logentry.SubOpID != -1)
+                    if (logentry.SubOpID != static_cast<uint16_t> (-1))
                     {
                         outputMsg += "suboperator " + Suboperators[logentry.SubOpID];
                     }
-                    if (logentry.AdditionalNotes != -1 && logentry.AdditionalNotes != 0)
+                    if (logentry.AdditionalNotes != static_cast<uint16_t> (-1) && logentry.AdditionalNotes != 0)
                     {
                         outputMsg += "note :" + notes[logentry.AdditionalNotes];
                     }

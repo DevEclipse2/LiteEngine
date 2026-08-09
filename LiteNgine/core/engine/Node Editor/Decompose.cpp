@@ -11,7 +11,6 @@
 namespace NodeEditor
 {
     //these are for the compose and decompose functions in the node editor system
-
     template <typename T>
     auto decomposeStruct(const T& obj) {
         //Get the names of all members as a compile-time std::array<std::string_view>
@@ -43,10 +42,6 @@ namespace NodeEditor
         // ============================================================================
         // part 2 : the bullshit begins
         // 
-        // forward declaration of recursive worker
-        template <typename T>
-        T deserialize_complex(const std::vector<VariantNode>& sub_nodes);
-
         template <typename FieldType>
         void populate_field(FieldType& field, const VariantNode& source_node) {
             // determine at compile time if this specific field is a nested struct
@@ -81,7 +76,7 @@ namespace NodeEditor
             size_t data_index = 0;
 
             // Unroll the fields of struct T. The compiler automatically maps each individual field to its corresponding data handler.
-            boost::pfr::for_each_field(struct_instance, [&sub_nodes, &data_index](auto& field) {
+            boost::pfr::for_each_field(struct_instance, [this,&sub_nodes, &data_index](auto& field) {
                 populate_field(field, sub_nodes[data_index++]);
                 });
 
@@ -89,7 +84,7 @@ namespace NodeEditor
         }
         template <typename T>
         void register_type(const ValidInputs& type_key) {
-            pipeline_[type_key] = [](const std::vector<VariantNode>& root_payload) -> std::any {
+            pipeline_[type_key] = [this](const std::vector<VariantNode>& root_payload) -> std::any {
                 return std::any(deserialize_complex<T>(root_payload));
                 };
         }
@@ -111,7 +106,6 @@ namespace NodeEditor
         };
         struct exampleStruct
         {
-            std::string str;
             int integer;
             bool boolean;
             subStruct substruct;
@@ -131,7 +125,7 @@ namespace NodeEditor
                     auto report = std::any_cast<exampleStruct>(response);
 
                     std::cout << "Successfully Ingested Polymorphic Struct Tree!\n";
-                    std::cout << " -> string    : " << report.str << "\n";
+                    //std::cout << " -> string    : " << report.str << "\n";
                     std::cout << " -> integer   : " << report.integer << "\n";
                     std::cout << " -> boolean   : " << std::boolalpha << report.boolean << "\n";
                     std::cout << " -> substruct1: " << report.substruct.dat1 << "\n";
