@@ -1,35 +1,54 @@
-Sun Jul 26 14:53:08 2026
+Sun Aug  9 23:38:46 2026
 
 LITENGINE, A BITEBYBYTE SOFTWARE DIVISION PRODUCT
-14:53:08.460 info: engine, begin launch bootstrap process
-14:53:10.714 info: engine, user entered selection
-14:53:10.714 info: engine, launch bootstrap process completed with response : continue
-14:53:10.714 info: engine, program to continue execution
-14:53:10.714 info: debug, generic, loaded new path from preferences logs/
-14:53:10.714 success: debug, generic, successfully written to new address :  logs/log at Jul 26 14-52-33 2026.txt
-14:53:10.715 success: debug, generic, temporary file deleted successfullyThe operation completed successfully.
-14:53:10.875 info: vulkan, validation layer: type { General } msg: While debugging through RenderDoc, debug output through validation layers is suppressed.
-To show debug output look at the 'DebugOutputMute' capture option in RenderDoc's API, but be aware of false positives from the validation layers.
-14:53:11.158 event: engine, Spinning up User Interface...
-14:53:11.168 event: engine, Init image viewport
-14:53:11.194 event: engine, Init editor viewport
-14:53:11.199 info: engine, Making swap image0
-14:53:11.200 info: engine, Making swap image1
-14:53:11.201 info: engine, create desc set layoud
-14:53:11.201 info: engine, create pipeline
-14:53:11.201 info: engine, create skinned pipeline
-14:53:11.202 info: engine, create synchronization
-14:53:11.202 info: engine, create command buffer
-14:53:11.202 info: engine, load files
-14:53:11.709 info: engine, create sampler
-14:53:11.713 event: engine, profiling, Iridium profiler has been initalised.
-14:53:11.713 event: engine, Preparing to render first frame
-14:53:11.714 error: high    , 	engine, profiling, Invalid frameID, submitted 0 while profiler has completed frame 0
-14:53:11.798 error: medium  , 	engine, profiling, No Frame Has Been Started!
-14:53:11.960 event: engine, CaptureFrame
-14:53:13.194 event: engine, Resize called
-14:53:13.235 event: engine, main window resized
-14:53:19.803 event: engine, engine shutdown-------------------------------------------
-14:53:19.803 event: engine, Engine Shutdown initiated
-14:53:20.717 event: engine, engine cleanup-------------------------------------------
-14:53:20.717 event: engine, Engine Cleanup initiated
+23:38:46.843 info: engine, begin launch bootstrap process
+23:38:48.546 info: engine, user entered selection
+23:38:48.546 info: engine, launch bootstrap process completed with response : continue
+23:38:48.546 info: engine, program to continue execution
+23:38:48.548 info: debug, generic, loaded new path from preferences logs/
+23:38:48.556 success: debug, generic, successfully written to new address :  logs/log at Jul 26 14-53-08 2026.txt
+23:38:48.558 success: debug, generic, temporary file deleted successfully操作成功完成。
+23:38:49.487 event: engine, Spinning up User Interface...
+23:38:49.518 event: engine, Init image viewport
+23:38:49.644 event: engine, Init editor viewport
+23:38:49.660 info: engine, Making swap image0
+23:38:49.664 info: engine, Making swap image1
+23:38:49.664 info: engine, create desc set layoud
+23:38:49.664 info: engine, create pipeline
+23:38:49.666 info: engine, create skinned pipeline
+23:38:49.667 info: engine, create synchronization
+23:38:49.667 info: engine, create command buffer
+23:38:49.667 info: engine, load files
+23:38:49.667 event: engine, Begin loading model from path :models/skeletalTest.fbx
+23:38:49.667 event: undefined, 	engine, No loading flags given, using defaults!models/skeletalTest.fbx
+23:38:50.508 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarBodyMale_Color_1K.jpg !
+23:38:50.510 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.510 event: undefined, 	engine, suboperator Assimp material operandmaterial possesses no diffuse texture
+23:38:50.510 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarHeadMale_Color_1K.jpg !
+23:38:50.510 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.510 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarLeftCornea_Color_512.jpg !
+23:38:50.510 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.510 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarEyes_Color_512.jpg !
+23:38:50.510 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.510 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarRightCornea_Color_512.jpg !
+23:38:50.511 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.511 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarEyes_Color_512.jpg !
+23:38:50.511 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.511 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarTeeth_Color_1K.jpg !
+23:38:50.512 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.512 info: engine, suboperator Assimp material operandloading texture from path : models\textures//AvatarTeeth_Color_1K.jpg !
+23:38:50.512 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.512 info: engine, suboperator Assimp material operandloading texture from path : models\textures//SEVAN_Color_1K.jpg !
+23:38:50.513 failed: high    , 	engine, suboperator Assimp material operand failed to load texture image!
+23:38:50.497 event: engine, loading animation...
+23:38:50.507 event: engine, loading materials...
+23:38:52.416 info: engine, create sampler
+23:38:52.436 event: engine, profiling, Iridium profiler has been initalised.
+23:38:52.436 event: engine, Preparing to render first frame
+23:38:52.440 error: high    , 	engine, profiling, Invalid frameID, submitted 0 while profiler has completed frame 0
+23:38:52.938 error: medium  , 	engine, profiling, No Frame Has Been Started!
+23:38:53.760 event: engine, CaptureFrame
+23:38:59.183 event: engine, engine shutdown-------------------------------------------
+23:38:59.183 event: engine, Engine Shutdown initiated
+23:38:59.472 event: engine, engine cleanup-------------------------------------------
+23:38:59.472 event: engine, Engine Cleanup initiated
