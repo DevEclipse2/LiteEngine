@@ -1,0 +1,11 @@
+[project info]
+name = xyz
+version = 123456
+
+[engine directory management]
+SlateDirectory	= slates/
+DefaultFile		= default.idx
+assetsFile		= Assets/
+shaderCache		= Temp/shaders
+codeCache		= Temp/wasm
+luaCache		= Temp/Lua

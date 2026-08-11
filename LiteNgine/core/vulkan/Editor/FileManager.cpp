@@ -1,8 +1,4 @@
 #include "DockingWindows.h"
-#ifdef _WIN32 || _WIN64
-#include <windows.h>
-#include <shlobj.h>
-#endif
 
 #include <iostream>
 #include <cstdio>
@@ -172,8 +168,7 @@ namespace lte{
     {
         SubOp StartPopUpOperation{"StartPopUP","a Imgui popup for the start menu, showing a list of projects to choose from"};
         ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_Appearing);
-        m_IsOpen = true;
-        if (ImGui::BeginPopupModal("Start or Open Project"/*, &m_IsOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings*/)) {
+        if (ImGui::BeginPopupModal("Start or Open Project", &m_IsOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings)) {
 
             // --- Top Bar: Search and Browse ---
             ImGui::SetNextItemWidth(300);
@@ -181,7 +176,22 @@ namespace lte{
             ImGui::SameLine();
             if (ImGui::Button("Browse File Explorer...")) {
                 // Trigger OS File Explorer here
+                std::wstring filepath = L"";
                 StartPopUpOperation.Log("browse file explorer", TAG_ENGINE);
+#if defined(PLATFORM_WINDOWS)
+                std::cout << "Running on Windows" << std::endl;
+                filepath = OpenFileDialog();
+                if (filepath != L"")
+                {
+
+                }
+#elif defined(PLATFORM_LINUX)
+                std::cout << "Running on Linux" << std::endl;
+                filepath = StringToWString(OpenLinuxFileDialog());
+#else 
+                std::cout << "Running on an unsupported platform" << std::endl;
+                StartPopUpOperation.LogError("unsupported platform!",CRIT_SEVERITY, TAG_ENGINE);
+#endif
 
             }
             ImGui::SameLine();

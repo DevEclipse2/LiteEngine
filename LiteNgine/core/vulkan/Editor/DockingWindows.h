@@ -3,6 +3,10 @@
 #include "backends/imgui.h"
 #include <string>
 #include <vector>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#include <shlobj.h>
+#endif
 #include <filesystem>
 //docking windows is the main place for utility windows
 namespace lte {	
@@ -32,7 +36,16 @@ namespace lte {
 		static void LoadRecentCache();
 		static std::wstring OpenFileDialog();
 		static std::string OpenLinuxFileDialog();
+		static std::wstring StringToWString(const std::string& str) {
+			if (str.empty()) return L"";
 
+			int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+
+			std::wstring wstrTo(size_needed, 0);
+			MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+
+			return wstrTo;
+		}
 
 	};
 
