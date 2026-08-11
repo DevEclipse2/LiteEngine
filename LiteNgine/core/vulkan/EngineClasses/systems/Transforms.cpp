@@ -1,4 +1,5 @@
 #include "Transforms.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <array>
@@ -90,6 +91,12 @@ namespace lte {
 			std::fill(DirtyTransforms[i].begin(), DirtyTransforms[i].end(), 0);
 		}
 	}
+	void Transforms::markTransformDirty(uint16_t depth, uint16_t index)
+	{
+		
+		uint16_t packedIndex = index / 8;
+		DirtyTransforms[depth][std::floor(packedIndex)] = DirtyTransforms[depth][packedIndex] | (1 << index%8);
+	}
 	glm::mat4 Transforms::averageTransformsWeighted(
 		const std::array<glm::mat4, 4>& matrices,
 		const std::array<float, 4>& rawWeights)
@@ -148,6 +155,18 @@ namespace lte {
 			glm::scale(glm::mat4(1.0f), avgScale);
 
 		return result;
+	}
+	void Transform::setLocalPosition(glm::vec3& newPos)
+	{
+		position = newPos; Transforms::markTransformDirty(currentLayer, currentIndex);
+	}
+	void Transform::setLocalScale(glm::vec3& newScale)
+	{
+		scale = newScale; Transforms::markTransformDirty(currentLayer, currentIndex);
+	}
+	void Transform::setLocalRotation(glm::vec3& newRotation)
+	{
+		rotation = newRotation; Transforms::markTransformDirty(currentLayer, currentIndex);
 	}
 	glm::mat4 Transform::getImmediateTransform()
 	{

@@ -232,6 +232,7 @@
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.h" />
+    <ClCompile Include="core\vulkan\EngineClasses\systems\Transforms.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h" />
@@ -239,6 +240,7 @@
     <ClInclude Include="core\engine\scripting\FENTdealer.h" />
     <ClInclude Include="core\engine\Ui\Blueprints.h" />
     <ClInclude Include="core\vulkan\Editor\DockingWindows.h" />
+    <ClInclude Include="core\vulkan\Editor\global_data.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Mat.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Preferences.h" />
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h" />
@@ -294,8 +296,10 @@
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Assimp\ViewportCamera.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\systems\Transforms.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="core\documentas\project.lite" />
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">
       <SubType>
       </SubType>

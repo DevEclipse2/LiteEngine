@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #define in_use 1
 
 namespace lte {
@@ -24,11 +25,11 @@ namespace lte {
 		friend class Transforms;
 	public:
 		glm::vec3 getLocalPosition() { return position; }
-		void setLocalPosition(glm::vec3& newPos) { position = newPos; Transforms::markTransformDirty(currentLayer, currentIndex); };
+		void setLocalPosition(glm::vec3& newPos);
 		glm::vec3 getLocalScale()	{ return scale;		}
-		void setLocalScale(glm::vec3& newScale) { scale = newScale; Transforms::markTransformDirty(currentLayer, currentIndex); }
+		void setLocalScale(glm::vec3& newScale);
 		glm::quat getLocalRotation() { return rotation; }
-		void setLocalRotation(glm::vec3& newRotation) { rotation = newRotation; Transforms::markTransformDirty(currentLayer, currentIndex); }
+		void setLocalRotation(glm::vec3& newRotation);
 		glm::mat4 getLocalTransform() { return LocalTransform; }
 		glm::mat4 getGlobalTransform() { return AccumulatedTransform;}
 		glm::mat4 getImmediateTransform();//this forces the engine to calculate the local transform
@@ -47,12 +48,12 @@ namespace lte {
 		
 	public:
 		static void CalculateTransforms();//is not for users to call
-		static void RemoveTransform(uint16_t depth, uint16_t index);
+		//static void RemoveTransform(uint16_t depth, uint16_t index);
 		static void markTransformDirty(uint16_t depth, uint16_t index);
 		static glm::mat4 averageTransformsWeighted(
 			const std::array<glm::mat4, 4>& matrices,
 			const std::array<float, 4>& rawWeights);
-		static void RegisterTransform();
+		//static void RegisterTransform();
 	private:
 		static inline std::vector<std::vector<Transform>>	TransformComponents;
 		static inline std::vector<std::vector<uint16_t>>	freeTransforms;

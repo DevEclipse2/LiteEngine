@@ -31,9 +31,7 @@ namespace lte {
 	struct LtMeshInfo {
 		
 		// Transform properties
-		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+		glm::mat4 transform;
 
 		// Uniform buffer for this object (one per frame in flight)
 		std::vector<vk::raii::Buffer> uniformBuffers;
@@ -45,13 +43,7 @@ namespace lte {
 
 		// Calculate model matrix based on position, rotation, and scale
 		glm::mat4 getModelMatrix() const {
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, position);
-			model = glm::rotate(model, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-			model = glm::rotate(model, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::rotate(model, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::scale(model, -scale);
-			return model;
+			return transform;
 		}
 		uint16_t NodeIndex = static_cast<uint16_t>(-1);
 	};

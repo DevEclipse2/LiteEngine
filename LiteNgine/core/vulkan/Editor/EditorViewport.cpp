@@ -79,7 +79,7 @@ namespace lte {
 					//skinned mesh
 					skinnedModels.emplace_back(model);
 					skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
-					ExtractTransformDegrees(model.transform, skinnedMeshes.back().position, skinnedMeshes.back().rotation, skinnedMeshes.back().scale);
+					meshes.back().transform = model.transform;
 					skinnedMeshes.back().scale *= 0.01f;
 					skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
 					skinnedMeshes.back().NodeIndex = i;
@@ -91,7 +91,7 @@ namespace lte {
 				{
 					//static mesh
 					meshes.emplace_back(LtMeshInfo{});
-					ExtractTransformDegrees(model.transform, meshes.back().position, meshes.back().rotation, meshes.back().scale);
+					meshes.back().transform = model.transform;
 					meshes.back().NodeIndex = i;
 				}
 			}
@@ -572,14 +572,7 @@ namespace lte {
 		for (auto& gameObject : meshes) {
 			// Get the model matrix for this object
 			// Update transforms for each object using aggregate node offsets
-
-			glm::vec3 Scale = glm::vec3(1);
-			glm::vec3 Position = glm::vec3(0);
-			glm::vec3 Rotation = glm::vec3(0);
-			ExtractTransformDegrees(Lt_Importer::SceneNodes[gameObject.NodeIndex].AccumulatedTransform, Position, Rotation, Scale);
-			gameObject.position = Position;
-			gameObject.rotation = Rotation;
-			gameObject.scale	= Scale;
+			gameObject.transform = Lt_Importer::SceneNodes[gameObject.NodeIndex].AccumulatedTransform;
 
 			glm::mat4 initialRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 			glm::mat4 model = gameObject.getModelMatrix() * initialRotation;
@@ -729,7 +722,7 @@ namespace lte {
 		}
 		
 
-		if (objectID == SelectedObject) 
+		/*if (objectID == SelectedObject) 
 		{
 			meshes[objectID].position.x = x;
 			meshes[objectID].position.y = y;
@@ -746,7 +739,7 @@ namespace lte {
 			rotY = glm::degrees(meshes[objectID].rotation.y);
 			rotZ = glm::degrees(meshes[objectID].rotation.z);
 			SelectedObject = objectID;
-		}
+		}*/
 		ImGui::SameLine();
 		ImGui::Text(("FPS " + std::to_string(fps) + "\n" + "frameTime " + std::to_string(frameTime)+ '\n' + "frameID " + std::to_string(Lt_ILayer::frameCount) + "\n" + "SwapFrame " + std::to_string(swapFrame)).c_str());
 		ImGui::End();

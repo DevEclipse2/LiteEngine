@@ -41,3 +41,4 @@ node editor
 blueprints
 file manager
 im in shanghai rn and uh yeah
+if the user xes out of the file select screen , give them the option to save the current scene as a new project

@@ -6,7 +6,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/quaternion.hpp> 
 
-void ExtractTransformDegrees(const glm::mat4& transform, glm::vec3& outPosition, glm::vec3& outRotation, glm::vec3& outScale)
+inline void ExtractTransformDegrees(const glm::mat4& transform, glm::vec3& outPosition, glm::vec3& outRotation, glm::vec3& outScale)
 {
     glm::quat orientation;
     glm::vec3 skew;

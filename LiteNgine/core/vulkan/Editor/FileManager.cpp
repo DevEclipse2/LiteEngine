@@ -22,7 +22,7 @@
 
 #include <combaseapi.h>
 #include <fstream>
-#include "../EngineClasses/Lt_Console.h"
+#include "global_data.h"
 namespace lte{
     namespace fs = std::filesystem;
 	void lte::FileManager::SubmitGUICommands()
@@ -134,19 +134,34 @@ namespace lte{
 
             if (SUCCEEDED(hr)) {
                 // Show the Open dialog box
+                FILEOPENDIALOGOPTIONS options;
+                hr = pFileOpen->GetOptions(&options);
+                if (SUCCEEDED(hr)) {
+                    // FOS_PICKFOLDERS allows folder selection
+                    // FOS_FORCEFILESYSTEM ensures it's a real file system object, not a virtual one
+                    pFileOpen->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
+                }
+
+                // 4. Set dialog title
+                pFileOpen->SetTitle(L"Select a File or a Folder");
+
+                // 5. Show the Dialog
                 hr = pFileOpen->Show(NULL);
 
-                // Get the file name from the dialog box
+                // 6. Process the result if the user clicked "Open / Select"
                 if (SUCCEEDED(hr)) {
-                    IShellItem* pItem;
+                    IShellItem* pItem = nullptr;
                     hr = pFileOpen->GetResult(&pItem);
+
                     if (SUCCEEDED(hr)) {
-                        PWSTR pszFilePath;
+                        PWSTR pszFilePath = nullptr;
                         hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-                        // Display the file name to the user
                         if (SUCCEEDED(hr)) {
+                            // Success! Display or use the path
+                            std::wcout << L"Selected Path: " << pszFilePath << std::endl;
                             filePath = pszFilePath;
+                            // Free the string allocated by the shell
                             CoTaskMemFree(pszFilePath);
                         }
                         pItem->Release();
@@ -166,7 +181,7 @@ namespace lte{
 
     inline void FileManager::DrawStartpopUp()
     {
-        SubOp StartPopUpOperation{"StartPopUP","a Imgui popup for the start menu, showing a list of projects to choose from"};
+        SubOp StartPopUpOperation{"StartPopUP","a Imgui popup for the start menu, showing a list of projects to choose from. "};
         ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_Appearing);
         if (ImGui::BeginPopupModal("Start or Open Project", &m_IsOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings)) {
 
@@ -180,11 +195,7 @@ namespace lte{
                 StartPopUpOperation.Log("browse file explorer", TAG_ENGINE);
 #if defined(PLATFORM_WINDOWS)
                 std::cout << "Running on Windows" << std::endl;
-                filepath = OpenFileDialog();
-                if (filepath != L"")
-                {
-
-                }
+                filepath = OpenFileDialog();                
 #elif defined(PLATFORM_LINUX)
                 std::cout << "Running on Linux" << std::endl;
                 filepath = StringToWString(OpenLinuxFileDialog());
@@ -192,7 +203,53 @@ namespace lte{
                 std::cout << "Running on an unsupported platform" << std::endl;
                 StartPopUpOperation.LogError("unsupported platform!",CRIT_SEVERITY, TAG_ENGINE);
 #endif
+                if (filepath != L"")
+                {
+                    if (!fs::exists(filepath)) {
+                        StartPopUpOperation.LogError("what. how could you have found the path in the system directory but not the engine", HIGH_SEVERITY, TAG_ENGINE);
+                        return;
+                    }
+                    //check if its a directory or a file
+                    //if its a directory, check for the .lite file
+                    //if its a file, see if its a .lite
+                    if (fs::is_directory(filepath)) {
+                        
+                        StartPopUpOperation.Log("user chose directory", TAG_USER);
 
+                        bool found = false;
+                        // Iterate through files inside the directory
+                        for (const auto& entry : fs::directory_iterator(filepath)) {
+                            if (entry.is_regular_file() && entry.path().extension() == ".lite") {
+                                StartPopUpOperation.LogSuccess("found .lite file!", TAG_USER);
+                                found = true;
+                                ProjectDirectory = wstring_to_string(filepath);
+                                m_RecentProjects.emplace_back(ProjectDirectory);
+                                selectedDirectory = true;
+                                SaveCache();
+                            }
+                        }
+                        if (!found) {
+                            StartPopUpOperation.LogFailure("didnt find .lite file!",HIGH_SEVERITY,TAG_ENGINE);
+                        }
+                    }
+                    // 3. Check if it is a regular file
+                    else if (fs::is_regular_file(filepath)) {
+                        StartPopUpOperation.Log("user chose file", TAG_USER);
+
+                        fs::path p = filepath;
+                        if (p.extension() == ".lite") {
+                            StartPopUpOperation.LogSuccess("extension correct!", TAG_USER);
+                            ProjectDirectory = p.parent_path().string();
+                            m_RecentProjects.emplace_back(ProjectDirectory);
+                            selectedDirectory = true;
+                            SaveCache();
+
+                        }
+                        else {
+                            StartPopUpOperation.LogFailure("Incorrect extension. Expected .lite", HIGH_SEVERITY, TAG_ENGINE);
+                        }
+                    }
+                }
             }
             ImGui::SameLine();
             if (ImGui::Button("New Project")) {
