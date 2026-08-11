@@ -182,6 +182,7 @@
     <ClCompile Include="core\engine\Node Editor\Decompose.cpp" />
     <ClCompile Include="core\engine\Ui\Blueprints.cpp" />
     <ClCompile Include="core\vulkan\Editor\FileManager.cpp" />
+    <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Anim.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Heirarchy.cpp" />
     <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp" />
@@ -230,7 +231,7 @@
     <ClCompile Include="core\Game\Registry.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
-    <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
+    <ClCompile Include="core\vulkan\Editor\ViewportCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h" />
@@ -292,7 +293,7 @@
     <ClInclude Include="core\Game\Registry.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
-    <ClInclude Include="core\vulkan\Editor\ViewportCamera.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Assimp\ViewportCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">

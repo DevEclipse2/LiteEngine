@@ -11,25 +11,28 @@ namespace lte {
 	class FileManager : LtUiWindow
 	{
 	public:
-		//static inline void SubmitGUICommands();
-		//static inline std::string m_DirPath = "";
-		//static inline std::string m_AddPath = "";
-		//static inline void Init();//new engine screen to create session or something idk
-		//static inline void DrawStartpopUp();
-		//static inline bool selectedDirectory = false;
+		static void SubmitGUICommands();
+		static inline std::string m_DirPath = "";
+		static inline std::string m_AddPath = "";
+		static void Init();//new engine screen to create session or something idk
+		static inline void DrawStartpopUp();
+		static inline bool selectedDirectory = false;
 
-		//inline static std::vector<std::string> m_RecentProjects;
-		//inline static std::vector<std::string> m_DocumentProjects;
-		////file paths are only 256 max length
-		//inline static char m_SearchBuffer[256] = "";
-		//inline static bool m_IsOpen = false;
-		//inline static bool m_IndexedDir = false;
-		//inline static fs::path m_DefaultSearchDir = "";
-		//// A simple text file next to the executable to store recent paths
-		//inline static const std::string CACHE_FILE = "recent_projects.cache";
-		//static std::filesystem::path GetOSDocumentPath();
-		//static void SaveCache();
-		//static void LoadRecentCache();
+		inline static std::vector<std::string> m_RecentProjects = {};
+		inline static std::vector<std::string> m_DocumentProjects = {};
+		//file paths are only 256 max length
+		inline static char m_SearchBuffer[256] = "";
+		inline static bool m_IsOpen = true;
+		inline static bool m_IndexedDir = false;
+		inline static fs::path m_DefaultSearchDir = "";
+		// A simple text file next to the executable to store recent paths
+		inline static const std::string CACHE_FILE = "recent_projects.cache";
+		static std::filesystem::path GetOSDocumentPath();
+		static void SaveCache();
+		static void LoadRecentCache();
+		static std::wstring OpenFileDialog();
+		static std::string OpenLinuxFileDialog();
+
 
 	};
 

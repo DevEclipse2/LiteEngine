@@ -8,6 +8,7 @@
 #include "../Editor/Viewport.h"
 #include "../Editor/EditorViewport.h"
 #include "../../engine/Iridium.h"
+#include "../Editor/DockingWindows.h"
 #include "../Editor/LayoutLoader.h"
 //this is where the main function comes to meet with the usable code
 namespace lte {
@@ -36,6 +37,7 @@ namespace lte {
 		Lt_Gui guiHandler{};
 		Viewport viewport{};
 		EditorViewport editorViewport{};
+		FileManager fileManager{};
 		uint8_t frames = 0;
 		LayoutLoader layoutloader{};
 		bool mainResized = false;

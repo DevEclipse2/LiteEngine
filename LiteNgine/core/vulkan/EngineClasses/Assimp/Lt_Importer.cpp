@@ -422,10 +422,10 @@ namespace lte
 			if (model.bones.size() == 0) { loadedModelIndex++; continue; }
 			std::vector<uint16_t> circularRefCheck;
 			Bone& t_currentBone = model.bones[0];
-			uint16_t iterator = 0; 
+			uint16_t iterator = 0;
 			while (t_currentBone.parentId != static_cast<uint16_t>(-1))
 			{
-			
+
 				iterator = t_currentBone.parentId;
 				t_currentBone = model.bones[iterator];
 			}
@@ -488,18 +488,18 @@ namespace lte
 					//for 
 					t_currentBone.parentId = nodeIndex;
 					BindBoneParents(model, SceneNodes[nodeIndex]);
-					
+
 
 
 				}
-				else 
+				else
 				{
-					Con::LogError("Failed to find bone!", HIGH_SEVERITY,TAG_ENGINE);
+					Con::LogError("Failed to find bone!", HIGH_SEVERITY, TAG_ENGINE);
 				}
 			}
 			loadedModelIndex++;
 		}
-
+		op.~SubOp();
 
 		return 0;
 	}

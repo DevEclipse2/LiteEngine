@@ -90,6 +90,7 @@ namespace lte {
 		std::cout << ("Address of this: " + std::to_string((uintptr_t)this)) << std::endl;
 		editorViewport.Init(ImVec2(800,600),2);
 		layoutloader.Init();
+		fileManager.Init();
 		//unfinished
 		IridiumCFG config;
 		Iridium::Init(config);
@@ -151,7 +152,7 @@ namespace lte {
 		
 		layoutloader.SubmitGUICommands();
 		
-
+		fileManager.SubmitGUICommands();
 		editorViewport.SubmitGUICommands();
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
@@ -217,6 +218,6 @@ namespace lte {
 		Con::LogEvent("Engine Cleanup initiated", TAG_ENGINE);
 		vulkanHandler.devices[0].logicalDevice.waitIdle();
 		vulkanHandler.commandPool = nullptr;
-
 	}
+	
 }
