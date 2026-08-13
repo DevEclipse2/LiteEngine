@@ -164,7 +164,7 @@ namespace lte {
 	{
 		scale = newScale; Transforms::markTransformDirty(currentLayer, currentIndex);
 	}
-	void Transform::setLocalRotation(glm::vec3& newRotation)
+	void Transform::setLocalRotation(glm::quat& newRotation)
 	{
 		rotation = newRotation; Transforms::markTransformDirty(currentLayer, currentIndex);
 	}

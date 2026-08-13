@@ -23,6 +23,7 @@
 #include <combaseapi.h>
 #include <fstream>
 #include "global_data.h"
+#include <set>
 namespace lte{
     namespace fs = std::filesystem;
 	void lte::FileManager::SubmitGUICommands()
@@ -34,27 +35,7 @@ namespace lte{
             ImGui::OpenPopup("Start or Open Project");
         }
         DrawStartpopUp();
-
-        /*
-        ImGui::Begin("Content Browser");
-
-        // Create a 2-column table for the layout
-        if (ImGui::BeginTable("BrowserTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable)) {
-
-            // Left Pane: Directory Tree
-            ImGui::TableNextColumn();
-            DrawDirectoryTree(m_DirPath + m_AddPath);
-
-            // Right Pane: Files and Folders
-            ImGui::TableNextColumn();
-            DrawFileBrowser();
-            ImGui::EndTable();
-        }
-       
-        // Handle floating popups for creating/renaming outside the table structure
-        DrawContextMenus();
-        ImGui::End();
-         */
+        DrawFileExplorer();
         
 	}
     void FileManager::LoadRecentCache() {
@@ -176,6 +157,11 @@ namespace lte{
     void FileManager::Init()
     {
         LoadRecentCache();
+        std::vector<fs::path> filepathes = getDocumentsProject(GetOSDocumentPath());
+        for (const auto& fp : filepathes)
+        {
+            m_DocumentProjects.push_back(fp.string());
+        }
         m_IsOpen = true;
     }
 
@@ -183,6 +169,8 @@ namespace lte{
     {
         SubOp StartPopUpOperation{"StartPopUP","a Imgui popup for the start menu, showing a list of projects to choose from. "};
         ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_Appearing);
+        if (selectedDirectory) return;
+        m_IsOpen = true;
         if (ImGui::BeginPopupModal("Start or Open Project", &m_IsOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings)) {
 
             // --- Top Bar: Search and Browse ---
@@ -253,11 +241,31 @@ namespace lte{
             }
             ImGui::SameLine();
             if (ImGui::Button("New Project")) {
+                StartPopUpOperation.LogError("Some goober forgot to implement this", CRIT_SEVERITY, TAG_ENGINE);
                 // Logic to create a new folder and .lite file
             }
             if (ImGui::Button("Select default directory")) {
+
+                StartPopUpOperation.LogEvent("user select new default directory",TAG_ENGINE);
                 // again trigger os file explorer
+                std::wstring filepath = L"";
+#if defined(PLATFORM_WINDOWS)
+                std::cout << "Running on Windows" << std::endl;
+                filepath = OpenFileDialog();
+#elif defined(PLATFORM_LINUX)
+                std::cout << "Running on Linux" << std::endl;
+                filepath = StringToWString(OpenLinuxFileDialog());
+#else 
+                std::cout << "Running on an unsupported platform" << std::endl;
+                StartPopUpOperation.LogError("unsupported platform!", CRIT_SEVERITY, TAG_ENGINE);
+#endif
+                if (filepath != L"")
+                {
+                    m_DefaultSearchDir = wstring_to_string(filepath);
+                }
+                SaveCache();
             }
+
             ImGui::Separator();
 
             std::string searchStr = m_SearchBuffer;
@@ -278,6 +286,8 @@ namespace lte{
                 if (!searchStr.empty() && lowerName.find(searchStr) == std::string::npos) continue;
 
                 if (ImGui::Selectable(folderName.c_str())) {
+                    selectedDirectory = true;
+                    ProjectDirectory = p.parent_path().string();
 
                     //OpenProject(path);
                 }
@@ -306,7 +316,8 @@ namespace lte{
 
                 if (ImGui::Selectable(folderName.c_str())) {
 
-
+                    selectedDirectory = true;
+                    ProjectDirectory = p.parent_path().string();
                     //OpenProject(path);
                 }
             }
@@ -349,5 +360,30 @@ namespace lte{
         }
         return fs::current_path(); // Absolute fallback
 #endif
-    }   
+    }  
+
+    std::vector<fs::path> FileManager::getDocumentsProject(const fs::path& root)
+    {
+        std::set<fs::path> unique_dirs;
+
+        try {
+            //ensure the root path exists and is a directory
+            if (!fs::exists(root) || !fs::is_directory(root)) {
+                return {};
+            }
+
+            for (const auto& entry : fs::recursive_directory_iterator(root)) {
+                if (entry.is_regular_file() && entry.path().extension() == ".lite") {
+                    // Add the parent directory of the .lite file to our set
+                    unique_dirs.insert(entry.path().parent_path());
+                }
+            }
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "Filesystem error: " << e.what() << '\n';
+        }
+
+        //convert the unique set of directories back into a vector
+        return std::vector<fs::path>(unique_dirs.begin(), unique_dirs.end());
+    }
 }

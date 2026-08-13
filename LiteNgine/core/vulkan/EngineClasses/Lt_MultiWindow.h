@@ -41,5 +41,6 @@ namespace lte
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void charCallback(GLFWwindow* window, unsigned int codepoint);
+		static void dropCallback(GLFWwindow* window, int count, const char** paths);
 	};
 }

@@ -29,7 +29,7 @@ namespace lte {
 		glm::vec3 getLocalScale()	{ return scale;		}
 		void setLocalScale(glm::vec3& newScale);
 		glm::quat getLocalRotation() { return rotation; }
-		void setLocalRotation(glm::vec3& newRotation);
+		void setLocalRotation(glm::quat& newRotation);
 		glm::mat4 getLocalTransform() { return LocalTransform; }
 		glm::mat4 getGlobalTransform() { return AccumulatedTransform;}
 		glm::mat4 getImmediateTransform();//this forces the engine to calculate the local transform

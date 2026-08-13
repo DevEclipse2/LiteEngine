@@ -1,4 +1,5 @@
 #include "Lt_MultiWindow.h"
+#include "../EngineClasses/Assimp/DragDrop.h"
 namespace lte {
 	GLFWwindow* Lt_MultiWindow::resizedWindow = nullptr;
 	//void (Lt_MultiWindow::*resizeCallback)() = nullptr;
@@ -15,6 +16,7 @@ namespace lte {
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 		glfwSetKeyCallback(window, KeyCallback);
 		glfwSetCharCallback(window, charCallback);
+		glfwSetDropCallback(window, dropCallback);
 		/*glfwSetScrollCallback
 		glfwGetCursorPos*/
 	}
@@ -23,6 +25,16 @@ namespace lte {
 	{
 		retwidth = width;
 		retheight = height;
+	}
+
+	void Lt_MultiWindow::dropCallback(GLFWwindow* window, int count, const char** paths) {
+		std::vector<std::string> droppedPaths;
+		for (int i = 0; i < count; i++) {
+			droppedPaths.push_back(paths[i]);
+		}
+
+		// Dispatch to your engine logic
+		DragDrop::OnFilesDropped(droppedPaths);
 	}
 
 	void Lt_MultiWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {

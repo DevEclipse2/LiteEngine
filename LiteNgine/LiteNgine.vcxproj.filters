@@ -177,6 +177,9 @@
     <ClCompile Include="core\vulkan\EngineClasses\systems\Transforms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\vulkan\Editor\fileExplorer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\vulkan\App.h">

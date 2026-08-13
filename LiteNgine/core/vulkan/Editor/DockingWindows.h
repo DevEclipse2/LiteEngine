@@ -63,6 +63,21 @@ namespace lte {
 
 			return std::string(buffer.data());
 		}
+		static std::vector<fs::path> getDocumentsProject(const fs::path& root);
+		static void DrawContextMenus();
+
+
+
+		static void DrawFileExplorer();
+		static void DrawDirectoryTree(const fs::path& directoryPath);
+		inline static fs::path m_CurrentPath = "";
+		inline static fs::path m_SelectedFile = "";
+		inline static bool m_IsCreatingFolder = false;
+		inline static bool m_IsCreatingFile = false;
+		inline static bool m_IsRenaming = false;
+		inline static char m_InputBuffer[256] = "";
+		static void DrawFileBrowser();
+
 
 	};
 

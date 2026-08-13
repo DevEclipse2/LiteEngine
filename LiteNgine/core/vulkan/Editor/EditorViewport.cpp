@@ -79,8 +79,8 @@ namespace lte {
 					//skinned mesh
 					skinnedModels.emplace_back(model);
 					skinnedMeshes.emplace_back(LtSkinnedMeshInfo{});
-					meshes.back().transform = model.transform;
-					skinnedMeshes.back().scale *= 0.01f;
+					skinnedMeshes.back().transform = glm::mat4(1.0f);
+					skinnedMeshes.back().transform = glm::scale(skinnedMeshes.back().transform, glm::vec3(-0.01f));
 					skinnedMeshes.back().finalBoneMatrices.assign(skinnedModels.back().bones.size(), glm::mat4(1.0f));
 					skinnedMeshes.back().NodeIndex = i;
 					//node index will become the root bone, as given by

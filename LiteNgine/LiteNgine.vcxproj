@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClCompile Include="core\engine\Node Editor\Decompose.cpp" />
     <ClCompile Include="core\engine\Ui\Blueprints.cpp" />
+    <ClCompile Include="core\vulkan\Editor\fileExplorer.cpp" />
     <ClCompile Include="core\vulkan\Editor\FileManager.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Anim.cpp" />

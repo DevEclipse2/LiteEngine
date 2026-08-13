@@ -42,7 +42,7 @@ namespace lte {
 			Node rootNode;
 			std::vector<RenderSet> staticRenderset;
 			std::vector<RenderSet> skinnedRenderset;
-			glm::mat4 transform;
+			glm::mat4 transform = glm::mat4(1.0f);
 			std::unordered_map<std::string, uint16_t> BoneIndexes;
 			std::vector<Bone> bones;
 			std::string name;

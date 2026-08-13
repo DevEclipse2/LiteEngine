@@ -154,6 +154,7 @@ namespace lte {
 		
 		fileManager.SubmitGUICommands();
 		editorViewport.SubmitGUICommands();
+		ImGui::ShowDemoWindow();
 		guiHandler.EndFrame();
 		if (guiHandler.RenderFrame(frames)) 
 		{
