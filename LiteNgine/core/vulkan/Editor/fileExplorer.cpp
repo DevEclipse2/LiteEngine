@@ -201,8 +201,6 @@ namespace lte
                 //other stuff here later
                 ImGui::EndPopup();
             }
-            
-
         }
     }
     void FileManager::moveFile(fs::path& source)
