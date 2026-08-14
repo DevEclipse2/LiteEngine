@@ -20,8 +20,10 @@ namespace lte {
 		uint16_t currentLayer;
 		uint32_t slateID;
 		uint16_t currentIndex;
+		uint16_t renderLayer;
+
 		char usageBits;
-			
+		
 		friend class Transforms;
 	public:
 		glm::vec3 getLocalPosition() { return position; }
@@ -53,6 +55,7 @@ namespace lte {
 		static glm::mat4 averageTransformsWeighted(
 			const std::array<glm::mat4, 4>& matrices,
 			const std::array<float, 4>& rawWeights);
+		static void GetImmediateGlobalTransforms(uint16_t depth, uint16_t index);
 		//static void RegisterTransform();
 	private:
 		static inline std::vector<std::vector<Transform>>	TransformComponents;

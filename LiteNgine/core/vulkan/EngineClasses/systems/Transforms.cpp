@@ -156,6 +156,10 @@ namespace lte {
 
 		return result;
 	}
+	void Transforms::GetImmediateGlobalTransforms(uint16_t depth, uint16_t index)
+	{
+
+	}
 	void Transform::setLocalPosition(glm::vec3& newPos)
 	{
 		position = newPos; Transforms::markTransformDirty(currentLayer, currentIndex);
@@ -182,10 +186,11 @@ namespace lte {
 	}
 	glm::mat4 Transform::getImmGlobalTransform()
 	{
+		Transforms::GetImmediateGlobalTransforms(currentLayer, currentIndex);
 		//do not use this function too much istg
 		//so first go up layers until no parents
 		//then for all of the parents check dirty bits and tick them off
-		return glm::mat4();
+		return AccumulatedTransform;
 	}
 	glm::vec3 Transform::getGlobalPosition()
 	{

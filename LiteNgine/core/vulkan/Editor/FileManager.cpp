@@ -287,7 +287,7 @@ namespace lte{
 
                 if (ImGui::Selectable(folderName.c_str())) {
                     selectedDirectory = true;
-                    ProjectDirectory = p.parent_path().string();
+                    ProjectDirectory = p.string();
 
                     //OpenProject(path);
                 }
@@ -317,7 +317,8 @@ namespace lte{
                 if (ImGui::Selectable(folderName.c_str())) {
 
                     selectedDirectory = true;
-                    ProjectDirectory = p.parent_path().string();
+                    ProjectDirectory = p.string();
+                    StartPopUpOperation.Log("new project directory" + ProjectDirectory, TAG_ENGINE);
                     //OpenProject(path);
                 }
             }

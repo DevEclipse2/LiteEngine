@@ -78,8 +78,12 @@ namespace lte {
 		inline static char m_InputBuffer[256] = "";
 		static void DrawFileBrowser();
 
-
+		static void moveFile(fs::path& path);
 	};
 
-
+	class SceneHeirarchy
+	{
+		static void SubmitGUICommands();
+		static void DrawTree();
+	};
 }

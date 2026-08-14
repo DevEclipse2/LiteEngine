@@ -2,5 +2,5 @@
 #include <string>
 namespace lte
 {
-	static inline std::string ProjectDirectory = "";
+	inline std::string ProjectDirectory = "";
 }
