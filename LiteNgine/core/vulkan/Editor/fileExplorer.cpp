@@ -1,5 +1,6 @@
 #include "DockingWindows.h"
 #include "global_data.h"
+#include "../EngineClasses/Assimp/Mist.h"
 namespace lte
 {
 	void FileManager::DrawFileExplorer()
@@ -66,6 +67,7 @@ namespace lte
                 }
                 outputFile << "-- LiteNgine!" << std::endl;
                 outputFile.close();
+                MistMaker::generateMistFile(m_CurrentPath / m_InputBuffer);
                 m_IsCreatingFile = false;
             }
             ImGui::EndPopup();
@@ -149,6 +151,7 @@ namespace lte
                         {
                             ShellExecuteW(NULL, L"open", path.c_str(), NULL, NULL, SW_SHOWNORMAL);
                         }
+
                     }
                 }
             }

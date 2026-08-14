@@ -179,6 +179,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\vulkan\EngineClasses\systems\Barnacles.cpp" />
     <ClCompile Include="core\engine\Node Editor\Decompose.cpp" />
     <ClCompile Include="core\engine\Ui\Blueprints.cpp" />
     <ClCompile Include="core\vulkan\Editor\fileExplorer.cpp" />
@@ -220,7 +221,6 @@
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Vulkan.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Lt_Console.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Lt_Importer.cpp" />
-    <ClCompile Include="core\vulkan\Opengl\GLBackend.cpp" />
     <ClCompile Include="dep\imGuiNodes\crude_json.cpp" />
     <ClCompile Include="dep\imGuiNodes\imgui_canvas.cpp" />
     <ClCompile Include="dep\imGuiNodes\imgui_node_editor.cpp" />
@@ -231,7 +231,9 @@
     <ClCompile Include="core\engine\Lt_PipelineNodes.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\rendering\RenderData.cpp" />
     <ClCompile Include="core\engine\ImageEditor\ImageEditor.cpp" />
-    <ClCompile Include="core\Game\Registry.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\systems\names.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\systems\scratchpad.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\Assimp\Mist.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.h" />
@@ -239,6 +241,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\systems\Barnacles.h" />
     <ClInclude Include="core\engine\Node Editor\Node.h" />
     <ClInclude Include="core\engine\scripting\FENTdealer.h" />
     <ClInclude Include="core\engine\Ui\Blueprints.h" />
@@ -281,7 +284,6 @@
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Vulkan.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Lt_Console.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Assimp\Lt_Importer.h" />
-    <ClInclude Include="core\vulkan\Opengl\GLBackend.h" />
     <ClInclude Include="dep\imGuiNodes\crude_json.h" />
     <ClInclude Include="dep\imGuiNodes\imgui_bezier_math.h" />
     <ClInclude Include="dep\imGuiNodes\imgui_canvas.h" />
@@ -296,13 +298,16 @@
     <ClInclude Include="core\vulkan\EngineClasses\rendering\RenderData.h" />
     <ClInclude Include="dep\vk_mem_alloc.h" />
     <ClInclude Include="core\engine\ImageEditor\ImageEditor.h" />
-    <ClInclude Include="core\Game\Registry.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\systems\names.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\systems\scratchpad.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\Assimp\Mist.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Assimp\ViewportCamera.h" />
     <ClInclude Include="core\vulkan\EngineClasses\systems\Transforms.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="core\documentas\keystone.idx" />
     <None Include="core\documentas\project.lite" />
     <None Include="core\vulkan\EngineClasses\FileFormats\file types.md">
       <SubType>
@@ -320,6 +325,7 @@
     <Text Include="core\documentas\class guide.txt" />
     <Text Include="core\documentas\engine formatting.txt" />
     <Text Include="core\documentas\iridium.txt" />
+    <Text Include="core\documentas\mist.txt" />
     <Text Include="core\documentas\todo.txt" />
     <Text Include="core\engine\Log.txt" />
     <Text Include="core\documentas\codeGraph.txt" />

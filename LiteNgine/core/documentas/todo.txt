@@ -34,7 +34,7 @@ add missing texture fallback
 
 
 
-switch LtMeshInfo to use mat4s 
+switch LtMeshInfo to use mat4s //failed
 
 lua engine
 node editor
@@ -42,6 +42,9 @@ blueprints
 //file manager
 ui heirarchy
 dumping of nodes into heirarchy
+more data oriented design
+
+for drag and drop, new .mist files must be generated
 
 im in shanghai rn and uh yeah
-if the user xes out of the file select screen , give them the option to save the current scene as a new project
+if the user xes out of the file select screen , give them the option to save the current scene as a new project // nah

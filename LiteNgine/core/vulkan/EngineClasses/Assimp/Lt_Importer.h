@@ -149,7 +149,7 @@ namespace lte {
 		static void UpdateBoneMatrices(StrippedModel& model, LtSkinnedMeshInfo& meshInfo);
 		static void UpdateTransforms(Node& CurrentNode);
 		static void SortBones();
-
+		static bool CheckIsValid(std::string& path);
 		inline static std::vector<Node> SceneNodes;
 
 	private:

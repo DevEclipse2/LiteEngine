@@ -79,6 +79,8 @@ namespace lte {
 		static void DrawFileBrowser();
 
 		static void moveFile(fs::path& path);
+		static void generateMistFile(fs::path& path);
+
 	};
 
 	class SceneHeirarchy

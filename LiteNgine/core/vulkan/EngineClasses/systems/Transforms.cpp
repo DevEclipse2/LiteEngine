@@ -172,8 +172,70 @@ namespace lte {
 		if (rawWeights.size() != matrices.size())
 		{
 			Con::LogError("size of vectors not equal when averaging transforms!", HIGH_SEVERITY, TAG_ENGINE);
+			return glm::mat4(1.0f); // Fallback to identity matrix
 		}
 
+		if (matrices.empty()) return glm::mat4(1.0f);
+		if (matrices.size() == 1) return matrices[0];
+
+		float weightSum = 0.0f;
+		for (float w : rawWeights) weightSum += w;
+
+		if (weightSum <= 0.0001f) return matrices[0];
+
+		std::vector<float> normalizedWeights(rawWeights.size());
+		for (size_t i = 0; i < rawWeights.size(); ++i)
+		{
+			normalizedWeights[i] = rawWeights[i] / weightSum;
+		}
+
+		glm::vec3 blendedTranslation(0.0f);
+		glm::vec3 blendedScale(0.0f);
+		glm::quat blendedRotation(0.0f, 0.0f, 0.0f, 0.0f);
+
+		glm::quat baseRotation;
+
+		for (size_t i = 0; i < matrices.size(); ++i)
+		{
+			glm::vec3 scale;
+			glm::quat rotation;
+			glm::vec3 translation;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+
+			glm::decompose(matrices[i], scale, rotation, translation, skew, perspective);
+
+			float w = normalizedWeights[i];
+
+			//67
+			blendedTranslation += translation * w;
+			blendedScale += scale * w;
+
+			// man fuck quaternions 
+			if (i == 0)
+			{
+				baseRotation = rotation;
+				blendedRotation = rotation * w;
+			}
+			else
+			{
+				
+				if (glm::dot(baseRotation, rotation) < 0.0f)
+				{
+					rotation = -rotation;
+				}
+				blendedRotation += rotation * w;
+			}
+		}
+
+		blendedRotation = glm::normalize(blendedRotation);
+
+		glm::mat4 result = glm::mat4(1.0f);
+		result = glm::translate(result, blendedTranslation);
+		result = result * glm::toMat4(blendedRotation);
+		result = glm::scale(result, blendedScale);
+
+		return result;
 	}
 	glm::mat4 Transforms::GetImmediateGlobalTransforms(uint16_t depth, uint16_t index)
 	{

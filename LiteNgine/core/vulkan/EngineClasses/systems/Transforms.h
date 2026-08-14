@@ -2,6 +2,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "../Assimp/Lt_Importer.h"
 #define in_use 1
 
 namespace lte {
@@ -62,7 +63,10 @@ namespace lte {
 		static glm::mat4 GetImmediateGlobalTransforms(uint16_t depth, uint16_t index);
 		static void DeleteTransform(uint16_t depth, uint16_t index);
 		static void clearDeletedParents(uint16_t depth, uint16_t index);
-		static void ImportNodeTree();
+		static void AddRootTransform();
+		static void ImportNodeTreeToRoot(std::vector<Lt_Importer::Node> incomingNodes);
+		static void ImportNodeTree(std::vector<Lt_Importer::Node> incomingNodes, uint16_t parentDepth, uint16_t parentIndex);
+		static void ImportNodeTree(std::vector<Lt_Importer::Node> incomingNodes, Transform parent);
 
 		//static void RegisterTransform();
 	private:

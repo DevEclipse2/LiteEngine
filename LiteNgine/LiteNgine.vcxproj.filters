@@ -114,9 +114,6 @@
     <ClCompile Include="core\vulkan\InterfaceLayers\Bootstrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\vulkan\Opengl\GLBackend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -159,9 +156,6 @@
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Anim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\Game\Registry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\engine\Ui\Blueprints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -184,6 +178,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\vulkan\Editor\UIHeirarchy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\systems\names.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\systems\scratchpad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\systems\Barnacles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\vulkan\EngineClasses\Assimp\Mist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -293,9 +299,6 @@
     <ClInclude Include="core\vulkan\InterfaceLayers\Bootstrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\vulkan\Opengl\GLBackend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\vulkan\Editor\Viewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -353,9 +356,6 @@
     <ClInclude Include="..\..\..\..\Users\Louis\Downloads\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\Game\Registry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="core\engine\Ui\Blueprints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -377,6 +377,18 @@
     <ClInclude Include="core\vulkan\EngineClasses\Assimp\DragDrop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\systems\names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\systems\scratchpad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\systems\Barnacles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\vulkan\EngineClasses\Assimp\Mist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.slang" />
@@ -392,6 +404,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="core\documentas\project.lite" />
+    <None Include="core\documentas\keystone.idx" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\documentas\engine formatting.txt" />
@@ -404,5 +417,6 @@
     <Text Include="core\documentas\todo.txt" />
     <Text Include="core\documentas\iridium.txt" />
     <Text Include="core\documentas\blueprints.txt" />
+    <Text Include="core\documentas\mist.txt" />
   </ItemGroup>
 </Project>

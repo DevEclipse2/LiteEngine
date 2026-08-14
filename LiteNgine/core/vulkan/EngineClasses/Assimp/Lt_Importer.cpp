@@ -13,6 +13,22 @@
 
 namespace lte 
 {
+	bool Lt_Importer::CheckIsValid(std::string& path)
+	{
+		Assimp::Importer importer;
+
+		const aiScene* importedScene = importer.ReadFile(path, aiProcess_CalcTangentSpace |
+			aiProcess_Triangulate |
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_FlipUVs |
+			aiProcess_PopulateArmatureData |
+			aiProcess_SortByPType);
+		if (importedScene == nullptr)
+		{
+			return false;
+		}
+		return true;
+	}
 	uint8_t Lt_Importer::Load(const std::string& path, unsigned int pFlags)
 	{
 		Con::LogEvent("Begin loading model from path :" + path, TAG_ENGINE);
@@ -36,6 +52,7 @@ namespace lte
 			return Load_Fail_Generic;
 		}
 		ParseScene(importedScene,"textures/");
+		importer.FreeScene();
 		return 0;
 
 	}
