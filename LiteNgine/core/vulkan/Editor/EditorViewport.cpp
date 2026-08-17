@@ -98,7 +98,7 @@ namespace lte {
 		}
 
 		Buffers::createDynamicUniformBuffers(1024, framesInFlight, deviceSet.logicalDevice, physDev, dynamicAlignment, dynamicSkinnedUBO, dynamicSkinnedMemory, dynamicUBOMappedPtr);
-		DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, deviceSet.logicalDevice, framesInFlight,skinnedMeshes.size() + 120);
+		DeviceHandler::createDynamicDescriptorPool(dynamicDescriptorPool, deviceSet.logicalDevice, framesInFlight,skinnedMeshes.size() + 4);
 		DeviceHandler::createDynamicDescriptorSets(skinnedMeshes,dynamicDescriptorPool, SkinnedPipeline.descSetLayout,sampler, deviceSet.logicalDevice, framesInFlight, dynamicSkinnedUBO,renderSets);
 		Buffers::createUniformBuffers(&meshes, framesInFlight, deviceSet.logicalDevice, physDev);
 

@@ -51,7 +51,7 @@ namespace lte
 			Con::LogFailure(errstr + "Assimp loading of model failed from internal engine class Lt_Importer", HIGH_SEVERITY,TAG_ENGINE);
 			return Load_Fail_Generic;
 		}
-		ParseScene(importedScene,"textures/");
+ 		ParseScene(importedScene,"textures/");
 		importer.FreeScene();
 		return 0;
 
