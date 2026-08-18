@@ -12,6 +12,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LiteNgine2k", "LiteNgine2k\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DummyPlugin", "DummyPlugin\DummyPlugin.vcxproj", "{F1353DE1-207F-4C28-B868-718B32CF1A20}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3447D871-C96A-40D5-AD1F-71C272BD8905} = {3447D871-C96A-40D5-AD1F-71C272BD8905}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LiteNgineAPI", "LiteNgineAPI\LiteNgineAPI.vcxproj", "{3447D871-C96A-40D5-AD1F-71C272BD8905}"
 EndProject

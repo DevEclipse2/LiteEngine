@@ -32,8 +32,5 @@
     <ClInclude Include="src\diskUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Plugin_ABI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
