@@ -155,13 +155,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="src\diskUtility.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="LiteNgine2k.cpp" />
+    <ClCompile Include="src\forScrap\Bootstrapper.cpp" />
+    <ClCompile Include="src\forScrap\Lt_Console.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Plugin.h" />
     <ClInclude Include="src\diskUtility.h" />
     <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\forScrap\Bootstrapper.h" />
+    <ClInclude Include="src\forScrap\Lt_Console.h" />
+    <ClInclude Include="src\forScrap\Preferences.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

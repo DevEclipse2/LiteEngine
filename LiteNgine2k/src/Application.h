@@ -1,13 +1,14 @@
 #pragma once
-namespace ltBase
+namespace ltCore
 {
 	class Application
 	{
 public:
-		void Init();
-		void Loop();
-		void Cleanup();
-
+		//void Init();
+		//void Loop();
+		void End();
+		//void Cleanup();
+		void run();
 	};
 }
 
