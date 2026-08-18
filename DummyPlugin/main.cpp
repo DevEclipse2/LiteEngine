@@ -1,3 +1,15 @@
+//things to keep in mind
+//if you have to, use glfw3dll
+//if not, use the inputhandlers given in core litengine
+
+
+
+
+
+
+
+
+
 #include "ABI.h"
 #include <iostream>
 class DummyPlugin : public IEnginePlugin {

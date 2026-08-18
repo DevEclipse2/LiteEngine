@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "forScrap/Bootstrapper.h"
 #include "forScrap/lt_Console.h"
+#include "jraphics/windowTracker.h"
 namespace ltCore {
 	enum Result {
 		Continue,
@@ -31,5 +32,20 @@ namespace ltCore {
 		lte::Bootstrapper::SavePrefs("LiteNginePref.ini");
 		lte::Con::BootstrapDone();
 		lte::Con::OutputFile();
+
+		windowTracker::Init();
+		windowTracker::DefaultWindow();
+		//here more stuff
+		while (!windowTracker::SubWindows[windowTracker::mainWindowIndex]->shouldClose())
+		{
+			//main loop 
+			lte::Con::Display();
+		}
+
+		lte::Con::Display();
+		lte::Con::OutputFile();
+
+		//stuff
+
 	}
 }

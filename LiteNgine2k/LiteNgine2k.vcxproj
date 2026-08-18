@@ -72,15 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <ExternalIncludePath>C:\VulkanSDK\1.4.341.1\Include\vulkan;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <ExternalIncludePath>C:\VulkanSDK\1.4.341.1\Include\vulkan;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <ExternalIncludePath>C:\VulkanSDK\1.4.341.1\Include\vulkan;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <ExternalIncludePath>C:\VulkanSDK\1.4.341.1\Include\vulkan;C:\VulkanSDK\1.4.341.1\Include;C:\VulkanLibraries\glfw-3.4.bin.WIN64\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -94,8 +98,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>LiteNgineAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\VulkanSDK\1.4.341.1\Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>LiteNgineAPI.lib;vulkan-1.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -114,8 +118,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>LiteNgineAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\VulkanSDK\1.4.341.1\Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>LiteNgineAPI.lib;vulkan-1.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,8 +134,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>LiteNgineAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\VulkanSDK\1.4.341.1\Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>LiteNgineAPI.lib;vulkan-1.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -150,25 +154,35 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>LiteNgineAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\;C:\VulkanLibraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\VulkanSDK\1.4.341.1\Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>LiteNgineAPI.lib;vulkan-1.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\jraphics\DebugMessenger.cpp" />
+    <ClCompile Include="src\jraphics\Devicehandler.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="src\diskUtility.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="LiteNgine2k.cpp" />
     <ClCompile Include="src\forScrap\Bootstrapper.cpp" />
     <ClCompile Include="src\forScrap\Lt_Console.cpp" />
+    <ClCompile Include="src\jraphics\Lt_Vulkan.cpp" />
+    <ClCompile Include="src\jraphics\vulkanInstance.cpp" />
+    <ClCompile Include="src\jraphics\windowTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\jraphics\DebugMessenger.h" />
+    <ClInclude Include="src\jraphics\Devicehandler.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="src\diskUtility.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\forScrap\Bootstrapper.h" />
     <ClInclude Include="src\forScrap\Lt_Console.h" />
     <ClInclude Include="src\forScrap\Preferences.h" />
+    <ClInclude Include="src\jraphics\Lt_Vulkan.h" />
+    <ClInclude Include="src\jraphics\vulkanInstance.h" />
+    <ClInclude Include="src\jraphics\windowTracker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
