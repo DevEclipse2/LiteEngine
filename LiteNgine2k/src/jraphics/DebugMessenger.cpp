@@ -31,13 +31,6 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
 }
 
 namespace ltCore {
-
-	DebugMessenger::DebugMessenger() {
-
-	}
-	DebugMessenger::~DebugMessenger() {
-
-	}
 	//validation layer stuff
 
 	void DebugMessenger::setupMessenger(vk::raii::Instance& instance)

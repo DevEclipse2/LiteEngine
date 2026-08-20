@@ -1,0 +1,35 @@
+
+
+for plugins, there are multiple phases
+scanning phase
+plugins are scanned
+dependency phase
+dependencies are sorted, dictating their load order
+
+
+after loading in, the plugins state undergoes these changes
+
+bootloading stage : plugin restrictions are called, 
+
+graphics injection stage : if a plugin demands something from a gpu, this is the time to name it
+
+hibernation stage : if a project doesn't need the plugin, the plugin is put into hibernation
+
+editor open stage : the editor is open, but no projects are loaded, some core plugins may be active during this period
+
+project loading : loading into a project , hold onto your hats!
+
+project open stage
+
+project closing stage
+
+quit editor stage
+
+
+for debug/release there is also
+
+on game loading
+
+on game tick
+
+on game closing

@@ -161,28 +161,27 @@
   <ItemGroup>
     <ClCompile Include="src\jraphics\DebugMessenger.cpp" />
     <ClCompile Include="src\jraphics\Devicehandler.cpp" />
-    <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="src\diskUtility.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="LiteNgine2k.cpp" />
     <ClCompile Include="src\forScrap\Bootstrapper.cpp" />
     <ClCompile Include="src\forScrap\Lt_Console.cpp" />
-    <ClCompile Include="src\jraphics\Lt_Vulkan.cpp" />
     <ClCompile Include="src\jraphics\vulkanInstance.cpp" />
     <ClCompile Include="src\jraphics\windowTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\jraphics\DebugMessenger.h" />
     <ClInclude Include="src\jraphics\Devicehandler.h" />
-    <ClInclude Include="Plugin.h" />
     <ClInclude Include="src\diskUtility.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\forScrap\Bootstrapper.h" />
     <ClInclude Include="src\forScrap\Lt_Console.h" />
     <ClInclude Include="src\forScrap\Preferences.h" />
-    <ClInclude Include="src\jraphics\Lt_Vulkan.h" />
     <ClInclude Include="src\jraphics\vulkanInstance.h" />
     <ClInclude Include="src\jraphics\windowTracker.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\pluginLoader\info.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

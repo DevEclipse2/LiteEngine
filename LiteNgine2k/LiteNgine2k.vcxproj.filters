@@ -24,9 +24,6 @@
     <ClCompile Include="src\diskUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\forScrap\Lt_Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\jraphics\Devicehandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\jraphics\Lt_Vulkan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\jraphics\DebugMessenger.cpp">
@@ -54,9 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\diskUtility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Plugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\forScrap\Lt_Console.h">
@@ -74,14 +65,14 @@
     <ClInclude Include="src\jraphics\Devicehandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\jraphics\Lt_Vulkan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\jraphics\DebugMessenger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\jraphics\vulkanInstance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\pluginLoader\info.txt" />
   </ItemGroup>
 </Project>

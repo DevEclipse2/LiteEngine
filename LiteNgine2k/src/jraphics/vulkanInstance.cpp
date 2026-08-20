@@ -111,13 +111,17 @@ namespace ltCore {
 
 		// only one discardable surface to check graphics devices
 		//devices
-		Lt_DevicePair devicepair{};
-		DeviceHandler::pickPhysicalDevice(instance, devicepair.physicalDevice, devicepair.sampling);
-		DeviceHandler::createLogicalDevice(devicepair.physicalDevice, devicepair.logicalDevice, TempSurface, devicepair.queue, devicepair.queueIndex, requiredDeviceExtensions);
-
-		DeviceHandler::createTextureSampler(&sampler, devicepair.physicalDevice, devicepair.logicalDevice);
-		devices.emplace_back(std::move(devicepair));
-
+		//device handler scans all devices
+		if (handler.scanDevices(m_instance) > 0)
+		{
+			handler.tagDevices(tempSurface);
+			handler.sortDevices();
+		}
+		else
+		{
+			//no devices, close engine
+		}
+		//if zero devices, exit
 		if (tempWindow) {
 			glfwDestroyWindow(tempWindow);
 		}

@@ -1,4 +1,5 @@
 #pragma once
+#include "jraphics/vulkanInstance.h"
 namespace ltCore
 {
 	class Application
@@ -9,7 +10,7 @@ public:
 		void End();
 		//void Cleanup();
 		void run();
-
+		vulkanInstance instance{};
 
 
 	};

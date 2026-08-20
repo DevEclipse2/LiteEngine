@@ -12,10 +12,8 @@ namespace ltCore {
 	class DebugMessenger
 	{
 	public:
-		DebugMessenger();
-		~DebugMessenger();
 		void setupMessenger(vk::raii::Instance& instance);
-		vk::raii::DebugUtilsMessengerEXT debugMessenger;
+		vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
 	};
 }
 

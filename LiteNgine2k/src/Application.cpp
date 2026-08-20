@@ -35,6 +35,7 @@ namespace ltCore {
 
 		windowTracker::Init();
 		windowTracker::DefaultWindow();
+		instance.Init("LiteNgine core");
 		//here more stuff
 		while (!windowTracker::SubWindows[windowTracker::mainWindowIndex]->shouldClose())
 		{
