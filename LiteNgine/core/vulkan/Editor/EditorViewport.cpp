@@ -7,6 +7,7 @@
 #include "../Reworked/DeviceHandler.h"
 #include "../../engine/Iridium.h"
 #include "../EngineClasses/Lt_Mat.h"
+#include "../EngineClasses/IneedToGraduate/InverseKinematics.h"
 #include <queue>
 namespace lte {
 	uint8_t deviceID = 0;
@@ -528,6 +529,12 @@ namespace lte {
 		std::set<uint16_t> updatedList;
 		Lt_Importer::UpdateAnimation(animationTime, Lt_Importer::animation, updatedList);
 
+		//add ik stuff here
+		
+		InverseKinematics::Solve(updatedList);
+
+
+
 		//if node parent is -1 , use mat4 1x position rotation scale
 		//here it updates the transforms
 		std::set<uint16_t> processedNodes;
@@ -539,6 +546,8 @@ namespace lte {
 		for (uint16_t startNodeId : updatedList) {
 			nodesToProcess.push(startNodeId);
 		}
+
+
 
 		while (!nodesToProcess.empty())
 		{

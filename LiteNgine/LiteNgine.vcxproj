@@ -231,9 +231,9 @@
     <ClCompile Include="core\engine\Lt_PipelineNodes.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\rendering\RenderData.cpp" />
     <ClCompile Include="core\engine\ImageEditor\ImageEditor.cpp" />
-    <ClCompile Include="core\vulkan\EngineClasses\systems\names.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\systems\scratchpad.cpp" />
     <ClCompile Include="core\vulkan\EngineClasses\Assimp\Mist.cpp" />
+    <ClCompile Include="core\vulkan\EngineClasses\IneedToGraduate\InverseKinematics.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="core\vulkan\Editor\Viewport.cpp" />
     <ClCompile Include="core\vulkan\Editor\ViewportCamera.h" />
@@ -298,9 +298,9 @@
     <ClInclude Include="core\vulkan\EngineClasses\rendering\RenderData.h" />
     <ClInclude Include="dep\vk_mem_alloc.h" />
     <ClInclude Include="core\engine\ImageEditor\ImageEditor.h" />
-    <ClInclude Include="core\vulkan\EngineClasses\systems\names.h" />
     <ClInclude Include="core\vulkan\EngineClasses\systems\scratchpad.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Assimp\Mist.h" />
+    <ClInclude Include="core\vulkan\EngineClasses\IneedToGraduate\InverseKinematics.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="core\vulkan\Editor\Viewport.h" />
     <ClInclude Include="core\vulkan\EngineClasses\Assimp\ViewportCamera.h" />

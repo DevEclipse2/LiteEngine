@@ -1,5 +1,6 @@
 #include "Lt_ILayer.h"
 #include "../EngineClasses/Preferences.h"
+#include "../EngineClasses/IneedToGraduate/InverseKinematics.h"
 namespace lte {
 
 	uint32_t Lt_ILayer::frameCount = 0;
@@ -150,8 +151,8 @@ namespace lte {
 
 		//viewport.SubmitGUICommands();
 		
-		layoutloader.SubmitGUICommands();
-		
+		//layoutloader.SubmitGUICommands();
+		InverseKinematics::SubmitDrawCommands();
 		fileManager.SubmitGUICommands();
 		editorViewport.SubmitGUICommands();
 		ImGui::ShowDemoWindow();
