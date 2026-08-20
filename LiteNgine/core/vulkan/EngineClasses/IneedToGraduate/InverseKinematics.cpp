@@ -72,7 +72,7 @@ namespace lte {
         {
             return;
         }
-        RunCCDSolver(ikChain, ikTargetPosition, 12, 0.01f);
+        RunCCDSolver(ikChain, ikTargetPosition, 120, 0.1f);
         set.insert(ikChain[0]);
     }
     std::vector<uint16_t> InverseKinematics::FindEndEffectors(const std::vector<Lt_Importer::Node>& hierarchy)
@@ -122,11 +122,17 @@ namespace lte {
 
                 // 4. Calculate the delta rotation in GLOBAL space
                 glm::quat deltaRotGlobal = glm::rotation(toEffector, toTarget);
-                glm::mat4 deltaRotMat = glm::mat4_cast(deltaRotGlobal);
 
-                // 5. Apply the global rotation to the current bone
-                // We isolate the rotation/scale by zeroing out the translation, apply the 
-                // delta rotation, and then put the translation (pivot point) back.
+                // -- THE JITTER FIX: Damping / Slerp --
+                // Instead of applying the full rotation, we blend it with the identity quaternion.
+                // A weight of 0.5f means it moves halfway to the target per iteration. 
+                // Lower = smoother but slower. Higher = faster but more jitter.
+                float dampingWeight = 0.5f;
+                glm::quat dampedRotGlobal = glm::slerp(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), deltaRotGlobal, dampingWeight);
+
+                glm::mat4 deltaRotMat = glm::mat4_cast(dampedRotGlobal);
+
+                // 5. Apply the damped global rotation
                 glm::mat4 globalRotScale = currentBone.AccumulatedTransform;
                 globalRotScale[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 

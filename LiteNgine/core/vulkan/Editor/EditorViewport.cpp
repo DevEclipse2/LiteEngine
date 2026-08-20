@@ -377,6 +377,7 @@ namespace lte {
 				depthFormat, deviceSet.logicalDevice);
 		}
 
+		//for debug
 	}
 
 	void EditorViewport::SubmitCommands(vk::raii::CommandBuffer& commandBuffer)
@@ -485,6 +486,10 @@ namespace lte {
 		commandBuffer.bindIndexBuffer(*RenderData::Buffers[skinnedIndexId]->buffer, 0, vk::IndexType::eUint32);
 		RenderSkinnedMeshes(skinnedMeshes, skinnedModels,commandBuffer);
 		
+
+
+
+
 		commandBuffer.endRendering();
 
 		
@@ -522,7 +527,7 @@ namespace lte {
 		animPlayHead += frameTime;
 		if (animPlayHead > Lt_Importer::animation.duration)
 		{
-			animPlayHead = 0;
+			animPlayHead = 0.2;
 		}
 		float timeInTicks = animPlayHead * Lt_Importer::animation.ticksPerSecond;
 		float animationTime = fmod(timeInTicks, Lt_Importer::animation.duration);
