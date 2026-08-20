@@ -33,3 +33,11 @@ on game loading
 on game tick
 
 on game closing
+
+
+
+plugin interfaces: 
+
+a table of basic types for the engine to look up, they have an owner and also users
+
+
