@@ -50,11 +50,14 @@ namespace lte {
         // 3. Chain Length Control
         // Limit the slider from 1 (just the leaf bone) up to a reasonable max like 15
         ImGui::SliderInt("Chain Length", &ikChainLength, 1, 15);
+        ImGui::SliderInt("Iterations", &MaxIter, 8, 250);
+        ImGui::SliderFloat("tolerance", &tolerance, 0.00001f, 1.0f);
 
         ImGui::Separator();
 
         // 4. Execution Toggle
         ImGui::Checkbox("Enable IK Solver", &enableIK);
+        ImGui::Checkbox("Enable Animations", &useAnim);
 
         // Optional: Visual feedback if no bone is selected but IK is enabled
         if (enableIK && selectedEndEffectorIndex == -1) {
@@ -72,7 +75,9 @@ namespace lte {
         {
             return;
         }
-        RunCCDSolver(ikChain, ikTargetPosition, 120, 0.1f);
+        //chain is end to start
+        SolveIK_Jacobian(Lt_Importer::SceneNodes,ikChain[0], ikChain[ikChain.size() - 1], ikTargetPosition,MaxIter,tolerance,0.1f);
+        //RunCCDSolver(ikChain, ikTargetPosition, 120, 0.1f);
         set.insert(ikChain[0]);
     }
     std::vector<uint16_t> InverseKinematics::FindEndEffectors(const std::vector<Lt_Importer::Node>& hierarchy)
@@ -87,6 +92,116 @@ namespace lte {
         }
 
         return endEffectors;
+    }
+    void InverseKinematics::SolveIK_Jacobian(
+        std::vector<Lt_Importer::Node>& skeleton,
+        int end_effector_idx,
+        int root_idx,
+        glm::vec3 target_pos,
+        int max_iterations,
+        float tolerance,
+        float lambda // Damping constant to prevent singularity glitches
+    ) 
+    {
+        // 1. Isolate the IK Chain (From Leaf to Root)
+        std::vector<int> chain;
+        int current = end_effector_idx;
+        while (current != -1) {
+            chain.push_back(current);
+            if (current == root_idx) break; // Stop at the shoulder/hip
+            current = skeleton[current].parent;
+        }
+
+        float max_step = 0.5f; // Tweak this if it still overshoots
+
+        // 2. The Iterative Solver Loop
+        for (int iter = 0; iter < max_iterations; ++iter) {
+
+            std::vector<glm::mat4> global_transforms(skeleton.size(), glm::mat4(1.0f));
+
+            // Iterate backward through the chain vector (which means Root -> Leaf)
+            for (int i = chain.size() - 1; i >= 0; --i) {
+                int bone_idx = chain[i];
+                int parent_idx = skeleton[bone_idx].parent;
+
+                if (parent_idx == -1) {
+                    global_transforms[bone_idx] = skeleton[bone_idx].defaultLocalTransform;
+                }
+                else {
+                    global_transforms[bone_idx] = global_transforms[parent_idx] * skeleton[bone_idx].defaultLocalTransform;
+                }
+            }
+
+
+
+            glm::vec3 effector_pos = glm::vec3(global_transforms[end_effector_idx][3]);
+            glm::vec3 error = target_pos - effector_pos;
+
+            if (glm::length(error) < tolerance) break;
+
+            // Apply Fix 3: Clamp the error vector so we don't take massive, unstable steps
+            if (glm::length(error) > max_step) {
+                error = glm::normalize(error) * max_step;
+            }
+
+            // C. Build the 3x3 (J * J^T) Matrix
+            glm::mat3 JJT(0.0f);
+            std::vector<glm::vec3> r_vectors(chain.size());
+
+            for (size_t i = 0; i < chain.size(); ++i) {
+                int bone_idx = chain[i];
+                glm::vec3 joint_pos = glm::vec3(global_transforms[bone_idx][3]);
+
+                // Vector from current joint to the end-effector
+                glm::vec3 r = effector_pos - joint_pos;
+                r_vectors[i] = r;
+
+                // Mathematical shortcut: J_i * J_i^T = (r dot r)*I - outerProduct(r, r)
+                float r_dot_r = glm::dot(r, r);
+                glm::mat3 r_rT = glm::outerProduct(r, r);
+
+                JJT += (r_dot_r * glm::mat3(1.0f)) - r_rT;
+            }
+
+            // D. Apply Damped Least Squares to prevent divide-by-zero at singularities
+            JJT += glm::mat3(1.0f) * (lambda * lambda);
+
+            // E. Invert the 3x3 matrix and multiply by error to get Spatial Velocity (V)
+            glm::vec3 V = glm::inverse(JJT) * error;
+
+            // F. Distribute Rotations back to the Chain (Delta Theta)
+            for (size_t i = 0; i < chain.size(); ++i) {
+                int bone_idx = chain[i];
+                glm::vec3 delta_theta = glm::cross(r_vectors[i], V);
+                float angle = glm::length(delta_theta);
+
+                if (angle > 0.00001f) {
+                    glm::vec3 axis = delta_theta / angle;
+                    glm::quat q_world = glm::angleAxis(angle, axis);
+                    glm::mat4 R_world = glm::mat4_cast(q_world);
+
+                    glm::mat4 parent_global = glm::mat4(1.0f);
+                    if (skeleton[bone_idx].parent != -1) {
+                        parent_global = global_transforms[skeleton[bone_idx].parent];
+                    }
+
+                    // NEW FIX 2: Stop the stretching!
+                    // 1. Save the original local translation (bone length/offset)
+                    glm::vec3 original_translation = glm::vec3(skeleton[bone_idx].defaultLocalTransform[3]);
+
+                    // 2. Calculate the new local matrix
+                    glm::mat4 global_old = global_transforms[bone_idx];
+                    glm::mat4 global_new = R_world * global_old;
+                    glm::mat4 new_local = glm::inverse(parent_global) * global_new;
+
+                    // 3. Force the translation back to exactly what it was
+                    new_local[3] = glm::vec4(original_translation, 1.0f);
+
+                    // 4. Save back to the skeleton
+                    skeleton[bone_idx].defaultLocalTransform = new_local;
+                }
+            }
+        }
     }
     void InverseKinematics::RunCCDSolver(const std::vector<uint16_t>& chain, glm::vec3 targetPos, int maxIterations, float threshold)
     {
@@ -109,6 +224,7 @@ namespace lte {
                 Lt_Importer::Node& currentBone = Lt_Importer::SceneNodes[currentBoneIndex];
 
                 // Re-fetch effector pos because previous bone rotations in this loop moved it
+
                 effectorPos = glm::vec3(Lt_Importer::SceneNodes[effectorIndex].AccumulatedTransform[3]);
                 glm::vec3 currentPos = glm::vec3(currentBone.AccumulatedTransform[3]);
 

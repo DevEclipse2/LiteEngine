@@ -524,15 +524,20 @@ namespace lte {
 			0.1f, 2000.0f);
 
 		//first update transforms reading from the animation and queues changes to update transforms, leaving other stuff untouched
-		animPlayHead += frameTime;
-		if (animPlayHead > Lt_Importer::animation.duration)
-		{
-			animPlayHead = 0.2;
-		}
-		float timeInTicks = animPlayHead * Lt_Importer::animation.ticksPerSecond;
-		float animationTime = fmod(timeInTicks, Lt_Importer::animation.duration);
 		std::set<uint16_t> updatedList;
-		Lt_Importer::UpdateAnimation(animationTime, Lt_Importer::animation, updatedList);
+		if (InverseKinematics::useAnim)
+		{
+			animPlayHead += frameTime;
+			if (animPlayHead > Lt_Importer::animation.duration)
+			{
+				animPlayHead = 0.2;
+			}
+			float timeInTicks = animPlayHead * Lt_Importer::animation.ticksPerSecond;
+			float animationTime = fmod(timeInTicks, Lt_Importer::animation.duration);
+			Lt_Importer::UpdateAnimation(animationTime, Lt_Importer::animation, updatedList);
+
+		}
+		
 
 		//add ik stuff here
 		
