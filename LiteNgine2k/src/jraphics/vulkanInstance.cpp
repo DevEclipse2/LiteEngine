@@ -93,6 +93,9 @@ namespace ltCore {
 		//vulkan only needs 1 instance. Ever. Period.
 		//Period? you need a pad?
 		if (usevalidation) {
+			
+			handler.requiredExtensions = requiredLayers;
+
 			messenger.setupMessenger(m_instance);
 
 			vk::DebugUtilsMessengerCallbackDataEXT callbackData{};
@@ -112,6 +115,7 @@ namespace ltCore {
 		// only one discardable surface to check graphics devices
 		//devices
 		//device handler scans all devices
+
 		if (handler.scanDevices(m_instance) > 0)
 		{
 			handler.tagDevices(tempSurface);

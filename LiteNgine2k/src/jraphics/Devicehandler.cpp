@@ -1,11 +1,13 @@
 #include "Devicehandler.h"
 #include "../forScrap/Lt_Console.h"
+#include <set>
 #define compute		1
 #define render		2
 #define raytracing	4
 #define present		8
 #define discrete    16
 #define geometry	32
+#define dynamicRender 64
 namespace ltCore
 {
 	int Devicehandler::scanDevices(const vk::raii::Instance& instance)
@@ -76,7 +78,7 @@ namespace ltCore
 			}
 			else
 			{
-				scores[iterator].first -= 3500;
+				scores[iterator].first -= 100;
 			}
 			if (props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
 			{
@@ -103,6 +105,11 @@ namespace ltCore
 					info.tags |= raytracing;
 					scores[iterator].first += 500;
 				}
+				if (extName == vk::KHRDynamicRenderingExtensionName) {
+					info.tags |= dynamicRender;
+					scores[iterator].first += 700;
+				}
+				//if(extName == vk::KHRDynamicRenderingExtensionName)
 			}
 			if (!hasSwapchain) {
 				info.tags &= ~present;
@@ -155,11 +162,137 @@ namespace ltCore
 			lte::Con::LogError("Target gpu index > gpu array, check your work!", HIGH_SEVERITY, TAG_ENGINE | TAG_VULKAN);
 			return;
 		}
-		//here create stuff
+		auto& context =	deviceContexts[index];
+		context.physicalDeviceIndex = index;
 
+		//here create stuff
+		vk::DeviceCreateInfo createInfo{};
+		void* currentPnext = nullptr;
+		std::vector<std::vector<uint8_t>> structures = deduplicateCreationChains(index);
+		void* pNextChain = nullptr;
+		for (auto& buffer : structures) {
+			auto* header = reinterpret_cast<VkBaseOutStructure*>(buffer.data());
+			header->pNext = static_cast<VkBaseOutStructure*>(pNextChain);
+			pNextChain = header;
+		}
 		//deviceContexts[index].logicalDevice
 
+		std::map<uint32_t, uint8_t> familyToFlags;
+
+		familyToFlags[devices[context.physicalDeviceIndex].graphicsFamily] |= graphicsBit;
+		familyToFlags[devices[context.physicalDeviceIndex].computeFamily] |= computeBit;
+		familyToFlags[devices[context.physicalDeviceIndex].transferFamily] |= transferBit;
+
+		// 2. Build the DeviceQueueCreateInfos for unique families
+		float queuePriority = 1.0f;
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+		queueCreateInfos.reserve(familyToFlags.size());
+
+		for (const auto& [familyIndex, flags] : familyToFlags) {
+			
+			if (familyIndex == -1)
+			{
+				//incase of -1 indexes
+				continue;
+			}
+			vk::DeviceQueueCreateInfo queueInfo{};
+			queueInfo.queueFamilyIndex = familyIndex;
+			queueInfo.queueCount = 1;
+			queueInfo.pQueuePriorities = &queuePriority;
+			queueCreateInfos.push_back(queueInfo);
+		}
+
+		vk::DeviceCreateInfo deviceCreateInfo{};
+		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+		deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
+		deviceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
+		deviceCreateInfo.pNext = pNextChain;
+		context.logicalDevice = vk::raii::Device(*m_physicalDevice[context.physicalDeviceIndex], deviceCreateInfo);
+		context.m_Queue.clear();
+		context.QueueFlagBits.clear();
+		context.m_Queue.reserve(familyToFlags.size());
+		context.QueueFlagBits.reserve(familyToFlags.size());
+
+		for (const auto& [familyIndex, flags] : familyToFlags) {
+			context.m_Queue.emplace_back(context.logicalDevice, familyIndex, 0);
+			context.QueueFlagBits.push_back(flags);
+		}
 		//for queues, if theres a compute only queue or a transfer only queue,
+	}
+	std::vector<std::vector<uint8_t>> Devicehandler::deduplicateCreationChains(uint16_t index)
+	{
+		std::unordered_map<uint32_t, size_t> sTypeIndexMap; // Maps sType -> index in deduplicatedStructs
+		std::vector<std::vector<uint8_t>> deduplicatedStructs;
+
+		for (size_t i = 0; i < deviceCreationChains[index].size(); ++i)
+		{
+			const void* rawPtr = deviceCreationChains[index][i].first;
+			size_t structSize = deviceCreationChains[index][i].second;
+
+			if (!rawPtr || structSize < sizeof(VkBaseOutStructure)) {
+				continue;
+			}
+
+			const auto* incomingHeader = static_cast<const VkBaseOutStructure*>(rawPtr);
+			uint32_t type = incomingHeader->sType;
+
+			auto it = sTypeIndexMap.find(type);
+			if (it == sTypeIndexMap.end())
+			{
+				// First time encountering this sType: Clone the entire byte payload
+				std::vector<uint8_t> buffer(structSize);
+				std::memcpy(buffer.data(), rawPtr, structSize);
+
+				// Clear the local pNext pointer before storing (engine will chain them later)
+				auto* storedHeader = reinterpret_cast<VkBaseOutStructure*>(buffer.data());
+				storedHeader->pNext = nullptr;
+
+				sTypeIndexMap[type] = deduplicatedStructs.size();
+				deduplicatedStructs.push_back(std::move(buffer));
+			}
+			else
+			{
+				// Duplicate detected: Merge with the existing buffer
+				size_t targetIdx = it->second;
+				std::vector<uint8_t>& existingBuffer = deduplicatedStructs[targetIdx];
+
+				if (existingBuffer.size() != structSize)
+				{
+					//yeah this sucks
+					lte::Con::LogError("Incorrect struct sizes during device creation chain deduplication!", CRIT_SEVERITY, TAG_VULKAN);
+					continue;
+				}
+
+				// Offset past the sType (4B) + padding (4B) + pNext (8B) = 16 bytes
+				constexpr size_t headerOffset = sizeof(VkBaseOutStructure);
+
+				uint32_t* existingBools = reinterpret_cast<uint32_t*>(existingBuffer.data() + headerOffset);
+				const uint32_t* incomingBools = reinterpret_cast<const uint32_t*>(
+					static_cast<const uint8_t*>(rawPtr) + headerOffset
+					);
+
+				size_t boolCount = (structSize - headerOffset) / sizeof(uint32_t);
+
+				for (size_t b = 0; b < boolCount; ++b) {
+					existingBools[b] |= incomingBools[b]; // Combine flags with bitwise OR
+				}
+			}
+		}
+
+		return deduplicatedStructs;
+	}
+	void Devicehandler::createDevices()
+	{
+		//foreach device create them via requirements
+		for (int i = 0; i < devices.size(); i++)
+		{
+			//deduplicate
+			lte::Con::LogEvent("create logicalDevice" + i, TAG_ENGINE | TAG_VULKAN);
+			createContext(i);
+			//here free the memory
+
+		}
 	}
 }
 

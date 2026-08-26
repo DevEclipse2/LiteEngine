@@ -182,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\pluginLoader\info.txt" />
+    <Text Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -36,6 +36,11 @@ namespace ltCore {
 		windowTracker::Init();
 		windowTracker::DefaultWindow();
 		instance.Init("LiteNgine core");
+		
+		//create commandpool
+		//create commandbuffers
+
+
 		//here more stuff
 		while (!windowTracker::SubWindows[windowTracker::mainWindowIndex]->shouldClose())
 		{

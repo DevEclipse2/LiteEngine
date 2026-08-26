@@ -41,3 +41,12 @@ plugin interfaces:
 a table of basic types for the engine to look up, they have an owner and also users
 
 
+call system 
+
+
+
+for each vulkan window
+make surface 
+make swapchain
+make descriptor set layouts 
+make commandbuffers

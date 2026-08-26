@@ -8,6 +8,9 @@
 #define transferBit	4
 namespace ltCore
 {
+	enum class EnabledFeatures {
+
+	};
 	struct LtDeviceInfo {
 		//usage and queue index
 		uint16_t ID;
@@ -47,8 +50,16 @@ namespace ltCore
 		void sortDevices();
 		void prepContexts();
 		void createContext(uint16_t index);
-
+		std::vector<std::vector<uint8_t>> deduplicateCreationChains(uint16_t index);
+		//std::vector<std::pair<std::vector<uint16_t>
+		std::vector<std::vector<std::pair<void*, uint32_t>>> deviceCreationChains;
+		void createDevices();
+		std::vector<const char*> requiredExtensions;
 	};
+
+	//the devicehandler recieves requests from plugins, and picks the best gpu for the task. if no gpu has that ability, it will respond accordingly
+	//highest scoring gpu with the most satisfied is the gpu, and it has a list of requirements
+	//submits requests
 }
 
 

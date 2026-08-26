@@ -220,7 +220,7 @@ namespace lte {
 		// query for Vulkan 1.3 features
 		vk::PhysicalDeviceFeatures deviceFeatures{};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
-		vk::StructureChain<
+		vk::StructureChain <
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceVulkan11Features,
 			vk::PhysicalDeviceVulkan13Features,

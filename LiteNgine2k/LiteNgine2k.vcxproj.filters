@@ -74,5 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\pluginLoader\info.txt" />
+    <Text Include="todo.txt" />
   </ItemGroup>
 </Project>

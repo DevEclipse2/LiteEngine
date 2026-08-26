@@ -1,0 +1,7 @@
+
+dll functions
+
+for calls in between plugins there should be a mapping system for the memory
+
+
+for gpu stuff
