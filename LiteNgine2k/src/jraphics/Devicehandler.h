@@ -52,8 +52,9 @@ namespace ltCore
 		void createContext(uint16_t index);
 		std::vector<std::vector<uint8_t>> deduplicateCreationChains(uint16_t index);
 		//std::vector<std::pair<std::vector<uint16_t>
-		std::vector<std::vector<std::pair<void*, uint32_t>>> deviceCreationChains;
+		std::vector<std::vector<std::pair<uint8_t*, uint32_t>>> deviceCreationChains; // remember to free
 		void createDevices();
+		void submitDeviceCreationInfo(uint16_t index,void* data, uint32_t size);
 		std::vector<const char*> requiredExtensions;
 	};
 

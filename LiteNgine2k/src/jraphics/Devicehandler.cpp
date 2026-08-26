@@ -291,8 +291,19 @@ namespace ltCore
 			lte::Con::LogEvent("create logicalDevice" + i, TAG_ENGINE | TAG_VULKAN);
 			createContext(i);
 			//here free the memory
-
+			for (auto& createinfo : deviceCreationChains[i])
+			{
+				delete[] createinfo.first;
+			}
+			deviceCreationChains[i].clear();
+			deviceCreationChains[i].shrink_to_fit();
 		}
+	}
+	void Devicehandler::submitDeviceCreationInfo(uint16_t index, void* data, uint32_t size)
+	{
+		uint8_t* engineMemory = new uint8_t[size];
+		std::memcpy(engineMemory, data, size);
+		deviceCreationChains[index].push_back({ engineMemory, size });
 	}
 }
 

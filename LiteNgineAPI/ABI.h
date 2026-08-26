@@ -1,11 +1,11 @@
-//dummy class for later
 
 #pragma once
 #include <cstdint>
 #include <vulkan/vulkan_core.h>
 #include <vma/vk_mem_alloc.h>
 constexpr uint32_t ENGINE_ABI_VERSION = 1;
-
+typedef uint32_t CallHandle;
+constexpr CallHandle INVALID_HANDLE = 0xFFFFFFFF;
 class IMemoryAllocator {
 public:
     virtual void* Allocate(size_t size) = 0;
@@ -31,9 +31,10 @@ public:
         uint16_t count;
     };
     virtual void call(const char* pluginName,const char* func, lt::formlessData* input, lt::formlessData* output) = 0;
-    virtual void func_register(void* (const char*, lt::formlessData*, lt::formlessData*),func_rules rules) = 0;//this function pointer is held by call interface
-    virtual void func_unregister(const char* name) = 0;
-    virtual void func_addruleallow(const char* plugin) = 0;
+    virtual void func_register(void* (lt::formlessData*, lt::formlessData*),const char* name ,func_rules rules) = 0;//this function pointer is held by call interface
+    virtual void func_addruleallow(const char* plugin, const char* funcName) = 0;
+    virtual CallHandle get_func_handle(const char* targetPlugin, const char* funcName) = 0;
+    virtual void call_fast(CallHandle handle, lt::formlessData* input, lt::formlessData* output) = 0;
 };
 class DebugInterface
 {
@@ -68,6 +69,7 @@ public:
 //virtual interface
 class IEnginePlugin {
 public:
+    virtual ~IEnginePlugin() = default;
     virtual const char* GetName() const = 0;//only use const for getters and handlers
 
     // Lifecycle hooks
@@ -103,4 +105,5 @@ public:
 #endif
 
 PLUGIN_EXPORT IEnginePlugin*    CreatePlugin(IMemoryAllocator* allocator);
+PLUGIN_EXPORT char*             GetName();
 PLUGIN_EXPORT void              DestroyPlugin(IEnginePlugin* plugin);

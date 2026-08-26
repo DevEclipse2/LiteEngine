@@ -1,11 +1,12 @@
 #include "PluginScanner.h"
 #include <filesystem>
 #include <nlohmann/json.hpp>
+#include <fstream>
 namespace ltCore
 {
 	using json = nlohmann::json;
 
-	using fs = std::filesystem;
+	namespace fs = std::filesystem;
 	void PluginScanner::Scan()
 	{
 		std::vector<fs::path> pathes;
@@ -22,6 +23,12 @@ namespace ltCore
 
 		}
 		//then here it loads all 
+		for (auto& path : pathes)
+		{
 
+			std::ifstream f(path);
+			json data = json::parse(f);
+			
+		}
 	}
 }

@@ -33,6 +33,8 @@ namespace ltCore {
 		const std::vector<const char*> requiredDeviceExtensions = { vk::KHRSwapchainExtensionName };
 		const std::vector<char const*> validationLayers;
 
+		
+
 	private:
 		void createInstance(std::string name, bool useValidationLayers);
 	};

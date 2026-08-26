@@ -93,7 +93,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\;$(ProjectDir)Include\;C:\VulkanSDK\1.4.341.1\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,7 +111,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\;$(ProjectDir)Include\;C:\VulkanSDK\1.4.341.1\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,7 +129,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\;$(ProjectDir)Include\;C:\VulkanSDK\1.4.341.1\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,7 +147,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)LiteNgineAPI\;$(ProjectDir)Include\;C:\VulkanSDK\1.4.341.1\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +159,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\pluginLoader\Bridge.cpp" />
+    <ClCompile Include="src\pluginLoader\PluginScanner.cpp" />
     <ClCompile Include="src\jraphics\DebugMessenger.cpp" />
     <ClCompile Include="src\jraphics\Devicehandler.cpp" />
     <ClCompile Include="src\diskUtility.cpp" />
@@ -170,6 +172,8 @@
     <ClCompile Include="src\jraphics\windowTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\pluginLoader\Bridge.h" />
+    <ClInclude Include="src\pluginLoader\PluginScanner.h" />
     <ClInclude Include="src\jraphics\DebugMessenger.h" />
     <ClInclude Include="src\jraphics\Devicehandler.h" />
     <ClInclude Include="src\diskUtility.h" />
