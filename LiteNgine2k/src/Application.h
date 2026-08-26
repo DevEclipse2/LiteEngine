@@ -7,6 +7,13 @@ namespace ltCore
 public:
 		//void Init();
 		//void Loop();
+		
+		enum class EngineState
+		{
+
+		};
+
+
 		void End();
 		//void Cleanup();
 		void run();

@@ -3,6 +3,7 @@
 #pragma once
 #include <cstdint>
 #include <vulkan/vulkan_core.h>
+#include <vma/vk_mem_alloc.h>
 constexpr uint32_t ENGINE_ABI_VERSION = 1;
 
 class IMemoryAllocator {
@@ -17,90 +18,6 @@ namespace lt {
         size_t size;
     };
 }
-namespace ltVK 
-{
-    struct ShaderStageABI {
-        VkShaderStageFlagBits stage;       // e.g., VK_SHADER_STAGE_VERTEX_BIT
-        const char* entryPoint;  // Usually "main"
-        lt::formlessData     spirvCode;   // The compiled shader bytecode
-    };
-
-    struct VertexBindingABI {
-        uint32_t             binding;
-        uint32_t             stride;
-        VkVertexInputRate    inputRate;    // VK_VERTEX_INPUT_RATE_VERTEX or INSTANCE
-    };
-
-    struct VertexAttributeABI {
-        uint32_t             location;
-        uint32_t             binding;
-        VkFormat             format;       // e.g., VK_FORMAT_R32G32B32_SFLOAT
-        uint32_t             offset;
-    };
-
-    struct RasterizationStateABI {
-        VkPolygonMode        polygonMode;  // VK_POLYGON_MODE_FILL / LINE
-        VkCullModeFlags      cullMode;     // VK_CULL_MODE_BACK_BIT
-        VkFrontFace          frontFace;    // VK_FRONT_FACE_COUNTER_CLOCKWISE
-        float                lineWidth;
-        bool                 depthBiasEnable;
-    };
-
-    struct DepthStencilStateABI {
-        bool                 depthTestEnable;
-        bool                 depthWriteEnable;
-        VkCompareOp          depthCompareOp; // VK_COMPARE_OP_LESS
-        // (Add stencil ops here if your engine uses stencil buffers)
-    };
-
-    struct ColorBlendAttachmentABI {
-        bool                     blendEnable;
-        VkBlendFactor            srcColorBlendFactor;
-        VkBlendFactor            dstColorBlendFactor;
-        VkBlendOp                colorBlendOp;
-        VkBlendFactor            srcAlphaBlendFactor;
-        VkBlendFactor            dstAlphaBlendFactor;
-        VkBlendOp                alphaBlendOp;
-        VkColorComponentFlags    colorWriteMask; // VK_COLOR_COMPONENT_R_BIT | ...
-    };
-
-    struct GraphicsPipelineDescription {
-        //Shaders
-        ShaderStageABI* shaders;
-        size_t                      shaderCount;
-
-        //Vertex Input
-        VertexBindingABI* vertexBindings;
-        size_t                      vertexBindingCount;
-        VertexAttributeABI* vertexAttributes;
-        size_t                      vertexAttributeCount;
-
-        //Input Assembly
-        VkPrimitiveTopology         topology; // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-
-        //Rasterization & Depth
-        RasterizationStateABI       rasterization;
-        DepthStencilStateABI        depthStencil;
-
-        //Blending
-        ColorBlendAttachmentABI* colorBlendAttachments;
-        size_t                      colorBlendAttachmentCount;
-
-        //Dynamic States (Allows changing Viewport/Scissor without rebuilding pipeline)
-        VkDynamicState* dynamicStates; // e.g., VK_DYNAMIC_STATE_VIEWPORT
-        size_t                      dynamicStateCount;
-
-        VkPipelineLayout            pipelineLayout;
-
-        VkRenderPass                renderPass;
-        uint32_t                    subpassIndex;
-
-        VkFormat* colorAttachmentFormats;
-        size_t                      colorAttachmentCount;
-        VkFormat                    depthAttachmentFormat;
-    };
-}
-
 class CallInterface
 {
     //this is for calls between plugins to do stuff
@@ -136,17 +53,17 @@ class IGPUBuilder
 class IGPUManager
 {
 public:
-    
-    enum class dType
-    {
-
-    };
     virtual VkDevice         getDevice(int id) const = 0;
     virtual VkInstance       getInstance() const = 0;
     virtual VkCommandBuffer  getActiveCommandBuffer(int deviceID) const = 0;
-    virtual void CreatePipeline(ltVK::GraphicsPipelineDescription* info) = 0;
+    virtual VmaAllocator     getVMAAllocator(int id) const = 0;
     //? stuff here
-    virtual void testFunc() = 0;
+    //for dynamic rendering
+    virtual VkFormat        GetSwapchainFormat() const = 0;
+    virtual VkFormat        GetDepthFormat() const = 0;
+    virtual VkQueue         GetQueue() const = 0;
+    // Required for Legacy pipeline compilation
+    virtual VkRenderPass    GetMainRenderPass() const = 0;
 };
 //virtual interface
 class IEnginePlugin {
