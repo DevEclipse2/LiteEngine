@@ -111,3 +111,5 @@ I have bad news for anyone using linux.
 6. download GLFW 3.4 precompiled binaries and move them to C:\VulkanLibraries\glfw-3.4.bin.WIN64. again this is due to prehistoric legacy code when i was still a little goober (well smaller than i am now anyways)
 7. run in debug x64
 8. may all deities help you if you are using linux
+make sure to run vulkan caps viewer if unsure whether your pc is able to support vulkan
+Warning : no guarantee of success is provided. everytime i set up the thing's development environment its like trying to replicate the formula of fogbank and honestly i'm no cia spook. 
