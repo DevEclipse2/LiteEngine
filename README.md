@@ -17,24 +17,25 @@ ok whatever
 <h2>thesis: what it is now?</h2>
 
 nothing much really, but here’s a rundown
-1. vulkan 1.4 dynamic rendering (it’s fast!)
-2. cutting edge vulkan implementation
-3. viewports! change size, scale, and look at whatever antialiasing you have
-4. fyi, you can max out your vram if you make it too big and it would kill the program so be dumb with caution 
-5. fully working ui code that’s still barely readable ( it won’t for long)
-6. full model loading support ( any format except valve pack files)
-7. skeletal animation (cutting edge during 1998)
-8. screenshots for profiling (sometimes render doc cannot pull through)
-9. preferences loading ( for those days when you are stuck with an old pc)
-10. preferences saving. it’s important enough to warrant another entry
-11. debug logging. very tenacious but lets you see how crap my code is
-12. multiple windows and multiple layouts (also can be saved)
-13. multiple model rendering and manipulation ( scale , translation , etc.)
-14. phong shading (needs work)
-15. performance profiler ( unfortunately unavailable to users as of now but there’s an fps tracker)
-16. fps tracker . lets you see how incredibly fast vulkan is 
-17. loading of texture images ( i’m sorry jd vance but someone has to be sacrificed)
-18. intergrated lua support ( inaccessible from the engine as its still being implemented but you can tell it's there because the exe is a lot bigger)
+1. mini inverse kinematics showcase.
+2. vulkan 1.4 dynamic rendering (it’s fast!)
+3. cutting edge vulkan implementation
+4. viewports! change size, scale, and look at whatever antialiasing you have
+5. fyi, you can max out your vram if you make it too big and it would kill the program so be dumb with caution 
+6. fully working ui code that’s still barely readable ( it won’t for long)
+7. full model loading support ( any format except valve pack files)
+8. skeletal animation (cutting edge during 1998)
+9. screenshots for profiling (sometimes render doc cannot pull through)
+10. preferences loading ( for those days when you are stuck with an old pc)
+11. preferences saving. it’s important enough to warrant another entry
+12. debug logging. very tenacious but lets you see how crap my code is
+13. multiple windows and multiple layouts (also can be saved)
+14. multiple model rendering and manipulation ( scale , translation , etc.)
+15. phong shading (needs work)
+16. performance profiler ( unfortunately unavailable to users as of now but there’s an fps tracker)
+17. fps tracker . lets you see how incredibly fast vulkan is 
+18. loading of texture images ( i’m sorry jd vance but someone has to be sacrificed)
+19. intergrated lua support ( inaccessible from the engine as its still being implemented but you can tell it's there because the exe is a lot bigger)
 
 <h1>WIP features and technology</h1>
 <h2>F.E.N.T</h2>
@@ -98,3 +99,15 @@ redecorate with the very dumb editor
 (do NOT go negative i have no idea what happens)
 
 and relaunch whenever to see your preferences saved! (only on work days though) 
+
+<h2> Build instructions</h2>
+This is for the much more complete legacy branch. Main branch is now dedicated to modularity and is undergoing intensive restructuring
+I have bad news for anyone using linux.
+1. clone legacy branch
+2. open in visual studio
+3. download and install the latest version of vulkan sdk from lunarG (not included in git repo for obvious reasons)
+4. note : i did not change any of this because i never expected anyone to want to build it.
+5. move all files in newly installed vulkan sdk to C:\VulkanSDK\1.4.341.1 . I did not configure anything to use the system path (i should but i did it on main modular)
+6. download GLFW 3.4 precompiled binaries and move them to C:\VulkanLibraries\glfw-3.4.bin.WIN64. again this is due to prehistoric legacy code when i was still a little goober (well smaller than i am now anyways)
+7. run in debug x64
+8. may all deities help you if you are using linux
