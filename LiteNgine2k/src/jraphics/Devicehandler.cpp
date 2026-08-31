@@ -305,5 +305,23 @@ namespace ltCore
 		std::memcpy(engineMemory, data, size);
 		deviceCreationChains[index].push_back({ engineMemory, size });
 	}
+	void Devicehandler::Startup()
+	{
+		gpuHandler::devicehandle = this;
+	}
+	gpuHandler* Devicehandler::createGpuBuilder(std::string name)
+	{
+
+		return nullptr;
+	}
 }
 
+VkPhysicalDevice gpuHandler::getPhysicalDevice(int id) const
+{
+	if (devicehandle == nullptr || id > devicehandle->m_physicalDevice.size())
+	{
+		lte::Con::LogError("empty devicehandle or id larger than physicaldevice size!", HIGH_SEVERITY, TAG_ENGINE);
+		return VK_NULL_HANDLE;
+	}
+	return **(devicehandle->m_physicalDevice[id]);
+}

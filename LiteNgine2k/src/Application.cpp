@@ -32,6 +32,8 @@ namespace ltCore {
 		lte::Bootstrapper::SavePrefs("LiteNginePref.ini");
 		lte::Con::BootstrapDone();
 		lte::Con::OutputFile();
+		//this is main engine
+		dllBridge.Startup();
 
 		windowTracker::Init();
 		windowTracker::DefaultWindow();
@@ -47,6 +49,13 @@ namespace ltCore {
 			//main loop 
 			lte::Con::Display();
 		}
+
+
+		//shutdown
+
+		dllBridge.Shutdown();
+
+		//ends
 
 		lte::Con::Display();
 		lte::Con::OutputFile();

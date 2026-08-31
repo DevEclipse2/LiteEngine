@@ -1,4 +1,5 @@
 #pragma once
+#include "pluginLoader/bridge.h"
 #include "jraphics/vulkanInstance.h"
 namespace ltCore
 {
@@ -17,6 +18,7 @@ public:
 		void End();
 		//void Cleanup();
 		void run();
+		Bridge dllBridge{};
 		vulkanInstance instance{};
 
 

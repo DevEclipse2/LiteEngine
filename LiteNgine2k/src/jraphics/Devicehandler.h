@@ -1,16 +1,22 @@
 #pragma once
 #include <vector>
 #include <vulkan/vulkan_raii.hpp>
+#include <ABI.h>
+#include <unordered_map>
 // use tags
 //tags for the gpu 
 #define computeBit	1
 #define graphicsBit	2
 #define transferBit	4
+
+
+class gpuHandler;
 namespace ltCore
 {
 	enum class EnabledFeatures {
 
 	};
+
 	struct LtDeviceInfo {
 		//usage and queue index
 		uint16_t ID;
@@ -56,6 +62,11 @@ namespace ltCore
 		void createDevices();
 		void submitDeviceCreationInfo(uint16_t index,void* data, uint32_t size);
 		std::vector<const char*> requiredExtensions;
+		void Shutdown();
+		void Startup();
+		gpuHandler* createGpuBuilder(std::string name);
+		std::unordered_map<std::string, gpuHandler*> PluginInterfaces; // allocated from heap
+
 	};
 
 	//the devicehandler recieves requests from plugins, and picks the best gpu for the task. if no gpu has that ability, it will respond accordingly
@@ -63,4 +74,13 @@ namespace ltCore
 	//submits requests
 }
 
+class gpuHandler : IGPUBuilder
+{
+public:
+	//assumes that you dont just have 30 ass gpus but all of them are somewhat competent
+	//get the physical device, query for features, then request it 
+	VkPhysicalDevice getPhysicalDevice(int id) const override;
+	void requireFeatureStruct(const void* pFeatureStruct, size_t structSize, int gpuID) override;
+	inline static ltCore::Devicehandler* devicehandle;
+};
 

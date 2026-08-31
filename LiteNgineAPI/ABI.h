@@ -58,7 +58,7 @@ public:
     virtual VkInstance       getInstance() const = 0;
     virtual VkCommandBuffer  getActiveCommandBuffer(int deviceID) const = 0;
     virtual VmaAllocator     getVMAAllocator(int id) const = 0;
-    //? stuff here
+    //? stuff here  
     //for dynamic rendering
     virtual VkFormat        GetSwapchainFormat() const = 0;
     virtual VkFormat        GetDepthFormat() const = 0;
