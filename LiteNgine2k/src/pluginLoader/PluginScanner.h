@@ -25,7 +25,7 @@ namespace ltCore {
 		void Scan();
 		void ScanDir(std::string filePath);
 		std::string pluginPath;
-
+		bool verifyIntegrity(std::string fpath);
 	};
 }
 

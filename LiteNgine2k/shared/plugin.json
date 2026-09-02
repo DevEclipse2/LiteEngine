@@ -1,0 +1,34 @@
+{
+  "ABI_version": "223",
+  "display_name": "name",
+  "Internal_name": "engine name",
+  "description": "desc",
+  "engine_supported_min": "0",
+  "engine_supported_max": "1",
+  "fallback_response": "failgrace/failerror/failthrow",
+  "load_fail_response" : "failwarn/failthrow",
+  "Internal_Revision_Major": "1",
+  "Internal_Revision_Minor": "0",
+  "Internal_Revision_Patch": "0",
+  "Soft_dependancies_silent": [
+    "this_dep",
+    "that_dep"
+  ],
+  "Soft_dependancies_warn": [
+    "this_dep",
+    "that_dep"
+  ],
+  "Hard_dependancies": [
+    "this_dep",
+    "that_dep"
+  ],
+  "internal_dependancy_pathes": [
+    "../folder/folder/file",
+    "someotherpath"
+  ],
+  "dep_missing_response": [
+    "warn",
+    "silent",
+    "throw"
+  ]
+}
