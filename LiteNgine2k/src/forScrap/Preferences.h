@@ -34,7 +34,7 @@ namespace lte {
 			inline static uint8_t maximumTrial = 14;
 		};
 		struct Plugin{
-			inline static uint32_t buildVer; // this is for plugins
+			inline static uint32_t ABIVER; // this is for plugins
 
 		};
 

@@ -3,11 +3,70 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "../forScrap/Lt_Console.h"
+#include "../forScrap/Preferences.h"
 namespace ltCore
 {
 	using json = nlohmann::json;
 
 	namespace fs = std::filesystem;
+
+	struct dependencies {
+		std::vector<std::string> Soft_dependencies_silent;
+		std::vector<std::string> Soft_dependencies_warn;
+		std::vector<std::string> Hard_dependencies;
+	};
+
+	struct Version {
+		std::vector<std::string> Soft_silent;
+		std::vector<std::string> Soft_warn;
+		std::vector<std::string> Hard;
+	};
+
+	struct VersionRequirement {
+		Version Min_inclusive;
+		Version Max_inclusive;
+	};
+
+	struct PluginManifest {
+		std::string ABI_version;
+		std::string display_name;
+		std::string Internal_name;
+		std::string description;
+		std::string engine_supported_min;
+		std::string engine_supported_max;
+		std::string fallback_response;
+		std::string load_fail_response;
+		std::string Internal_Revision_Major;
+		std::string Internal_Revision_Minor;
+		std::string Internal_Revision_Patch;
+		dependencies Dependencies;
+		VersionRequirement Dependencies_version_requirement;
+		std::vector<std::string> internal_dependency_pathes;
+		std::vector<std::string> dep_missing_response;
+	};
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(dependencies,
+		Soft_dependencies_silent, Soft_dependencies_warn, Hard_dependencies)
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Version,
+		Soft_silent, Soft_warn, Hard)
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VersionRequirement,
+		Min_inclusive, Max_inclusive)
+
+	// This macro auto-generates the from_json and to_json mapping
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PluginManifest,
+		ABI_version, display_name, Internal_name, description,
+		engine_supported_min, engine_supported_max, fallback_response,
+		load_fail_response, Internal_Revision_Major, Internal_Revision_Minor,
+		Internal_Revision_Patch,
+		Dependencies,
+		Dependencies_version_requirement,
+		internal_dependency_pathes, dep_missing_response
+	)
+
+
+
 	void PluginScanner::Scan()
 	{
 		std::vector<fs::path> pathes;
@@ -28,16 +87,63 @@ namespace ltCore
 		{
 			if (!verifyIntegrity(path.string()))
 			{
+				lte::Con::LogFailure("failed to verify manifest integrity,skipping load :" + path.string(), MED_SEVERITY, TAG_ADDON);
 				continue;
+
 			}
+			lte::Con::LogSuccess("successfully verified manifest integrity of : " + path.string(), TAG_ADDON);
+
 			std::ifstream f(path);
 			json data = json::parse(f);
+			PluginManifest manifest = data.get<PluginManifest>();
+
+			bool ThrowOnLoadFail = false;
+
+			//manifest checks
+			/*
+				1 check abi version
+				2 check engine support min max
+				3 check internal dependancies
+			*/
+
+			if
+
+			//this chunk is for load failure handling
+			{
+				if (manifest.load_fail_response == "failwarn")
+				{
+
+				}
+				else if (manifest.load_fail_response == "failthrow")
+				{
+					ThrowOnLoadFail = true;
+				}
+				else
+				{
+					lte::Con::LogError("no load failure handling recognised!, fallingback to exit on load fail!", MED_SEVERITY, TAG_ADDON);
+					ThrowOnLoadFail = true;
+				}
+			}
 			
-			// build ver
-			// build ver diff action
-			// soft dependancies: warn
-			// soft dependancies: silent
-			// soft dependancies: throw
+
+
+			//if something is not recognised it triggers a loadfail, response depending on the setting. if the fallback option is not recognised it throws
+			int iterator = 0;
+			for (auto& internalDep : manifest.internal_dependency_pathes)
+			{
+				if (!fs::exists(internalDep))
+				{
+					
+					switch ()
+					{
+
+					default:
+					}
+				}
+				iterator++;
+			}
+
+
 		}
 	}
 	bool PluginScanner::verifyIntegrity(std::string fpath)
@@ -46,7 +152,7 @@ namespace ltCore
 		std::ifstream f(fpath);
 		json data = json::parse(f);
 		//for each key 
-		std::array<std::string, 16> AllKeyValPairs =
+		std::array<std::string, 15> AllKeyValPairs =
 		{
 			"ABI_version",
 			"display_name",
@@ -58,11 +164,10 @@ namespace ltCore
 			"Internal_Revision_Major" ,
 			"Internal_Revision_Minor" ,
 			"Internal_Revision_Patch" ,
-			"Soft_dependancies_silent",
-			"load_fail_response",
-			"Soft_dependancies_warn",
-			"Hard_dependancies",
-			"internal_dependancy_pathes",
+			"load_fail_response"	  ,
+			"dependencies",
+			"dependencies_version_requirement",
+			"internal_dependency_pathes",
 			"dep_missing_response",
 		};
 		bool passed = true;

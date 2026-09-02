@@ -1,0 +1,10 @@
+
+this is documentation for liteNgine plugins, as much for me as for you.
+this document is split into multiple segments
+1. using the ABI
+2. programming practices
+3. building
+4. publishing
+
+
+

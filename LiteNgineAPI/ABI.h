@@ -66,6 +66,21 @@ public:
     // Required for Legacy pipeline compilation
     virtual VkRenderPass    GetMainRenderPass() const = 0;
 };
+class PreferenceHook
+{
+public:
+    struct fullprefs
+    {
+        char** fulldata;
+        size_t size;
+    };
+    virtual void registerCategory(const char* catName) = 0;
+    virtual void addKeyValPair(const char* catName, const char* Key, const char* Val) = 0;
+    virtual const char* getKeyValPair(const char* catName, const char* Key) = 0;
+    virtual fullprefs dumpAllPrefs(const char* catName, const char* Key) = 0;
+
+
+};
 //virtual interface
 class IEnginePlugin {
 public:
@@ -80,10 +95,10 @@ public:
     virtual void OnGraphicsInjection(class IGPUManager* gpu        ) = 0;
     virtual void OnCallAPIDecl(class CallInterface* interface) = 0;
     virtual void OnDebugAPI(class    DebugInterface* interface) = 0;
+    virtual void OnPreferenceHook(class PreferenceHook* hook) = 0;
     virtual void OnHibernation() = 0;
     virtual void OnEditorOpen() = 0;
     virtual void OnEditorTick( float deltaTime) = 0;
-
     virtual void OnProjectLoading() = 0;
     virtual void OnProjectOpen() = 0;
     virtual void OnProjectTick(float deltaTime) = 0;

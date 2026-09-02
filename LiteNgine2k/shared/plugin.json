@@ -6,23 +6,51 @@
   "engine_supported_min": "0",
   "engine_supported_max": "1",
   "fallback_response": "failgrace/failerror/failthrow",
-  "load_fail_response" : "failwarn/failthrow",
+  "load_fail_response": "failwarn/failthrow",
   "Internal_Revision_Major": "1",
   "Internal_Revision_Minor": "0",
   "Internal_Revision_Patch": "0",
-  "Soft_dependancies_silent": [
-    "this_dep",
-    "that_dep"
-  ],
-  "Soft_dependancies_warn": [
-    "this_dep",
-    "that_dep"
-  ],
-  "Hard_dependancies": [
-    "this_dep",
-    "that_dep"
-  ],
-  "internal_dependancy_pathes": [
+
+  "Dependencies": {
+    "Soft_dependencies_silent": [
+      "this_dep",
+      "that_dep"
+    ],
+    "Soft_dependencies_warn": [
+      "this_dep",
+      "that_dep"
+    ],
+    "Hard_dependencies": [
+      "this_dep",
+      "that_dep"
+    ]
+  }
+  "Dependencies_version_requirement": {
+    "Min_inclusive": {
+      "Soft_silent": [
+
+      ],
+      "Soft_warn": [
+
+      ],
+      "Hard": [
+
+      ]
+    },
+    "Max_inclusive": {
+      "Soft_silent": [
+
+      ],
+      "Soft_warn": [
+
+      ],
+      "Hard": [
+
+      ]
+    }
+  }
+
+  "internal_dependency_pathes": [
     "../folder/folder/file",
     "someotherpath"
   ],
