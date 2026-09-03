@@ -5,6 +5,39 @@ this document is split into multiple segments
 2. programming practices
 3. building
 4. publishing
+5. legacy support
 
 
 
+
+
+
+
+programming practices
+
+since the ABI uses raw memory pointers to cross DLL boundaries, it is UP TO THE DEVELOPER to track lifetimes through whatever 
+weird and wacky ways. remember to deallocate memory in a timely fashion and to turn raw void* into readable data, storing it locally.
+please do not keep memory bits and bobs lying around because its a memory leak.
+
+running a function call to another plugin often comes with a heavy oppourtunity cost. it is reccomended to bunch calls together for
+simultaneous execution. alternatively, please keep singular calls to a minimum to improve run times and cache efficiency.
+
+
+vulkan specific programming practices
+DO NOT DESTROY ANYTHING
+LET THEM FALL OUT OF SCOPE
+thanks for coming to my ted talk
+
+
+external dependencies
+
+when adding additional dependencies for plugins, developers can choose between silent, warn, and error behaviours when the engine 
+fails to find the plugin specified. silent means engine does nothing, warn means it displays a warning, and error means that the
+plugin cannot operate without this dependency and fails to load.
+it is advised to put missing dependencies on "warn" for most usage cases, while "silent" might be used for libraries of functions
+
+
+legacy support
+when abi versions start changing, it will probably lead to old plugins breaking. for the sakes of everyone involved,
+abi updates are few and far between, with bigger updates to overhaul the experience. When the ABI has changed yet the project
+has been abandoned and god forbid closed source, it is advised to seek out an interpretation layer that remaps the calls.

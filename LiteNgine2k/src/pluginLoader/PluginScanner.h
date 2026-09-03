@@ -7,23 +7,48 @@ namespace ltCore {
 		//first scan the plugins directory, find json dependancies
 		//find the master
 	public:
-		struct dependancies
+		enum class dependencyLinkage
 		{
-			std::string dependancyName;
+			silent,
+			warn,
+			hard,
+		};
+		enum class errHandling
+		{
+			failwarn,
+			failskip,
+			failerror,
+			failthrow,
+		};
+		struct dependencies
+		{
+			std::string dependencyName;
 			uint32_t versionMin;
 			uint32_t versionMax;
+			dependencyLinkage linkage;
+		};
+		struct internalDep
+		{
+			std::string path;
+			dependencyLinkage linkage;
 		};
 		struct pluginMetaData {
-			std::string name;
+			std::string displayName;
+			std::string internalName;
+			std::string description;
+			int32_t	enginesupportMin;
+			int32_t	enginesupportMax;
+			errHandling engineVersionIncomptatible;
+			errHandling loadingFailed;
 			std::string filePath;
-			uint32_t version;
-			//dependancies
-			//find em!
-			std::vector<dependancies> deps;
+			uint16_t internalVersionMajor;
+			uint16_t internalVersionMinor;
+			uint16_t internalVersionPatch;
+			std::vector<dependencies> deps;
+			std::vector<internalDep> internalDependencies;
 		};
 		std::vector<pluginMetaData> metadata;
 		void Scan();
-		void ScanDir(std::string filePath);
 		std::string pluginPath;
 		bool verifyIntegrity(std::string fpath);
 	};

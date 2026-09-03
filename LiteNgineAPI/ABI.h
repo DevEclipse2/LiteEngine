@@ -122,3 +122,4 @@ public:
 PLUGIN_EXPORT IEnginePlugin*    CreatePlugin(IMemoryAllocator* allocator);
 PLUGIN_EXPORT char*             GetName();
 PLUGIN_EXPORT void              DestroyPlugin(IEnginePlugin* plugin);
+PLUGIN_EXPORT uint32_t          GetPluginABIVersion();

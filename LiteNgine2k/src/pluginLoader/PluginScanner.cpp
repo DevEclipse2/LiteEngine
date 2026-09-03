@@ -44,7 +44,6 @@ namespace ltCore
 		std::vector<std::string> internal_dependency_pathes;
 		std::vector<std::string> dep_missing_response;
 	};
-
 	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(dependencies,
 		Soft_dependencies_silent, Soft_dependencies_warn, Hard_dependencies)
 
@@ -97,7 +96,6 @@ namespace ltCore
 			json data = json::parse(f);
 			PluginManifest manifest = data.get<PluginManifest>();
 
-			bool ThrowOnLoadFail = false;
 
 			//manifest checks
 			/*
@@ -105,43 +103,109 @@ namespace ltCore
 				2 check engine support min max
 				3 check internal dependancies
 			*/
+			pluginMetaData metadata{};
+			//cast to check abi versions
+			//turns abi version into string
+			metadata.displayName = manifest.display_name;
+			metadata.internalName = manifest.Internal_name;
+			metadata.enginesupportMin = std::stoi(manifest.engine_supported_min, nullptr);
+			metadata.enginesupportMax = std::stoi(manifest.engine_supported_max, nullptr);
+			metadata.internalVersionPatch = std::stoi(manifest.Internal_Revision_Patch, nullptr);
+			metadata.internalVersionMinor = std::stoi(manifest.Internal_Revision_Minor, nullptr);
+			metadata.internalVersionMajor = std::stoi(manifest.Internal_Revision_Major, nullptr);
 
-			if
+
+			bool loadFailed = false;
+
 
 			//this chunk is for load failure handling
 			{
 				if (manifest.load_fail_response == "failwarn")
 				{
+					metadata.loadingFailed = errHandling::failwarn;
 
 				}
 				else if (manifest.load_fail_response == "failthrow")
 				{
-					ThrowOnLoadFail = true;
+					metadata.loadingFailed = errHandling::failthrow;
 				}
 				else
 				{
+					metadata.loadingFailed = errHandling::failthrow;
 					lte::Con::LogError("no load failure handling recognised!, fallingback to exit on load fail!", MED_SEVERITY, TAG_ADDON);
-					ThrowOnLoadFail = true;
 				}
-			}
-			
-
-
-			//if something is not recognised it triggers a loadfail, response depending on the setting. if the fallback option is not recognised it throws
-			int iterator = 0;
-			for (auto& internalDep : manifest.internal_dependency_pathes)
-			{
-				if (!fs::exists(internalDep))
+				if (manifest.fallback_response == "failskip")
 				{
+					metadata.engineVersionIncomptatible = errHandling::failskip;
+				}
+				else if (manifest.fallback_response == "failerror")
+				{
+					metadata.engineVersionIncomptatible = errHandling::failerror;
+				}
+				else if (manifest.fallback_response == "failthrow")
+				{
+					metadata.engineVersionIncomptatible = errHandling::failthrow;
+				}
+				else
+				{
+					switch (metadata.loadingFailed)
+					{
+					case errHandling::failthrow:
+						break;
+					}
+				}
+				
+			}
+			//this chunk is for loading internal dependencies
+			{
+				int iterator = 0;
+				//if something is not recognised it triggers a loadfail, response depending on the setting. if the fallback option is not recognised it throws
+				for (auto& dependency : manifest.internal_dependency_pathes)
+				{
+					internalDep dep{};
+					dep.path = dependency;
+					//dep.linkage = 
+					if (manifest.dep_missing_response[iterator] == "warn")
+					{
+						dep.linkage = dependencyLinkage::warn;
+					}
+					else if(manifest.dep_missing_response[iterator] == "silent")
+					{
+						dep.linkage = dependencyLinkage::silent;
+					}
+					else if (manifest.dep_missing_response[iterator] == "throw")
+					{
+						dep.linkage = dependencyLinkage::hard;
+					}
+					else 
+					{
+
+						//not recognised
+						//use loadfail
+						switch (metadata.loadingFailed)
+						{
+						case errHandling::failwarn:
+							break;
+						case errHandling::failthrow:
+							break;
+						}
+					}
+					iterator++;
 					
+				}
+
+				/*if (!fs::exists(internalDep))
+				{
 					switch ()
 					{
 
 					default:
+						break;
 					}
 				}
-				iterator++;
+				iterator++;*/
 			}
+			
 
 
 		}

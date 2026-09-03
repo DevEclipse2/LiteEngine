@@ -5,7 +5,7 @@
   "description": "desc",
   "engine_supported_min": "0",
   "engine_supported_max": "1",
-  "fallback_response": "failgrace/failerror/failthrow",
+  "fallback_response": "failskip/failerror/failthrow",
   "load_fail_response": "failwarn/failthrow",
   "Internal_Revision_Major": "1",
   "Internal_Revision_Minor": "0",
