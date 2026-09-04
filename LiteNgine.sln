@@ -18,6 +18,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DummyPlugin", "DummyPlugin\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LiteNgineAPI", "LiteNgineAPI\LiteNgineAPI.vcxproj", "{3447D871-C96A-40D5-AD1F-71C272BD8905}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginAssembler", "PluginAssembler\PluginAssembler.vcxproj", "{40E197F3-0DAF-45F5-845C-72AB491F2143}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -58,6 +60,14 @@ Global
 		{3447D871-C96A-40D5-AD1F-71C272BD8905}.Release|x64.Build.0 = Release|x64
 		{3447D871-C96A-40D5-AD1F-71C272BD8905}.Release|x86.ActiveCfg = Release|Win32
 		{3447D871-C96A-40D5-AD1F-71C272BD8905}.Release|x86.Build.0 = Release|Win32
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Debug|x64.ActiveCfg = Debug|x64
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Debug|x64.Build.0 = Debug|x64
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Debug|x86.ActiveCfg = Debug|Win32
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Debug|x86.Build.0 = Debug|Win32
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Release|x64.ActiveCfg = Release|x64
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Release|x64.Build.0 = Release|x64
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Release|x86.ActiveCfg = Release|Win32
+		{40E197F3-0DAF-45F5-845C-72AB491F2143}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

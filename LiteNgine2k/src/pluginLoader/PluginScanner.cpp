@@ -151,6 +151,11 @@ namespace ltCore
 					switch (metadata.loadingFailed)
 					{
 					case errHandling::failthrow:
+						//quit 
+						break;
+
+					case errHandling::failwarn:
+						//warn
 						break;
 					}
 				}

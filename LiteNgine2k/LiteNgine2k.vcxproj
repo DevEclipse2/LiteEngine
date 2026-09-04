@@ -188,6 +188,9 @@
     <Text Include="src\pluginLoader\info.txt" />
     <Text Include="todo.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shared\plugin.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

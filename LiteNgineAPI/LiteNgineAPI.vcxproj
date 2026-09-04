@@ -24,6 +24,9 @@
   <ItemGroup>
     <ClCompile Include="dummy.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Documentation.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
