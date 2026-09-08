@@ -35,7 +35,7 @@ namespace lte {
 		};
 		struct Plugin{
 			inline static uint32_t ABIVER; // this is for plugins
-
+			inline static std::string basePath = "plugins/";
 		};
 
 

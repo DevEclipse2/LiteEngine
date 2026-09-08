@@ -20,7 +20,7 @@ public:
 		void run();
 		Bridge dllBridge{};
 		vulkanInstance instance{};
-
+		void CheckEngine();
 
 	};
 }

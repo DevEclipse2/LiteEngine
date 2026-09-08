@@ -33,6 +33,7 @@ namespace ltCore {
 			dependencyLinkage linkage;
 		};
 		struct pluginMetaData {
+			uint32_t ABI_version = 0;
 			std::string displayName;
 			std::string internalName;
 			std::string description;

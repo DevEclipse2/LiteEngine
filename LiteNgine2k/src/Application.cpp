@@ -63,4 +63,11 @@ namespace ltCore {
 		//stuff
 
 	}
+	void Application::CheckEngine()
+	{
+		//check for
+		//plugin directory
+		//logs directory
+		//
+	}
 }

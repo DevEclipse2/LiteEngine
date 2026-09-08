@@ -1,4 +1,4 @@
-#include "PluginScanner.h"
+﻿#include "PluginScanner.h"
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -102,6 +102,7 @@ namespace ltCore
 				1 check abi version
 				2 check engine support min max
 				3 check internal dependancies
+				4 get all dependencies
 			*/
 			pluginMetaData metadata{};
 			//cast to check abi versions
@@ -113,7 +114,7 @@ namespace ltCore
 			metadata.internalVersionPatch = std::stoi(manifest.Internal_Revision_Patch, nullptr);
 			metadata.internalVersionMinor = std::stoi(manifest.Internal_Revision_Minor, nullptr);
 			metadata.internalVersionMajor = std::stoi(manifest.Internal_Revision_Major, nullptr);
-
+			metadata.ABI_version = std::stoi(manifest.ABI_version, nullptr);
 
 			bool loadFailed = false;
 
@@ -156,12 +157,38 @@ namespace ltCore
 
 					case errHandling::failwarn:
 						//warn
+						loadFailed = true;
+						lte::Con::LogWarning("Loading of this module " + metadata.displayName + " failed!,skipping over", TAG_ADDON);
 						break;
 					}
 				}
 				
 			}
-			//this chunk is for loading internal dependencies
+			//this chunk is for abi checking
+			if (!loadFailed)
+			{
+				if (metadata.ABI_version != lte::Preferences::Plugin::ABIVER)
+				{
+					switch (metadata.loadingFailed)
+					{
+					case errHandling::failwarn:
+						//warns exits loading 
+						//no point loadin if missing dependancies
+						loadFailed = true;
+						lte::Con::LogWarning("ABI version mismatch in: " + metadata.displayName + " , engine using version" + std::to_string(lte::Preferences::Plugin::ABIVER) + ", but plugin expected"+ std::to_string(metadata.ABI_version) + ",skipping over", TAG_ADDON);
+						break;
+					case errHandling::failthrow:
+						//quits the app
+						break;
+					}
+				}
+			}
+
+			//olive delights 🎵
+
+
+			//this chunk is for loading internal dependencies fail erorrs
+			if(!loadFailed)
 			{
 				int iterator = 0;
 				//if something is not recognised it triggers a loadfail, response depending on the setting. if the fallback option is not recognised it throws
@@ -190,29 +217,104 @@ namespace ltCore
 						switch (metadata.loadingFailed)
 						{
 						case errHandling::failwarn:
+							//warns exits loading 
+							//no point loadin if missing dependancies
+							loadFailed = true;
+							lte::Con::LogWarning("Loading of internal dependancies handling in this module: " + metadata.displayName + " has failed! Unrecognized result " + manifest.dep_missing_response[iterator] + ",skipping load", TAG_ADDON);
+
 							break;
 						case errHandling::failthrow:
+							//quits the app
 							break;
 						}
 					}
 					iterator++;
-					
+					metadata.internalDependencies.emplace_back(dep);
+					//it doesnt immediately exit so you can get to catch all of the problems
 				}
-
-				/*if (!fs::exists(internalDep))
+				
+			}
+			//this chunk is for checking if the dependencies exist
+			if (!loadFailed) {
+				for (auto& dep : metadata.internalDependencies)
 				{
-					switch ()
+					fs::path depPath = "";
+					depPath.concat<std::string>(lte::Preferences::Plugin::basePath, dep.path);
+					if (!fs::exists(depPath))
 					{
+						switch (metadata.loadingFailed)
+						{
+						case errHandling::failwarn:
+							//warns exits loading 
+							//no point loadin if missing dependancies
+							loadFailed = true;
+							
+							lte::Con::LogWarning("Loading of internal dependancies in this module: " + metadata.displayName + " has failed, no file in path " + depPath.string() + " skipping over", TAG_ADDON);
+							break;
+						case errHandling::failthrow:
+							//quits the app
+							break;
+						}
+					}
+					else if (fs::is_directory(depPath))
+					{
+						switch (metadata.loadingFailed)
+						{
+						case errHandling::failwarn:
+							//warns exits loading 
+							//no point loadin if missing dependancies
+							loadFailed = true;
+							lte::Con::LogWarning("Loading of internal dependancies in this module: " + metadata.displayName + " has failed, only folders, not directories should be linked! Path: " + depPath.string() + " skipping over", TAG_ADDON);
+							break;
+						case errHandling::failthrow:
+							//quits the app
+							break;
+						}
+					}
+				}
+			}
+			//this chunk is for adding dependencies
+			if (!loadFailed) {
+				// here check all sizes fit first
+				if (manifest.Dependencies.Hard_dependencies.size()								==
+					manifest.Dependencies.Soft_dependencies_silent.size()						==
+					manifest.Dependencies.Soft_dependencies_warn.size()							==
+					manifest.Dependencies_version_requirement.Max_inclusive.Hard.size()			==
+					manifest.Dependencies_version_requirement.Max_inclusive.Soft_silent.size()	==
+					manifest.Dependencies_version_requirement.Max_inclusive.Soft_warn.size()	==
+					manifest.Dependencies_version_requirement.Min_inclusive.Hard.size()			==
+					manifest.Dependencies_version_requirement.Min_inclusive.Soft_silent.size()	==
+					manifest.Dependencies_version_requirement.Min_inclusive.Soft_warn.size())
+				{
+					for (int i = 0; i < manifest.Dependencies.Hard_dependencies.size(); i++)
+					{
+						//iterates through all of the array.
+						dependencies dependency{};
+						dependency.linkage = dependencyLinkage::hard;
+						dependency.dependencyName = manifest.Dependencies.Hard_dependencies[i];
+						dependency.versionMax = std::stoi(manifest.Dependencies_version_requirement.Max_inclusive.Hard[i], nullptr);
+						dependency.versionMin = std::stoi(manifest.Dependencies_version_requirement.Min_inclusive.Hard[i],nullptr);
+						metadata.deps.push_back(dependency);
+					}
+					//unfinished!
 
-					default:
+				}
+				else
+				{
+					switch (metadata.loadingFailed)
+					{
+					case errHandling::failwarn:
+						//warns exits loading 
+						//no point loadin if missing dependancies
+						loadFailed = true;
+						lte::Con::LogWarning("dependency array sizes not same! possible modification to this manifest!" + metadata.displayName + " skipping over", TAG_ADDON);
+						break;
+					case errHandling::failthrow:
+						//quits the app
 						break;
 					}
 				}
-				iterator++;*/
 			}
-			
-
-
 		}
 	}
 	bool PluginScanner::verifyIntegrity(std::string fpath)
