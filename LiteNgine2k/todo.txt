@@ -3,5 +3,7 @@ dll functions
 
 for calls in between plugins there should be a mapping system for the memory
 
+implment proper memory allocator
+
 
 for gpu stuff

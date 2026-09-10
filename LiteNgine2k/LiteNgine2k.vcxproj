@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ImGui.cpp" />
     <ClCompile Include="src\pluginLoader\Bridge.cpp" />
     <ClCompile Include="src\pluginLoader\PluginScanner.cpp" />
     <ClCompile Include="src\jraphics\DebugMessenger.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="src\jraphics\windowTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImGui.h" />
     <ClInclude Include="src\pluginLoader\Bridge.h" />
     <ClInclude Include="src\pluginLoader\PluginScanner.h" />
     <ClInclude Include="src\jraphics\DebugMessenger.h" />

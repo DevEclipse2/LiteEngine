@@ -13,6 +13,10 @@ namespace ltCore {
 	}
 	void Application::run()
 	{
+		//checks engine integrity first
+		CheckEngine();
+
+		//wakeup stuff
 		lte::Con::Init();
 		uint8_t result = 0;
 		lte::Bootstrapper::OnWake(&result);
@@ -33,8 +37,12 @@ namespace ltCore {
 		lte::Con::BootstrapDone();
 		lte::Con::OutputFile();
 		//this is main engine
+		
+		pluginScanner.Scan();
+		pluginScanner.checkDependencies();
 		dllBridge.Startup();
-
+		//pre graphics creation
+		
 		windowTracker::Init();
 		windowTracker::DefaultWindow();
 		instance.Init("LiteNgine core");

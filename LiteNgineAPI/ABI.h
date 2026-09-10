@@ -6,9 +6,12 @@
 constexpr uint32_t ENGINE_ABI_VERSION = 1;
 typedef uint32_t CallHandle;
 constexpr CallHandle INVALID_HANDLE = 0xFFFFFFFF;
+
+//imgui is necessary bloat imo 
+
 class IMemoryAllocator {
 public:
-    virtual void* Allocate(size_t size) = 0;
+    virtual void* Allocate(size_t size, size_t alignment) = 0;
     virtual void Free(void* ptr) = 0;
 };
 namespace lt {
@@ -38,6 +41,7 @@ public:
 };
 class DebugInterface
 {
+    //todo
     //this is for calls between plugins to do stuff
     //each dll gets their own interface so the engine knows which calls are from where
 public:
@@ -71,6 +75,7 @@ class PreferenceHook
 public:
     struct fullprefs
     {
+        //this dumps the entire thing
         char** fulldata;
         size_t size;
     };
@@ -78,8 +83,6 @@ public:
     virtual void addKeyValPair(const char* catName, const char* Key, const char* Val) = 0;
     virtual const char* getKeyValPair(const char* catName, const char* Key) = 0;
     virtual fullprefs dumpAllPrefs(const char* catName, const char* Key) = 0;
-
-
 };
 //virtual interface
 class IEnginePlugin {
@@ -92,7 +95,7 @@ public:
     virtual void OnBootload() = 0;
     virtual void PreGraphicsCreation(class IGPUBuilder* gpu) = 0;
 
-    virtual void OnGraphicsInjection(class IGPUManager* gpu        ) = 0;
+    virtual void OnGraphicsInjection(class IGPUManager* gpu) = 0;
     virtual void OnCallAPIDecl(class CallInterface* interface) = 0;
     virtual void OnDebugAPI(class    DebugInterface* interface) = 0;
     virtual void OnPreferenceHook(class PreferenceHook* hook) = 0;
@@ -108,7 +111,6 @@ public:
     virtual void OnGameOpen() = 0;
     virtual void OnGameTick(float deltaTime) = 0;
     virtual void OnGameClosing() = 0;
-
     virtual void OnQuitEditor() = 0;
 };
 
@@ -120,6 +122,6 @@ public:
 #endif
 
 PLUGIN_EXPORT IEnginePlugin*    CreatePlugin(IMemoryAllocator* allocator);
-PLUGIN_EXPORT char*             GetName();
+PLUGIN_EXPORT const char*       GetName(); //use the INTERNAL NAME
 PLUGIN_EXPORT void              DestroyPlugin(IEnginePlugin* plugin);
 PLUGIN_EXPORT uint32_t          GetPluginABIVersion();

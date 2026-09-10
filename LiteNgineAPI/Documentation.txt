@@ -41,3 +41,5 @@ legacy support
 when abi versions start changing, it will probably lead to old plugins breaking. for the sakes of everyone involved,
 abi updates are few and far between, with bigger updates to overhaul the experience. When the ABI has changed yet the project
 has been abandoned and god forbid closed source, it is advised to seek out an interpretation layer that remaps the calls.
+
+for developers, please refrain from removing functions, as it can seriously mess up some things.

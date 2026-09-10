@@ -1,5 +1,4 @@
 ﻿#include "PluginScanner.h"
-#include <filesystem>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "../forScrap/Lt_Console.h"
@@ -8,7 +7,6 @@ namespace ltCore
 {
 	using json = nlohmann::json;
 
-	namespace fs = std::filesystem;
 
 	struct dependencies {
 		std::vector<std::string> Soft_dependencies_silent;
@@ -104,17 +102,17 @@ namespace ltCore
 				3 check internal dependancies
 				4 get all dependencies
 			*/
-			pluginMetaData metadata{};
+			pluginMetaData meta{};
 			//cast to check abi versions
 			//turns abi version into string
-			metadata.displayName = manifest.display_name;
-			metadata.internalName = manifest.Internal_name;
-			metadata.enginesupportMin = std::stoi(manifest.engine_supported_min, nullptr);
-			metadata.enginesupportMax = std::stoi(manifest.engine_supported_max, nullptr);
-			metadata.internalVersionPatch = std::stoi(manifest.Internal_Revision_Patch, nullptr);
-			metadata.internalVersionMinor = std::stoi(manifest.Internal_Revision_Minor, nullptr);
-			metadata.internalVersionMajor = std::stoi(manifest.Internal_Revision_Major, nullptr);
-			metadata.ABI_version = std::stoi(manifest.ABI_version, nullptr);
+			meta.displayName = manifest.display_name;
+			meta.internalName = manifest.Internal_name;
+			meta.enginesupportMin = std::stoi(manifest.engine_supported_min, nullptr);
+			meta.enginesupportMax = std::stoi(manifest.engine_supported_max, nullptr);
+			meta.internalVersionPatch = std::stoi(manifest.Internal_Revision_Patch, nullptr);
+			meta.internalVersionMinor = std::stoi(manifest.Internal_Revision_Minor, nullptr);
+			meta.internalVersionMajor = std::stoi(manifest.Internal_Revision_Major, nullptr);
+			meta.ABI_version = std::stoi(manifest.ABI_version, nullptr);
 
 			bool loadFailed = false;
 
@@ -123,33 +121,33 @@ namespace ltCore
 			{
 				if (manifest.load_fail_response == "failwarn")
 				{
-					metadata.loadingFailed = errHandling::failwarn;
+					meta.loadingFailed = errHandling::failwarn;
 
 				}
 				else if (manifest.load_fail_response == "failthrow")
 				{
-					metadata.loadingFailed = errHandling::failthrow;
+					meta.loadingFailed = errHandling::failthrow;
 				}
 				else
 				{
-					metadata.loadingFailed = errHandling::failthrow;
+					meta.loadingFailed = errHandling::failthrow;
 					lte::Con::LogError("no load failure handling recognised!, fallingback to exit on load fail!", MED_SEVERITY, TAG_ADDON);
 				}
 				if (manifest.fallback_response == "failskip")
 				{
-					metadata.engineVersionIncomptatible = errHandling::failskip;
+					meta.engineVersionIncomptatible = errHandling::failskip;
 				}
 				else if (manifest.fallback_response == "failerror")
 				{
-					metadata.engineVersionIncomptatible = errHandling::failerror;
+					meta.engineVersionIncomptatible = errHandling::failerror;
 				}
 				else if (manifest.fallback_response == "failthrow")
 				{
-					metadata.engineVersionIncomptatible = errHandling::failthrow;
+					meta.engineVersionIncomptatible = errHandling::failthrow;
 				}
 				else
 				{
-					switch (metadata.loadingFailed)
+					switch (meta.loadingFailed)
 					{
 					case errHandling::failthrow:
 						//quit 
@@ -158,7 +156,7 @@ namespace ltCore
 					case errHandling::failwarn:
 						//warn
 						loadFailed = true;
-						lte::Con::LogWarning("Loading of this module " + metadata.displayName + " failed!,skipping over", TAG_ADDON);
+						lte::Con::LogWarning("Loading of this module " + meta.displayName + " failed!,skipping over", TAG_ADDON);
 						break;
 					}
 				}
@@ -167,15 +165,15 @@ namespace ltCore
 			//this chunk is for abi checking
 			if (!loadFailed)
 			{
-				if (metadata.ABI_version != lte::Preferences::Plugin::ABIVER)
+				if (meta.ABI_version != lte::Preferences::Plugin::ABIVER)
 				{
-					switch (metadata.loadingFailed)
+					switch (meta.loadingFailed)
 					{
 					case errHandling::failwarn:
 						//warns exits loading 
 						//no point loadin if missing dependancies
 						loadFailed = true;
-						lte::Con::LogWarning("ABI version mismatch in: " + metadata.displayName + " , engine using version" + std::to_string(lte::Preferences::Plugin::ABIVER) + ", but plugin expected"+ std::to_string(metadata.ABI_version) + ",skipping over", TAG_ADDON);
+						lte::Con::LogWarning("ABI version mismatch in: " + meta.displayName + " , engine using version" + std::to_string(lte::Preferences::Plugin::ABIVER) + ", but plugin expected"+ std::to_string(meta.ABI_version) + ",skipping over", TAG_ADDON);
 						break;
 					case errHandling::failthrow:
 						//quits the app
@@ -183,10 +181,7 @@ namespace ltCore
 					}
 				}
 			}
-
 			//olive delights 🎵
-
-
 			//this chunk is for loading internal dependencies fail erorrs
 			if(!loadFailed)
 			{
@@ -214,14 +209,13 @@ namespace ltCore
 
 						//not recognised
 						//use loadfail
-						switch (metadata.loadingFailed)
+						switch (meta.loadingFailed)
 						{
 						case errHandling::failwarn:
 							//warns exits loading 
 							//no point loadin if missing dependancies
 							loadFailed = true;
-							lte::Con::LogWarning("Loading of internal dependancies handling in this module: " + metadata.displayName + " has failed! Unrecognized result " + manifest.dep_missing_response[iterator] + ",skipping load", TAG_ADDON);
-
+							lte::Con::LogWarning("Loading of internal dependancies handling in this module: " + meta.displayName + " has failed! Unrecognized result " + manifest.dep_missing_response[iterator] + ",skipping load", TAG_ADDON);
 							break;
 						case errHandling::failthrow:
 							//quits the app
@@ -229,27 +223,27 @@ namespace ltCore
 						}
 					}
 					iterator++;
-					metadata.internalDependencies.emplace_back(dep);
+					meta.internalDependencies.emplace_back(dep);
 					//it doesnt immediately exit so you can get to catch all of the problems
 				}
 				
 			}
 			//this chunk is for checking if the dependencies exist
 			if (!loadFailed) {
-				for (auto& dep : metadata.internalDependencies)
+				for (auto& dep : meta.internalDependencies)
 				{
 					fs::path depPath = "";
 					depPath.concat<std::string>(lte::Preferences::Plugin::basePath, dep.path);
 					if (!fs::exists(depPath))
 					{
-						switch (metadata.loadingFailed)
+						switch (meta.loadingFailed)
 						{
 						case errHandling::failwarn:
 							//warns exits loading 
 							//no point loadin if missing dependancies
 							loadFailed = true;
 							
-							lte::Con::LogWarning("Loading of internal dependancies in this module: " + metadata.displayName + " has failed, no file in path " + depPath.string() + " skipping over", TAG_ADDON);
+							lte::Con::LogWarning("Loading of internal dependancies in this module: " + meta.displayName + " has failed, no file in path " + depPath.string() + " skipping over", TAG_ADDON);
 							break;
 						case errHandling::failthrow:
 							//quits the app
@@ -258,13 +252,13 @@ namespace ltCore
 					}
 					else if (fs::is_directory(depPath))
 					{
-						switch (metadata.loadingFailed)
+						switch (meta.loadingFailed)
 						{
 						case errHandling::failwarn:
 							//warns exits loading 
 							//no point loadin if missing dependancies
 							loadFailed = true;
-							lte::Con::LogWarning("Loading of internal dependancies in this module: " + metadata.displayName + " has failed, only folders, not directories should be linked! Path: " + depPath.string() + " skipping over", TAG_ADDON);
+							lte::Con::LogWarning("Loading of internal dependancies in this module: " + meta.displayName + " has failed, only folders, not directories should be linked! Path: " + depPath.string() + " skipping over", TAG_ADDON);
 							break;
 						case errHandling::failthrow:
 							//quits the app
@@ -294,14 +288,32 @@ namespace ltCore
 						dependency.dependencyName = manifest.Dependencies.Hard_dependencies[i];
 						dependency.versionMax = std::stoi(manifest.Dependencies_version_requirement.Max_inclusive.Hard[i], nullptr);
 						dependency.versionMin = std::stoi(manifest.Dependencies_version_requirement.Min_inclusive.Hard[i],nullptr);
-						metadata.deps.push_back(dependency);
+						meta.deps.push_back(dependency);
 					}
-					//unfinished!
-
+					for (int i = 0; i < manifest.Dependencies.Soft_dependencies_silent.size(); i++)
+					{
+						//iterates through all of the array.
+						dependencies dependency{};
+						dependency.linkage = dependencyLinkage::silent;
+						dependency.dependencyName = manifest.Dependencies.Soft_dependencies_silent[i];
+						dependency.versionMax = std::stoi(manifest.Dependencies_version_requirement.Max_inclusive.Soft_silent[i], nullptr);
+						dependency.versionMin = std::stoi(manifest.Dependencies_version_requirement.Min_inclusive.Soft_silent[i], nullptr);
+						meta.deps.push_back(dependency);
+					}
+					for (int i = 0; i < manifest.Dependencies.Soft_dependencies_warn.size(); i++)
+					{
+						//iterates through all of the array.
+						dependencies dependency{};
+						dependency.linkage = dependencyLinkage::warn;
+						dependency.dependencyName = manifest.Dependencies.Soft_dependencies_warn[i];
+						dependency.versionMax = std::stoi(manifest.Dependencies_version_requirement.Max_inclusive.Soft_warn[i], nullptr);
+						dependency.versionMin = std::stoi(manifest.Dependencies_version_requirement.Min_inclusive.Soft_warn[i], nullptr);
+						meta.deps.push_back(dependency);
+					}
 				}
 				else
 				{
-					switch (metadata.loadingFailed)
+					switch (meta.loadingFailed)
 					{
 					case errHandling::failwarn:
 						//warns exits loading 
@@ -315,8 +327,199 @@ namespace ltCore
 					}
 				}
 			}
+			if (!loadFailed)
+			{
+				metadata.push_back(meta);
+			}
+			else
+			{
+				//stuff here later
+			}
 		}
+		//this part is responsible for checking dependancies
+		//also checks for duplicates
+		for (auto& metaDat : metadata)
+		{
+			//use internal name for the lookup table
+		}
+		
 	}
+	void PluginScanner::LoadPlugins()
+	{
+		
+		//first makes sure no duplicates
+		std::vector<pluginMetaData> copyMeta;
+
+		for (int i = 0; i < metadata.size(); i++)
+		{
+			if (lookupTable.contains(metadata[i].internalName))
+			{
+				//replace if version is superior
+				auto& newmeta = metadata[i];
+				auto& original = copyMeta[lookupTable[metadata[i].internalName]];
+				lte::Con::LogWarning("Multiple versions of the plugin " + newmeta.displayName + " exist! using newest version", TAG_ADDON);
+				
+				if (original.internalVersionMajor < newmeta.internalVersionMajor)
+				{
+					copyMeta[lookupTable[newmeta.internalName]] = newmeta;
+
+					//runs the replacement function
+				}
+				else if (original.internalVersionMajor == newmeta.internalVersionMajor)
+				{
+					if (original.internalVersionMinor > newmeta.internalVersionMinor)
+					{
+						copyMeta[lookupTable[newmeta.internalName]] = newmeta;
+						//replace
+					}
+					else if (original.internalVersionMajor == newmeta.internalVersionMajor)
+					{
+						if (original.internalVersionPatch > newmeta.internalVersionPatch)
+						{
+							copyMeta[lookupTable[newmeta.internalName]] = newmeta;
+							//replace
+						}
+						else if (original.internalVersionPatch == newmeta.internalVersionPatch)
+						{
+							lte::Con::LogWarning("same plugin " + newmeta.displayName + " has multiple instances of the same version, if you are a developer, remember to re-run plugin Assembler with new tags", TAG_ADDON);
+						}
+						else
+						{
+
+						}
+					}
+					else
+					{
+
+					}
+				}
+				else
+				{
+					//new version is not superior
+					//this is an empty block that does nothing until the code review
+					//probably a warn somewhere
+				}
+					
+			}
+			else 
+			{
+				lookupTable[metadata[i].internalName] = static_cast<uint16_t>(copyMeta.size());
+				copyMeta.push_back(metadata[i]);
+			}
+		}
+		metadata = copyMeta;
+
+		activePlugins.clear();
+		activePlugins.reserve(metadata.size());
+
+		for (int i = 0; i < metadata.size(); i++)
+		{
+			//for all plugins create handler, which is it's single instanced interface, and contains other things 
+			//for each plugin,
+			//check if the library is there,
+			//do lifecycle stuff
+			//prep for init and injection
+			/*
+			* 
+			* each one has their own to avoid spoofing
+			* 
+			* add dll bridge,
+			* kernel side gpu manager
+			* imgui handler
+			* debug handler
+			* preference handler
+			* anything else thats important
+			*/
+			if (LoadPlugin(i))
+			{
+
+			}
+		}
+
+		
+
+
+		activePlugins.shrink_to_fit();
+	}
+	bool PluginScanner::LoadPlugin(uint16_t index)
+	{
+		//plugins are loaded by index via meta files
+		//also for this index remember to change the unordered map 
+		//hopefully these things aren't called often
+		//creates and inserts self
+		PluginDelegate plugin;
+
+		// 1. Load the DLL into memory
+		fs::path depPath = "";
+		depPath.concat<std::string>(lte::Preferences::Plugin::basePath, metadata[index].filePath);
+		plugin.osHandle = PlatformLibrary::Load(depPath);
+		if (!plugin.osHandle)
+		{
+			//handle response
+			lte::Con::LogFailure("Failed to load plugin: " + metadata[index].displayName + "from path " + depPath.string() + ". check engine light flashes", MED_SEVERITY, TAG_ADDON);
+			return false;
+		}
+
+		// 2. Extract the ABI version function FIRST
+		auto getVersionFunc = (GetPluginABIVersionFunc)PlatformLibrary::GetFunction(plugin.osHandle, "GetPluginABIVersion");
+
+		if (!getVersionFunc) {
+			// Not a valid plugin for this engine
+			PlatformLibrary::Unload(plugin.osHandle);
+			lte::Con::LogFailure("ABI version get function cannot be found in plugin: " + metadata[index].displayName + "from path " + depPath.string() + ". check engine light flashes", MED_SEVERITY, TAG_ADDON);
+			return false;
+		}
+
+		uint32_t pluginVersion = getVersionFunc();
+		if (pluginVersion != lte::Preferences::Plugin::ABI_VER) {
+			// Reject the plugin: ABI mismatch
+			lte::Con::LogError("Engine ABI Version: " + std::to_string( lte::Preferences::Plugin::ABI_VER) + " vs module version: " + std::to_string(pluginVersion) + " version incompatiblity", MED_SEVERITY, TAG_ADDON);
+			lte::Con::LogFailure("ABI version mismatch in plugin: " + metadata[index].displayName + "from path " + depPath.string() + ". check engine light flashes", MED_SEVERITY, TAG_ADDON);
+			PlatformLibrary::Unload(plugin.osHandle);
+			return false;
+		}
+		if (pluginVersion != metadata[index].ABI_version)
+		{
+			//reject due to abi declaration mismatch 
+			// this will NEVER hit
+			lte::Con::LogError("Declared ABI Version: " + std::to_string(metadata[index].ABI_version) + " vs module version: " + std::to_string(pluginVersion) + " version incompatiblity", MED_SEVERITY, TAG_ADDON);
+			lte::Con::LogFailure("ABI version declaration mismatch in plugin: " + metadata[index].displayName + "from path " + depPath.string() + ". check engine light flashes", MED_SEVERITY, TAG_ADDON);
+			PlatformLibrary::Unload(plugin.osHandle);
+			return false;
+		}
+
+		plugin.createFunc = (CreatePluginFunc)PlatformLibrary::GetFunction(plugin.osHandle, "CreatePlugin");
+		plugin.destroyFunc = (DestroyPluginFunc)PlatformLibrary::GetFunction(plugin.osHandle, "DestroyPlugin");
+		auto getNameFunc = (GetNameFunc)PlatformLibrary::GetFunction(plugin.osHandle, "GetName");
+
+		if (!plugin.createFunc || !plugin.destroyFunc || !getNameFunc) {
+
+			//unknown erro
+			lte::Con::LogFailure("failed to find plugin functions in " + metadata[index].displayName + "from path " + depPath.string() + ". check engine light flashes", MED_SEVERITY, TAG_ADDON);
+			PlatformLibrary::Unload(plugin.osHandle);
+			return false;
+		}
+
+		// 5. Initialize
+		const char* rawName = getNameFunc();
+		plugin.name = rawName ? std::string(rawName) : "Unknown_Plugin";
+		//also check name against stuff
+		if (plugin.name != metadata[index].internalName)
+		{
+			lte::Con::LogFailure("internal name mismatch between meta and returned name (" + metadata[index].internalName + ", and " + rawName + ") from " + metadata[index].displayName + "from path " + depPath.string() + ". check engine light flashes", MED_SEVERITY, TAG_ADDON);
+			PlatformLibrary::Unload(plugin.osHandle);
+			return false;
+		}
+
+		plugin.instance = plugin.createFunc(&g_EngineAllocator);
+
+		lookupTable[metadata[index].internalName] = activePlugins.size();
+
+		activePlugins.push_back(plugin);
+		return true;
+
+	}
+
 	bool PluginScanner::verifyIntegrity(std::string fpath)
 	{
 		lte::SubOp integrityOp{"integrity verification of" + fpath, ""};
