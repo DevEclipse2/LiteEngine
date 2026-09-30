@@ -48,7 +48,10 @@
     <ClCompile Include="src\pluginLoader\Bridge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui.cpp">
+    <ClCompile Include="src\pluginLoader\ABIPrefs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\forScrap\ConsoleExp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,7 +89,7 @@
     <ClInclude Include="src\pluginLoader\Bridge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui.h">
+    <ClInclude Include="src\pluginLoader\ABIPrefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

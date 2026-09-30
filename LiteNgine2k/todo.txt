@@ -5,5 +5,8 @@ for calls in between plugins there should be a mapping system for the memory
 
 implment proper memory allocator
 
+add overriding preferences 
 
 for gpu stuff
+
+

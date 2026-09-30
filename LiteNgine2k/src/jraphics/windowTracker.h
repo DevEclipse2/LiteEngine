@@ -28,7 +28,7 @@ namespace ltCore {
 		}
 		static void Init();
 		static void DefaultWindow();
-		static uint32_t CreateWindow(int width, int height, std::string name);
+		static uint32_t makeWindow(int width, int height, std::string name);
 		static void frameBufferResizeCallback(GLFWwindow* window, int width, int height);
 		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void dropCallback(GLFWwindow* window, int count, const char** paths);

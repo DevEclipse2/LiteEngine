@@ -1,5 +1,9 @@
 #include "Bridge.h"
 #include "../forScrap/Lt_Console.h"
+//todo: add tracing for the call and dispatch bcuz this tells me nothing
+
+
+
 void DllPort::call(const char* pluginName, const char* func, lt::formlessData* input, lt::formlessData* output)
 {
 	//quick rerouting function to do a call to bridge, mainly
@@ -103,7 +107,7 @@ CallHandle DllPort::get_func_handle(const char* targetPlugin, const char* funcNa
     return handle;
 }
 
-DllPort* ltCore::Bridge::createInterface(std::string name)
+DllPort* ltCore::Bridge::createInterface(std::string& name)
 {
     auto it = PluginInterfaces.find(name);
     if (it != PluginInterfaces.end())
@@ -123,6 +127,7 @@ void ltCore::Bridge::Shutdown()
     {
         delete(port.second);
     }
+    PluginInterfaces.clear();
 }
 
 void ltCore::Bridge::Startup()

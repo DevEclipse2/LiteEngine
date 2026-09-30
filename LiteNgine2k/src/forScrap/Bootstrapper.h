@@ -51,6 +51,7 @@ namespace lte {
 			static void DumpPreferences();
 			static std::vector<PrefLine> FileLines;
 			static std::map<std::string, std::map< std::string ,Preference>> data;
+			static std::pair<const char**, size_t> DumpFullPrefs();
 		private:
 			static std::string SaveFile();
 			static std::string GenerateFile();
@@ -61,5 +62,6 @@ namespace lte {
 				const std::string& category,
 				const std::string& key,
 				T defaultValue);
+			static inline bool cachedPrefs = false;
 	};
 }

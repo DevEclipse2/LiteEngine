@@ -50,3 +50,12 @@ make surface
 make swapchain
 make descriptor set layouts 
 make commandbuffers
+
+
+
+engine
+|-logs
+|-plugins
+|-projects
+|-preferences.Ltpref
+|-projectlocations

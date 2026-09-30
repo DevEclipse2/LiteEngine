@@ -603,6 +603,44 @@ namespace lte {
 	{
 		str += information + "\n";
 	}
+
+	std::pair<const char**, size_t> Bootstrapper::DumpFullPrefs()
+	{
+		if (cachedPrefs)
+		{
+			return { nullptr,1};
+		}
+
+		std::string line;
+		std::ifstream file(preferencesFileName);
+		if (!file.is_open())
+		{
+			lte::Con::LogFailure("failed to open full preferences for plugin preference dump!",HIGH_SEVERITY,TAG_ENGINE);
+			return {nullptr,0};
+		}
+		std::vector<std::string> lines;
+		std::string line;
+		while (std::getline(file, line))
+		{
+			lines.push_back(line);
+		}
+
+		if (lines.empty()) {
+			return { nullptr, 0 };
+		}
+
+		const char** mainptr = new const char* [lines.size()];
+		for (size_t i = 0; i < lines.size(); ++i)
+		{
+			// +1 accounts for the null terminator '\0' (fixes the buffer overflow)
+			char* line_cstr = new char[lines[i].size() + 1];
+			std::strcpy(line_cstr, lines[i].c_str());
+			mainptr[i] = line_cstr;
+		}
+
+		return std::pair<const char**, size_t>(mainptr,	lines.size());
+	}
+
 	
 
 }

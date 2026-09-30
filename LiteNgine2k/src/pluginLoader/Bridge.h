@@ -10,7 +10,7 @@ namespace ltCore
 {
 	class Bridge;
 }
-class DllPort : CallInterface
+class DllPort : public CallInterface
 {
 	//these are created on a per dll basis and are tagged 
 public:
@@ -36,7 +36,7 @@ namespace ltCore
 	class Bridge
 	{
 	public:
-		DllPort* createInterface(std::string name);
+		DllPort* createInterface(std::string& name);
 		void Shutdown();
 		void Startup();
 		std::unordered_map<std::string, std::unordered_map<std::string,uint32_t>> functionMap;
@@ -45,6 +45,3 @@ namespace ltCore
 		std::unordered_map<std::string, DllPort*> PluginInterfaces; // allocated from heap
 	};
 }
-
-
-

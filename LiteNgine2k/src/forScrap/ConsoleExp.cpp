@@ -1,0 +1,6 @@
+/*
+this is for more advanced debugging stuff
+basically a rework of the original console system aimed to give more context and add better filtering and tracing
+
+
+*/

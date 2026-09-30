@@ -7,6 +7,34 @@ namespace ltCore {
 		Continue,
 		Exit
 	};
+	void Application::PluginBegin()
+	{
+		
+		/*
+		* this section is in charge of the plugin scanner
+		* debugging system
+		* function registrar
+		* main ABI (clocks)
+		* preferences
+		*  
+		*/
+
+		dllBridge.Startup(); // abi bridge
+		plugin_preferences_delegate.Startup();
+
+		pluginScanner.Startup(&dllBridge,&plugin_preferences_delegate,&currentSecondaryState,&nextSecondaryState);
+		pluginScanner.Scan();
+		pluginScanner.LoadPlugins();
+	}
+	void Application::PluginEnd()
+	{
+		plugin_preferences_delegate.Shutdown();
+		dllBridge.Shutdown();
+		pluginScanner.Shutdown();
+	}
+	void Application::MainLoop()
+	{
+	}
 	void Application::End()
 	{
 		lte::Con::LogEvent("Engine Shutdown initiated", TAG_ENGINE);
@@ -38,11 +66,9 @@ namespace ltCore {
 		lte::Con::OutputFile();
 		//this is main engine
 		
-		pluginScanner.Scan();
-		pluginScanner.checkDependencies();
-		dllBridge.Startup();
+		PluginBegin();
+
 		//pre graphics creation
-		
 		windowTracker::Init();
 		windowTracker::DefaultWindow();
 		instance.Init("LiteNgine core");
@@ -55,13 +81,13 @@ namespace ltCore {
 		while (!windowTracker::SubWindows[windowTracker::mainWindowIndex]->shouldClose())
 		{
 			//main loop 
+			MainLoop();
 			lte::Con::Display();
 		}
 
 
 		//shutdown
-
-		dllBridge.Shutdown();
+		PluginEnd();
 
 		//ends
 

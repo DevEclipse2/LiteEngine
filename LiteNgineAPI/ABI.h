@@ -6,8 +6,30 @@
 constexpr uint32_t ENGINE_ABI_VERSION = 1;
 typedef uint32_t CallHandle;
 constexpr CallHandle INVALID_HANDLE = 0xFFFFFFFF;
+typedef uint8_t  plugin_state_call_rule_bits;
+constexpr plugin_state_call_rule_bits Enter_call    = 1;
+constexpr plugin_state_call_rule_bits Exit_call     = 2;
+constexpr plugin_state_call_rule_bits Tick_call     = 4;
 
 //imgui is necessary bloat imo 
+enum class EngineState
+{
+
+    starting,
+    operating,
+    critical_exit,
+    shutdown
+};
+enum class EngineSecondaryState
+{
+    index,
+    project,
+    debug,
+    game,
+    quit,
+    none
+};
+
 
 class IMemoryAllocator {
 public:
@@ -30,7 +52,7 @@ public:
     {
         //will expand later
         bool isDefaultPublic = true;
-        char** allowedPlugins;
+        const char** allowedPlugins;
         uint16_t count;
     };
     virtual void call(const char* pluginName,const char* func, lt::formlessData* input, lt::formlessData* output) = 0;
@@ -76,13 +98,21 @@ public:
     struct fullprefs
     {
         //this dumps the entire thing
-        char** fulldata;
+        const char** fulldata;
         size_t size;
     };
     virtual void registerCategory(const char* catName) = 0;
     virtual void addKeyValPair(const char* catName, const char* Key, const char* Val) = 0;
     virtual const char* getKeyValPair(const char* catName, const char* Key) = 0;
     virtual fullprefs dumpAllPrefs(const char* catName, const char* Key) = 0;
+};
+class callRules
+{
+    //these dictate the call rules for better optimisation
+    virtual void setIndexCalls(plugin_state_call_rule_bits bits) = 0;
+    virtual void setProjectCalls(plugin_state_call_rule_bits bits) = 0;
+    virtual void setDebugCalls(plugin_state_call_rule_bits bits) = 0;
+    virtual void setGameCalls(plugin_state_call_rule_bits bits) = 0;
 };
 //virtual interface
 class IEnginePlugin {
@@ -93,26 +123,37 @@ public:
     // Lifecycle hooks
     //these are called from the engine to the plugins
     virtual void OnBootload() = 0;
-    virtual void PreGraphicsCreation(class IGPUBuilder* gpu) = 0;
-
-    virtual void OnGraphicsInjection(class IGPUManager* gpu) = 0;
-    virtual void OnCallAPIDecl(class CallInterface* interface) = 0;
-    virtual void OnDebugAPI(class    DebugInterface* interface) = 0;
-    virtual void OnPreferenceHook(class PreferenceHook* hook) = 0;
-    virtual void OnHibernation() = 0;
-    virtual void OnEditorOpen() = 0;
-    virtual void OnEditorTick( float deltaTime) = 0;
-    virtual void OnProjectLoading() = 0;
-    virtual void OnProjectOpen() = 0;
+    virtual void PreGraphicsCreation        (class IGPUBuilder*     gpu) = 0;
+    virtual void OnGraphicsInjection        (class IGPUManager*     gpu) = 0;
+    virtual void OnCallAPIDecl              (class CallInterface*   interface) = 0; //done
+    virtual void OnDebugAPI                 (class DebugInterface*  interface) = 0;
+    virtual void OnPreferenceHook           (class PreferenceHook*  hook) = 0; // done
+    virtual void OnWakeMeWhenYouNeedMeHook  (class callRules* rules) = 0;
+    virtual void OnPreferencesOutofDate     () = 0;
+    virtual void OnHibernation              () = 0;
+    virtual void OnIndexOpen                () = 0; //done 
+    virtual void OnIndexTick                (float deltaTime) = 0; //done
+    virtual void OnIndexExit                (EngineSecondaryState newstate) = 0;
+    virtual void OnProjectOpen           () = 0;
+    virtual void OnProjectExit              () = 0;
     virtual void OnProjectTick(float deltaTime) = 0;
-    virtual void OnProjectClosing() = 0;
-
-    virtual void OnGameLoading() = 0;
+    virtual void OnDebugOpen() = 0;
+    virtual void OnDebugTick(float deltaTime) = 0;
+    virtual void OnDebugExit() = 0;
     virtual void OnGameOpen() = 0;
     virtual void OnGameTick(float deltaTime) = 0;
-    virtual void OnGameClosing() = 0;
-    virtual void OnQuitEditor() = 0;
+    virtual void OnGameExit() = 0;
 };
+//these states are defined as follows
+/*
+
+Index   : the primary state the engine boots into, and shows a list of prospective projects
+Project : a state in which the main focus is the modification of asset files in which the changes are saved and the "game" or "debug" is not actively experiencing time
+Debug   : a state in which the "game time" or "debug time" is ticking and able to be interacted with, where the changes are usually not preserved * this can of course be changed to a developer's whim, but its good practise
+Game    : usually the build version of the game, and no modifications of the game assets should be encouraged or at least happen without the discresion of the player
+
+*/
+
 
 //export macros
 #if defined(_WIN32)

@@ -13,9 +13,9 @@ namespace ltCore {
 	}
 	void windowTracker::DefaultWindow()
 	{
-		mainWindowIndex = CreateWindow(800,600,"LiteNgine");
+		mainWindowIndex = makeWindow(800,600,"LiteNgine");
 	}
-	uint32_t windowTracker::CreateWindow(int width, int height, std::string name)
+	uint32_t windowTracker::makeWindow(int width, int height, std::string name)
 	{
 		Lt_window window{};
 		window.width = width;

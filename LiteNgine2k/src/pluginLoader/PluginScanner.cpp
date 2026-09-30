@@ -165,7 +165,7 @@ namespace ltCore
 			//this chunk is for abi checking
 			if (!loadFailed)
 			{
-				if (meta.ABI_version != lte::Preferences::Plugin::ABIVER)
+				if (meta.ABI_version != lte::Preferences::Plugin::ABI_VER)
 				{
 					switch (meta.loadingFailed)
 					{
@@ -173,7 +173,7 @@ namespace ltCore
 						//warns exits loading 
 						//no point loadin if missing dependancies
 						loadFailed = true;
-						lte::Con::LogWarning("ABI version mismatch in: " + meta.displayName + " , engine using version" + std::to_string(lte::Preferences::Plugin::ABIVER) + ", but plugin expected"+ std::to_string(meta.ABI_version) + ",skipping over", TAG_ADDON);
+						lte::Con::LogWarning("ABI version mismatch in: " + meta.displayName + " , engine using version" + std::to_string(lte::Preferences::Plugin::ABI_VER) + ", but plugin expected"+ std::to_string(meta.ABI_version) + ",skipping over", TAG_ADDON);
 						break;
 					case errHandling::failthrow:
 						//quits the app
@@ -226,14 +226,13 @@ namespace ltCore
 					meta.internalDependencies.emplace_back(dep);
 					//it doesnt immediately exit so you can get to catch all of the problems
 				}
-				
 			}
 			//this chunk is for checking if the dependencies exist
 			if (!loadFailed) {
 				for (auto& dep : meta.internalDependencies)
 				{
 					fs::path depPath = "";
-					depPath.concat<std::string>(lte::Preferences::Plugin::basePath, dep.path);
+					depPath.concat<std::string>(lte::Preferences::Plugin::basePath + dep.path);
 					if (!fs::exists(depPath))
 					{
 						switch (meta.loadingFailed)
@@ -271,13 +270,15 @@ namespace ltCore
 			if (!loadFailed) {
 				// here check all sizes fit first
 				if (manifest.Dependencies.Hard_dependencies.size()								==
-					manifest.Dependencies.Soft_dependencies_silent.size()						==
-					manifest.Dependencies.Soft_dependencies_warn.size()							==
 					manifest.Dependencies_version_requirement.Max_inclusive.Hard.size()			==
+					manifest.Dependencies_version_requirement.Min_inclusive.Hard.size()			
+					&&
+					manifest.Dependencies.Soft_dependencies_silent.size()						==
 					manifest.Dependencies_version_requirement.Max_inclusive.Soft_silent.size()	==
+					manifest.Dependencies_version_requirement.Min_inclusive.Soft_silent.size()
+					&&
+					manifest.Dependencies.Soft_dependencies_warn.size()							==
 					manifest.Dependencies_version_requirement.Max_inclusive.Soft_warn.size()	==
-					manifest.Dependencies_version_requirement.Min_inclusive.Hard.size()			==
-					manifest.Dependencies_version_requirement.Min_inclusive.Soft_silent.size()	==
 					manifest.Dependencies_version_requirement.Min_inclusive.Soft_warn.size())
 				{
 					for (int i = 0; i < manifest.Dependencies.Hard_dependencies.size(); i++)
@@ -319,7 +320,7 @@ namespace ltCore
 						//warns exits loading 
 						//no point loadin if missing dependancies
 						loadFailed = true;
-						lte::Con::LogWarning("dependency array sizes not same! possible modification to this manifest!" + metadata.displayName + " skipping over", TAG_ADDON);
+						lte::Con::LogWarning("dependency array sizes not same! possible modification to this manifest!" + manifest.display_name + " skipping over", TAG_ADDON);
 						break;
 					case errHandling::failthrow:
 						//quits the app
@@ -335,14 +336,7 @@ namespace ltCore
 			{
 				//stuff here later
 			}
-		}
-		//this part is responsible for checking dependancies
-		//also checks for duplicates
-		for (auto& metaDat : metadata)
-		{
-			//use internal name for the lookup table
-		}
-		
+		}		
 	}
 	void PluginScanner::LoadPlugins()
 	{
@@ -424,7 +418,7 @@ namespace ltCore
 			* each one has their own to avoid spoofing
 			* 
 			* add dll bridge,
-			* kernel side gpu manager
+			* gpu manager
 			* imgui handler
 			* debug handler
 			* preference handler
@@ -432,6 +426,21 @@ namespace ltCore
 			*/
 			if (LoadPlugin(i))
 			{
+				//here it gives the plugin bridge handlers etc
+				//gets handle (stored in actual memory and not discarded here)
+
+
+
+				//remember failmode
+				auto& instance = activePlugins[i].instance;
+				instance->OnCallAPIDecl(apibridge->createInterface(activePlugins[i].name));
+				instance->OnPreferenceHook(prefs->createInterface(activePlugins[i].name));
+				instance->OnWakeMeWhenYouNeedMeHook(generateFuncCallRules(activePlugins[i].name));
+				//instance->OnDebugAPI
+			}
+			else 
+			{
+				//based on fail do handling
 
 			}
 		}
@@ -451,7 +460,7 @@ namespace ltCore
 
 		// 1. Load the DLL into memory
 		fs::path depPath = "";
-		depPath.concat<std::string>(lte::Preferences::Plugin::basePath, metadata[index].filePath);
+		depPath = std::filesystem::path(lte::Preferences::Plugin::basePath) / metadata[index].filePath;
 		plugin.osHandle = PlatformLibrary::Load(depPath);
 		if (!plugin.osHandle)
 		{
@@ -565,4 +574,124 @@ namespace ltCore
 		integrityOp.~SubOp();
 		return passed;
 	}
+	void PluginScanner::Startup(Bridge* dllbridge, preferencesDelegate* prefdel, EngineSecondaryState* current_state, EngineSecondaryState* next_state)
+	{
+		apibridge = dllbridge;
+		prefs = prefdel;
+		current_state_ptr = current_state;
+		next_state_ptr = next_state;
+		PluginFunctionCallRules::host_ptr = this;
+	}
+	void PluginScanner::Shutdown()
+	{
+		for (auto& port : funcCallrules)
+		{
+			delete(port);
+		}
+		funcCallrules.clear();
+		//call plugin destuction
+
+
+	}
+	void PluginScanner::IndexEnter()
+	{
+		//all plugins are active during the main process
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (IndexCallBits[index] & Enter_call)
+			{
+				plugin.instance->OnIndexOpen();
+			}
+			index++;
+		}
+	}
+	void PluginScanner::IndexTick(float deltatime)
+	{
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (IndexCallBits[index] & Tick_call)
+			{
+				plugin.instance->OnIndexTick(deltatime);
+			}
+			index++;
+		}
+	}
+
+	void PluginScanner::IndexExit()
+	{
+		int index = 0;
+		if (*next_state_ptr == EngineSecondaryState::none)
+		{
+			lte::Con::LogError("undefined exit state! indexExit should not be called without a valid exit state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		for (const auto& plugin : activePlugins)
+		{
+			if (IndexCallBits[index] & Exit_call)
+			{
+				plugin.instance->OnIndexExit();
+			}
+			index++;
+		}
+	}
+	PluginFunctionCallRules* PluginScanner::generateFuncCallRules(std::string& name)
+	{
+		
+		PluginFunctionCallRules* newrule = new PluginFunctionCallRules{};
+		newrule->name = name;
+		funcCallrules	.push_back(newrule);
+		IndexCallBits	.push_back(Enter_call | Exit_call | Tick_call);
+		ProjectCallBits	.push_back(Enter_call | Exit_call | Tick_call);
+		DebugCallBits	.push_back(Enter_call | Exit_call | Tick_call);
+		GameCallBits	.push_back(Enter_call | Exit_call | Tick_call);
+		return newrule;
+	}
+	
+}
+
+void PluginFunctionCallRules::setIndexCalls(plugin_state_call_rule_bits bits)
+{
+	//remember to add checks here later // done 
+	if (host_ptr->lookupTable.contains(name) && host_ptr->IndexCallBits.size() > host_ptr->lookupTable[name])
+	{
+		host_ptr->IndexCallBits[host_ptr->lookupTable[name]] = bits;
+		lte::Con::LogEvent("plugin " + name + " has changed it's index call bits to " + std::to_string(bits) + ".\n refer to documentation for precise meaning.", TAG_ADDON);
+		return;
+	}
+	lte::Con::LogError("cannot find plugin with valid index call bits under " + name + " !", MED_SEVERITY, TAG_ADDON);
+}
+
+void PluginFunctionCallRules::setProjectCalls(plugin_state_call_rule_bits bits)
+{
+	if (host_ptr->lookupTable.contains(name) && host_ptr->ProjectCallBits.size() > host_ptr->lookupTable[name])
+	{
+		host_ptr->ProjectCallBits[host_ptr->lookupTable[name]] = bits;
+		lte::Con::LogEvent("plugin " + name + " has changed it's project call bits to " + std::to_string(bits) + ".\n refer to documentation for precise meaning.", TAG_ADDON);
+		return;
+	}
+	lte::Con::LogError("cannot find plugin with valid project call bits under " + name + " !", MED_SEVERITY, TAG_ADDON);
+}
+
+void PluginFunctionCallRules::setDebugCalls(plugin_state_call_rule_bits bits)
+{
+	if (host_ptr->lookupTable.contains(name) && host_ptr->DebugCallBits.size() > host_ptr->lookupTable[name])
+	{
+		host_ptr->DebugCallBits[host_ptr->lookupTable[name]] = bits;
+		lte::Con::LogEvent("plugin " + name + " has changed it's debug call bits to " + std::to_string(bits) + ".\n refer to documentation for precise meaning.", TAG_ADDON);
+		return;
+	}
+	lte::Con::LogError("cannot find plugin with valid debug call bits under " + name + " !", MED_SEVERITY, TAG_ADDON);
+}
+
+void PluginFunctionCallRules::setGameCalls(plugin_state_call_rule_bits bits)
+{
+	if (host_ptr->lookupTable.contains(name) && host_ptr->GameCallBits.size() > host_ptr->lookupTable[name])
+	{
+		host_ptr->GameCallBits[host_ptr->lookupTable[name]] = bits;
+		lte::Con::LogEvent("plugin " + name + " has changed it's game call bits to " + std::to_string(bits) + ".\n refer to documentation for precise meaning.", TAG_ADDON);
+		return;
+	}
+	lte::Con::LogError("cannot find plugin with valid game call bits under " + name + " !", MED_SEVERITY, TAG_ADDON);
 }

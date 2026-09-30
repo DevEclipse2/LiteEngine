@@ -16,6 +16,9 @@ typedef HMODULE LibraryHandle;
 typedef void* LibraryHandle;
 #endif
 
+#include "Bridge.h"
+#include "ABIPrefs.h"
+
 class EngineSystemAllocator : public IMemoryAllocator {
 public:
 	void* Allocate(size_t size, size_t alignment) override {
@@ -27,6 +30,20 @@ public:
 	void Free(void* ptr) override {
 		std::free(ptr);
 	}
+};
+namespace ltCore {
+	class PluginScanner;
+}
+
+class PluginFunctionCallRules : public callRules {
+
+public:
+	std::string name;
+	void setIndexCalls(plugin_state_call_rule_bits bits) override;
+	void setProjectCalls(plugin_state_call_rule_bits bits) override;
+	void setDebugCalls(plugin_state_call_rule_bits bits) override;
+	void setGameCalls(plugin_state_call_rule_bits bits) override;
+	static inline ltCore::PluginScanner* host_ptr;
 };
 
 namespace ltCore {
@@ -83,6 +100,11 @@ namespace ltCore {
 		IEnginePlugin* instance = nullptr;
 		CreatePluginFunc createFunc = nullptr;
 		DestroyPluginFunc destroyFunc = nullptr;
+		plugin_state_call_rule_bits index_rules		;
+		plugin_state_call_rule_bits project_rules	;
+		plugin_state_call_rule_bits debug_rules		;
+		plugin_state_call_rule_bits game_rules		;
+		//this bit is for the rest of them
 	};
 
 	
@@ -143,15 +165,30 @@ namespace ltCore {
 		void Scan();
 		void LoadPlugins();
 		void AddPlugins();
-		void checkDependencies();
-		bool LoadPlugin(uint16_t index);
+		
 
 		std::string pluginPath;
 		bool verifyIntegrity(std::string fpath);
-
+		void Startup(Bridge* apibridge, preferencesDelegate* prefdel, EngineSecondaryState* current_state, EngineSecondaryState* next_state);
+		void Shutdown();
+		void IndexEnter();
+		void IndexExit();
+		void IndexTick(float deltatime);
 		// Create the global instance
+		Bridge* apibridge;
+		preferencesDelegate* prefs;
 		EngineSystemAllocator g_EngineAllocator;
+		std::vector<PluginFunctionCallRules*> funcCallrules;
 		//these are state manager functions for the engine
+		static inline std::vector<plugin_state_call_rule_bits> IndexCallBits;
+		static inline std::vector<plugin_state_call_rule_bits> ProjectCallBits;
+		static inline std::vector<plugin_state_call_rule_bits> DebugCallBits;
+		static inline std::vector<plugin_state_call_rule_bits> GameCallBits;
+		EngineSecondaryState* current_state_ptr;
+		EngineSecondaryState* next_state_ptr;
+	private:
+		bool LoadPlugin(uint16_t index);
+		PluginFunctionCallRules* generateFuncCallRules(std::string& name);
 	};
 }
 
