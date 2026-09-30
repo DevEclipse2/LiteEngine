@@ -21,9 +21,6 @@
     <ClCompile Include="src\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\diskUtility.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\forScrap\Lt_Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,12 +51,18 @@
     <ClCompile Include="src\forScrap\ConsoleExp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shared\commands.txt">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\virtualplugins\projectManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\virtualplugins\virtualplugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\diskUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\forScrap\Lt_Console.h">
@@ -90,6 +93,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\pluginLoader\ABIPrefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\InternalCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\virtualplugins\projectManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\virtualplugins\virtualplugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

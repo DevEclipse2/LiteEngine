@@ -159,33 +159,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\virtualplugins\projectManager.cpp" />
+    <ClCompile Include="shared\commands.txt" />
     <ClCompile Include="src\forScrap\ConsoleExp.cpp" />
     <ClCompile Include="src\pluginLoader\ABIPrefs.cpp" />
     <ClCompile Include="src\pluginLoader\Bridge.cpp" />
     <ClCompile Include="src\pluginLoader\PluginScanner.cpp" />
     <ClCompile Include="src\jraphics\DebugMessenger.cpp" />
     <ClCompile Include="src\jraphics\Devicehandler.cpp" />
-    <ClCompile Include="src\diskUtility.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="LiteNgine2k.cpp" />
     <ClCompile Include="src\forScrap\Bootstrapper.cpp" />
     <ClCompile Include="src\forScrap\Lt_Console.cpp" />
     <ClCompile Include="src\jraphics\vulkanInstance.cpp" />
     <ClCompile Include="src\jraphics\windowTracker.cpp" />
+    <ClCompile Include="src\virtualplugins\virtualplugin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\virtualplugins\projectManager.h" />
+    <ClInclude Include="shared\InternalCommands.h" />
     <ClInclude Include="src\pluginLoader\ABIPrefs.h" />
     <ClInclude Include="src\pluginLoader\Bridge.h" />
     <ClInclude Include="src\pluginLoader\PluginScanner.h" />
     <ClInclude Include="src\jraphics\DebugMessenger.h" />
     <ClInclude Include="src\jraphics\Devicehandler.h" />
-    <ClInclude Include="src\diskUtility.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\forScrap\Bootstrapper.h" />
     <ClInclude Include="src\forScrap\Lt_Console.h" />
     <ClInclude Include="src\forScrap\Preferences.h" />
     <ClInclude Include="src\jraphics\vulkanInstance.h" />
     <ClInclude Include="src\jraphics\windowTracker.h" />
+    <ClInclude Include="src\virtualplugins\virtualplugin.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\pluginLoader\info.txt" />

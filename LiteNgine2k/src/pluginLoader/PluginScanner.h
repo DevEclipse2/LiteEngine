@@ -171,9 +171,22 @@ namespace ltCore {
 		bool verifyIntegrity(std::string fpath);
 		void Startup(Bridge* apibridge, preferencesDelegate* prefdel, EngineSecondaryState* current_state, EngineSecondaryState* next_state);
 		void Shutdown();
+
 		void IndexEnter();
 		void IndexExit();
 		void IndexTick(float deltatime);
+
+		void ProjectEnter();
+		void ProjectExit();
+		void ProjectTick(float deltatime);
+
+		void GameEnter();
+		void GameExit();
+		void GameTick(float deltatime);
+
+		void DebugEnter();
+		void DebugExit();
+		void DebugTick(float deltatime);
 		// Create the global instance
 		Bridge* apibridge;
 		preferencesDelegate* prefs;

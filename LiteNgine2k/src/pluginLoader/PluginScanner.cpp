@@ -618,7 +618,6 @@ namespace ltCore
 			index++;
 		}
 	}
-
 	void PluginScanner::IndexExit()
 	{
 		int index = 0;
@@ -627,15 +626,162 @@ namespace ltCore
 			lte::Con::LogError("undefined exit state! indexExit should not be called without a valid exit state!", HIGH_SEVERITY, TAG_ADDON);
 			return;
 		}
+		if (*next_state_ptr == *current_state_ptr)
+		{
+			lte::Con::LogError("next state is the same as the current state! indexExit should not be called to transition within the same state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
 		for (const auto& plugin : activePlugins)
 		{
 			if (IndexCallBits[index] & Exit_call)
 			{
-				plugin.instance->OnIndexExit();
+				plugin.instance->OnIndexExit(*next_state_ptr);
 			}
 			index++;
 		}
 	}
+	void PluginScanner::ProjectEnter()
+	{
+		//all plugins are active during the main process
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (ProjectCallBits[index] & Enter_call)
+			{
+				plugin.instance->OnProjectOpen();
+			}
+			index++;
+		}
+	}
+	void PluginScanner::ProjectTick(float deltatime)
+	{
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (ProjectCallBits[index] & Tick_call)
+			{
+				plugin.instance->OnProjectTick(deltatime);
+			}
+			index++;
+		}
+	}
+	void PluginScanner::ProjectExit()
+	{
+		int index = 0;
+		if (*next_state_ptr == EngineSecondaryState::none)
+		{
+			lte::Con::LogError("undefined exit state! projectExit should not be called without a valid exit state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		if (*next_state_ptr == *current_state_ptr)
+		{
+			lte::Con::LogError("next state is the same as the current state! projectExit should not be called to transition within the same state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		for (const auto& plugin : activePlugins)
+		{
+			if (ProjectCallBits[index] & Exit_call)
+			{
+				plugin.instance->OnProjectExit(*next_state_ptr);
+			}
+			index++;
+		}
+	}
+	void PluginScanner::GameEnter()
+	{
+		//all plugins are active during the main process
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (GameCallBits[index] & Enter_call)
+			{
+				plugin.instance->OnGameOpen();
+			}
+			index++;
+		}
+	}
+	void PluginScanner::GameTick(float deltatime)
+	{
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (GameCallBits[index] & Tick_call)
+			{
+				plugin.instance->OnGameTick(deltatime);
+			}
+			index++;
+		}
+	}
+	void PluginScanner::GameExit()
+	{
+		int index = 0;
+		if (*next_state_ptr == EngineSecondaryState::none)
+		{
+			lte::Con::LogError("undefined exit state! gameExit should not be called without a valid exit state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		if (*next_state_ptr == *current_state_ptr)
+		{
+			lte::Con::LogError("next state is the same as the current state! gameExit should not be called to transition within the same state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		for (const auto& plugin : activePlugins)
+		{
+			if (GameCallBits[index] & Exit_call)
+			{
+				plugin.instance->OnGameExit(*next_state_ptr);
+			}
+			index++;
+		}
+	}
+	void PluginScanner::DebugEnter()
+	{
+		//all plugins are active during the main process
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (DebugCallBits[index] & Enter_call)
+			{
+				plugin.instance->OnDebugOpen();
+			}
+			index++;
+		}
+	}
+	void PluginScanner::DebugTick(float deltatime)
+	{
+		int index = 0;
+		for (const auto& plugin : activePlugins)
+		{
+			if (DebugCallBits[index] & Tick_call)
+			{
+				plugin.instance->OnDebugTick(deltatime);
+			}
+			index++;
+		}
+	}
+	void PluginScanner::DebugExit()
+	{
+		int index = 0;
+		if (*next_state_ptr == EngineSecondaryState::none)
+		{
+			lte::Con::LogError("undefined exit state! debugExit should not be called without a valid exit state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		if (*next_state_ptr == *current_state_ptr)
+		{
+			lte::Con::LogError("next state is the same as the current state! debugExit should not be called to transition within the same state!", HIGH_SEVERITY, TAG_ADDON);
+			return;
+		}
+		for (const auto& plugin : activePlugins)
+		{
+			if (DebugCallBits[index] & Exit_call)
+			{
+				plugin.instance->OnDebugExit(*next_state_ptr);
+			}
+			index++;
+		}
+	}
+
 	PluginFunctionCallRules* PluginScanner::generateFuncCallRules(std::string& name)
 	{
 		

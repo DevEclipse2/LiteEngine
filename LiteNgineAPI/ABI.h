@@ -114,6 +114,12 @@ class callRules
     virtual void setDebugCalls(plugin_state_call_rule_bits bits) = 0;
     virtual void setGameCalls(plugin_state_call_rule_bits bits) = 0;
 };
+class PluginImGuiContext {
+    ImGuiContext* ctx;
+    ImGuiMemAllocFunc allocFunc;
+    ImGuiMemFreeFunc freeFunc;
+    void* userData;
+};
 //virtual interface
 class IEnginePlugin {
 public:
@@ -122,31 +128,31 @@ public:
 
     // Lifecycle hooks
     //these are called from the engine to the plugins
-    virtual void OnBootload() = 0;
+    virtual void OnBootload                 () = 0;
     virtual void PreGraphicsCreation        (class IGPUBuilder*     gpu) = 0;
     virtual void OnGraphicsInjection        (class IGPUManager*     gpu) = 0;
     virtual void OnCallAPIDecl              (class CallInterface*   interface) = 0; //done
     virtual void OnDebugAPI                 (class DebugInterface*  interface) = 0;
     virtual void OnPreferenceHook           (class PreferenceHook*  hook) = 0; // done
-    virtual void OnWakeMeWhenYouNeedMeHook  (class callRules* rules) = 0;
-    virtual void OnPreferencesOutofDate     () = 0;
+    virtual void OnWakeMeWhenYouNeedMeHook  (class callRules* rules) = 0; //done
+    virtual void OnGUIHook                  (class PluginImGuiContext* context);
+    virtual void OnPreferencesOutofDate     () = 0; 
     virtual void OnHibernation              () = 0;
     virtual void OnIndexOpen                () = 0; //done 
     virtual void OnIndexTick                (float deltaTime) = 0; //done
-    virtual void OnIndexExit                (EngineSecondaryState newstate) = 0;
-    virtual void OnProjectOpen           () = 0;
-    virtual void OnProjectExit              () = 0;
-    virtual void OnProjectTick(float deltaTime) = 0;
-    virtual void OnDebugOpen() = 0;
-    virtual void OnDebugTick(float deltaTime) = 0;
-    virtual void OnDebugExit() = 0;
-    virtual void OnGameOpen() = 0;
-    virtual void OnGameTick(float deltaTime) = 0;
-    virtual void OnGameExit() = 0;
+    virtual void OnIndexExit                (EngineSecondaryState newstate) = 0; //done
+    virtual void OnProjectOpen              () = 0; //done
+    virtual void OnProjectExit              (EngineSecondaryState newstate) = 0; //done
+    virtual void OnProjectTick              (float deltaTime) = 0; //done
+    virtual void OnDebugOpen                () = 0; //done
+    virtual void OnDebugTick                (float deltaTime) = 0; //done
+    virtual void OnDebugExit                (EngineSecondaryState newstate) = 0; //done
+    virtual void OnGameOpen                 () = 0; //done
+    virtual void OnGameTick                 (float deltaTime) = 0; //done
+    virtual void OnGameExit                 (EngineSecondaryState newstate) = 0; //done
 };
 //these states are defined as follows
 /*
-
 Index   : the primary state the engine boots into, and shows a list of prospective projects
 Project : a state in which the main focus is the modification of asset files in which the changes are saved and the "game" or "debug" is not actively experiencing time
 Debug   : a state in which the "game time" or "debug time" is ticking and able to be interacted with, where the changes are usually not preserved * this can of course be changed to a developer's whim, but its good practise
